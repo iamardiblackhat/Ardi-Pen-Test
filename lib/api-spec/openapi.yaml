@@ -3,20 +3,34 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Ardi - Autonomous Penetration Testing Platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: dashboard
+    description: Dashboard stats and activity
+  - name: assets
+    description: Asset management
+  - name: scans
+    description: Scan orchestration
+  - name: findings
+    description: Security findings
+  - name: reports
+    description: Report generation
+  - name: compliance
+    description: Compliance frameworks
+  - name: auth
+    description: Authentication
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +38,518 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # Auth
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register new account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterInput"
+      responses:
+        "201":
+          description: Registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  # Dashboard
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get dashboard summary stats
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/activity:
+    get:
+      operationId: getDashboardActivity
+      tags: [dashboard]
+      summary: Get recent activity feed
+      responses:
+        "200":
+          description: Activity list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+
+  /dashboard/findings-by-severity:
+    get:
+      operationId: getFindingsBySeverity
+      tags: [dashboard]
+      summary: Get findings grouped by severity
+      responses:
+        "200":
+          description: Severity breakdown
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SeverityCount"
+
+  /dashboard/scan-trend:
+    get:
+      operationId: getScanTrend
+      tags: [dashboard]
+      summary: Get scan coverage trend over time
+      responses:
+        "200":
+          description: Scan trend data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TrendPoint"
+
+  # Assets
+  /assets:
+    get:
+      operationId: getAssets
+      tags: [assets]
+      summary: List all assets
+      responses:
+        "200":
+          description: Asset list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Asset"
+    post:
+      operationId: createAsset
+      tags: [assets]
+      summary: Create a new asset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssetInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Asset"
+
+  /assets/{id}:
+    get:
+      operationId: getAsset
+      tags: [assets]
+      summary: Get asset by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Asset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Asset"
+    patch:
+      operationId: updateAsset
+      tags: [assets]
+      summary: Update asset
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssetUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Asset"
+    delete:
+      operationId: deleteAsset
+      tags: [assets]
+      summary: Delete asset
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "204":
+          description: Deleted
+
+  /assets/stats:
+    get:
+      operationId: getAssetStats
+      tags: [assets]
+      summary: Get asset statistics by type and risk
+      responses:
+        "200":
+          description: Asset stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssetStats"
+
+  # Scans
+  /scans:
+    get:
+      operationId: getScans
+      tags: [scans]
+      summary: List all scans
+      responses:
+        "200":
+          description: Scan list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Scan"
+    post:
+      operationId: createScan
+      tags: [scans]
+      summary: Create a new scan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScanInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Scan"
+
+  /scans/{id}:
+    get:
+      operationId: getScan
+      tags: [scans]
+      summary: Get scan by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Scan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Scan"
+
+  /scans/{id}/start:
+    post:
+      operationId: startScan
+      tags: [scans]
+      summary: Start a scan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Scan started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Scan"
+
+  /scans/{id}/stop:
+    post:
+      operationId: stopScan
+      tags: [scans]
+      summary: Stop a running scan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Scan stopped
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Scan"
+
+  /scans/{id}/findings:
+    get:
+      operationId: getScanFindings
+      tags: [scans]
+      summary: Get findings for a specific scan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Findings for scan
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Finding"
+
+  # Findings
+  /findings:
+    get:
+      operationId: getFindings
+      tags: [findings]
+      summary: List all findings
+      responses:
+        "200":
+          description: Findings list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Finding"
+
+  /findings/{id}:
+    get:
+      operationId: getFinding
+      tags: [findings]
+      summary: Get finding by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Finding
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Finding"
+    patch:
+      operationId: updateFinding
+      tags: [findings]
+      summary: Update finding status or notes
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FindingUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Finding"
+
+  /findings/mitre-coverage:
+    get:
+      operationId: getMitreCoverage
+      tags: [findings]
+      summary: Get MITRE ATT&CK coverage matrix data
+      responses:
+        "200":
+          description: MITRE coverage
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MitreTactic"
+
+  /findings/stats:
+    get:
+      operationId: getFindingStats
+      tags: [findings]
+      summary: Get finding statistics and trends
+      responses:
+        "200":
+          description: Finding stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FindingStats"
+
+  # Reports
+  /reports:
+    get:
+      operationId: getReports
+      tags: [reports]
+      summary: List all reports
+      responses:
+        "200":
+          description: Reports list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Report"
+    post:
+      operationId: createReport
+      tags: [reports]
+      summary: Generate a new report
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReportInput"
+      responses:
+        "201":
+          description: Report created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Report"
+
+  /reports/{id}:
+    get:
+      operationId: getReport
+      tags: [reports]
+      summary: Get report by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Report"
+
+  # Compliance
+  /compliance/frameworks:
+    get:
+      operationId: getComplianceFrameworks
+      tags: [compliance]
+      summary: Get all compliance frameworks and their status
+      responses:
+        "200":
+          description: Frameworks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ComplianceFramework"
+
+  /compliance/frameworks/{id}:
+    get:
+      operationId: getComplianceFramework
+      tags: [compliance]
+      summary: Get detailed compliance framework with control mapping
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Framework detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplianceFrameworkDetail"
+
+  /compliance/summary:
+    get:
+      operationId: getComplianceSummary
+      tags: [compliance]
+      summary: Get overall compliance posture summary
+      responses:
+        "200":
+          description: Compliance summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplianceSummary"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +560,511 @@ components:
       required:
         - status
 
+    # Auth
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          
+        password:
+          type: string
+
+    RegisterInput:
+      type: object
+      required: [email, password, name, orgName]
+      properties:
+        email:
+          type: string
+          
+        password:
+          type: string
+        name:
+          type: string
+        orgName:
+          type: string
+
+    AuthResponse:
+      type: object
+      required: [user, token]
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        token:
+          type: string
+
+    User:
+      type: object
+      required: [id, email, name, role, orgName]
+      properties:
+        id:
+          type: number
+        email:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+          enum: [admin, analyst, viewer]
+        orgName:
+          type: string
+        avatarUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    # Dashboard
+    DashboardStats:
+      type: object
+      required: [totalAssets, activeScans, openFindings, criticalFindings, resolvedFindings, complianceScore, lastScanAt]
+      properties:
+        totalAssets:
+          type: number
+        activeScans:
+          type: number
+        openFindings:
+          type: number
+        criticalFindings:
+          type: number
+        resolvedFindings:
+          type: number
+        complianceScore:
+          type: number
+        lastScanAt:
+          type: ["string", "null"]
+
+    ActivityItem:
+      type: object
+      required: [id, type, title, description, createdAt]
+      properties:
+        id:
+          type: number
+        type:
+          type: string
+          enum: [scan_started, scan_completed, finding_discovered, finding_resolved, asset_added, report_generated]
+        title:
+          type: string
+        description:
+          type: string
+        severity:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    SeverityCount:
+      type: object
+      required: [severity, count]
+      properties:
+        severity:
+          type: string
+          enum: [critical, high, medium, low, info]
+        count:
+          type: number
+
+    TrendPoint:
+      type: object
+      required: [date, scans, findings]
+      properties:
+        date:
+          type: string
+        scans:
+          type: number
+        findings:
+          type: number
+
+    # Assets
+    Asset:
+      type: object
+      required: [id, name, type, target, status, riskLevel, createdAt]
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        type:
+          type: string
+          enum: [web_app, network, cloud_aws, cloud_azure, cloud_gcp, api, mobile]
+        target:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive, scanning, pending]
+        riskLevel:
+          type: string
+          enum: [critical, high, medium, low, none]
+        tags:
+          type: array
+          items:
+            type: string
+        lastScannedAt:
+          type: ["string", "null"]
+        openFindings:
+          type: number
+        description:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    AssetInput:
+      type: object
+      required: [name, type, target]
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [web_app, network, cloud_aws, cloud_azure, cloud_gcp, api, mobile]
+        target:
+          type: string
+        description:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+
+    AssetUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive, scanning, pending]
+        description:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+
+    AssetStats:
+      type: object
+      required: [byType, byRisk]
+      properties:
+        byType:
+          type: array
+          items:
+            type: object
+            required: [type, count]
+            properties:
+              type:
+                type: string
+              count:
+                type: number
+        byRisk:
+          type: array
+          items:
+            type: object
+            required: [risk, count]
+            properties:
+              risk:
+                type: string
+              count:
+                type: number
+
+    # Scans
+    Scan:
+      type: object
+      required: [id, name, type, status, assetId, assetName, createdAt]
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        type:
+          type: string
+          enum: [web_app, network, cloud, api, full_stack]
+        status:
+          type: string
+          enum: [pending, running, completed, failed, stopped]
+        assetId:
+          type: number
+        assetName:
+          type: string
+        progress:
+          type: number
+        startedAt:
+          type: ["string", "null"]
+        completedAt:
+          type: ["string", "null"]
+        findingsCount:
+          type: number
+        criticalCount:
+          type: number
+        highCount:
+          type: number
+        duration:
+          type: ["number", "null"]
+        createdAt:
+          type: string
+
+    ScanInput:
+      type: object
+      required: [name, type, assetId]
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [web_app, network, cloud, api, full_stack]
+        assetId:
+          type: number
+        config:
+          type: object
+          properties:
+            depth:
+              type: string
+              enum: [shallow, standard, deep]
+            authenticated:
+              type: boolean
+            modules:
+              type: array
+              items:
+                type: string
+
+    # Findings
+    Finding:
+      type: object
+      required: [id, title, severity, status, category, assetId, assetName, scanId, cve, mitreId, mitreTactic, mitreTechnique, description, remediation, createdAt]
+      properties:
+        id:
+          type: number
+        title:
+          type: string
+        severity:
+          type: string
+          enum: [critical, high, medium, low, info]
+        status:
+          type: string
+          enum: [open, in_progress, resolved, accepted_risk, false_positive]
+        category:
+          type: string
+          enum: [injection, broken_auth, xss, idor, misconfiguration, exposed_data, privilege_escalation, lateral_movement, persistence, exfiltration]
+        assetId:
+          type: number
+        assetName:
+          type: string
+        scanId:
+          type: number
+        cve:
+          type: ["string", "null"]
+        cvss:
+          type: ["number", "null"]
+        mitreId:
+          type: string
+        mitreTactic:
+          type: string
+        mitreTechnique:
+          type: string
+        description:
+          type: string
+        remediation:
+          type: string
+        evidence:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        resolvedAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    FindingUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [open, in_progress, resolved, accepted_risk, false_positive]
+        notes:
+          type: string
+
+    MitreTactic:
+      type: object
+      required: [id, name, techniques]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        techniques:
+          type: array
+          items:
+            type: object
+            required: [id, name, count]
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              count:
+                type: number
+              severity:
+                type: ["string", "null"]
+
+    FindingStats:
+      type: object
+      required: [total, open, resolved, byMonth]
+      properties:
+        total:
+          type: number
+        open:
+          type: number
+        resolved:
+          type: number
+        mttr:
+          type: ["number", "null"]
+        byMonth:
+          type: array
+          items:
+            type: object
+            required: [month, discovered, resolved]
+            properties:
+              month:
+                type: string
+              discovered:
+                type: number
+              resolved:
+                type: number
+
+    # Reports
+    Report:
+      type: object
+      required: [id, title, type, status, format, createdAt]
+      properties:
+        id:
+          type: number
+        title:
+          type: string
+        type:
+          type: string
+          enum: [executive, technical, compliance, pentest]
+        status:
+          type: string
+          enum: [generating, ready, failed]
+        format:
+          type: string
+          enum: [pdf, html, json]
+        scanId:
+          type: ["number", "null"]
+        assetId:
+          type: ["number", "null"]
+        summary:
+          type: ["string", "null"]
+        downloadUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    ReportInput:
+      type: object
+      required: [title, type, format]
+      properties:
+        title:
+          type: string
+        type:
+          type: string
+          enum: [executive, technical, compliance, pentest]
+        format:
+          type: string
+          enum: [pdf, html, json]
+        scanId:
+          type: number
+        assetId:
+          type: number
+        dateRange:
+          type: object
+          properties:
+            from:
+              type: string
+            to:
+              type: string
+
+    # Compliance
+    ComplianceFramework:
+      type: object
+      required: [id, name, version, score, controlsPassed, controlsFailed, controlsTotal, lastAssessedAt]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        version:
+          type: string
+        score:
+          type: number
+        controlsPassed:
+          type: number
+        controlsFailed:
+          type: number
+        controlsTotal:
+          type: number
+        lastAssessedAt:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [compliant, non_compliant, partial, not_assessed]
+
+    ComplianceFrameworkDetail:
+      type: object
+      required: [id, name, version, score, controls]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        version:
+          type: string
+        score:
+          type: number
+        controls:
+          type: array
+          items:
+            type: object
+            required: [id, name, status, category]
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              status:
+                type: string
+                enum: [passed, failed, partial, not_assessed]
+              category:
+                type: string
+              findings:
+                type: array
+                items:
+                  type: number
+              description:
+                type: string
+
+    ComplianceSummary:
+      type: object
+      required: [overallScore, frameworks, topGaps]
+      properties:
+        overallScore:
+          type: number
+        frameworks:
+          type: array
+          items:
+            type: object
+            required: [name, score]
+            properties:
+              name:
+                type: string
+              score:
+                type: number
+        topGaps:
+          type: array
+          items:
+            type: object
+            required: [control, framework, severity]
+            properties:
+              control:
+                type: string
+              framework:
+                type: string
+              severity:
+                type: string
