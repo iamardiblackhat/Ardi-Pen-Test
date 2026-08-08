@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "buildCommand": "pnpm --filter @workspace/api-server run build",
+  "outputDirectory": "artifacts/api-server/dist",
+  "framework": null,
+  "typescript": {
+    "ignoreBuildErrors": true
+  },
+  "routes": [
+    { "src": "/(.*)", "dest": "artifacts/api-server/dist/index.mjs" }
+  ]
+}
