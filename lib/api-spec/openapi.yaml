@@ -841,7 +841,12 @@ components:
           enum: [open, in_progress, resolved, accepted_risk, false_positive]
         category:
           type: string
-          enum: [injection, broken_auth, xss, idor, misconfiguration, exposed_data, privilege_escalation, lateral_movement, persistence, exfiltration]
+          # Web-application categories, plus the infrastructure categories the
+          # nmap and nuclei engines actually emit (network, tls, dns, exposure,
+          # web, file, other). The engine is the source of truth here: a
+          # category it can produce but the spec rejects makes the whole
+          # findings endpoint fail Zod validation and return 500.
+          enum: [injection, broken_auth, xss, idor, misconfiguration, exposed_data, privilege_escalation, lateral_movement, persistence, exfiltration, network, web, tls, dns, exposure, file, other]
         assetId:
           type: number
         assetName:

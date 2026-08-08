@@ -7,6 +7,7 @@ import findingsRouter from "./findings";
 import reportsRouter from "./reports";
 import complianceRouter from "./compliance";
 import dashboardRouter from "./dashboard";
+import ardiRouter from "./ardi";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use(findingsRouter);
 router.use(reportsRouter);
 router.use(complianceRouter);
 router.use(dashboardRouter);
+router.use(ardiRouter);
 
 export default router;

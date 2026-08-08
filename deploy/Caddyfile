@@ -1,0 +1,57 @@
+# Ardi reverse proxy.
+#
+# Replace ardi.example.com with your domain, point an A record at this VM,
+# and Caddy obtains and renews a Let's Encrypt certificate automatically.
+#
+# CRITICAL: the frontend calls the API with RELATIVE `/api/*` paths, because
+# Orval generates the client with baseUrl "/api". So the SPA and the API must
+# be served from the SAME ORIGIN. Splitting them across two hostnames breaks
+# every request in the app. That is what this file exists to prevent.
+
+ardi.example.com {
+	encode zstd gzip
+
+	# Security headers. HSTS is deliberately left commented — turn it on only
+	# once you are certain TLS works, because it is hard to undo in browsers
+	# that have already cached it.
+	header {
+		# Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "geolocation=(), microphone=(), camera=()"
+		-Server
+	}
+
+	# API first — more specific route wins.
+	handle /api/* {
+		reverse_proxy localhost:8080 {
+			health_uri /api/healthz
+			health_interval 30s
+
+			# Ardi and scan progress stream over SSE; buffering breaks them.
+			flush_interval -1
+		}
+	}
+
+	# Everything else: the built SPA, with client-side routing fallback.
+	handle {
+		root * /opt/ardi/artifacts/ardi/dist/public
+		try_files {path} /index.html
+		file_server
+
+		# Hashed assets are immutable; index.html must never be cached or
+		# users get a stale shell pointing at deleted asset filenames.
+		@immutable path /assets/*
+		header @immutable Cache-Control "public, max-age=31536000, immutable"
+		@html path /index.html
+		header @html Cache-Control "no-cache"
+	}
+
+	log {
+		output file /var/log/caddy/ardi.log {
+			roll_size 50MiB
+			roll_keep 10
+		}
+	}
+}

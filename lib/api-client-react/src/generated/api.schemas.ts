@@ -315,6 +315,13 @@ export const FindingCategory = {
   lateral_movement: 'lateral_movement',
   persistence: 'persistence',
   exfiltration: 'exfiltration',
+  network: 'network',
+  web: 'web',
+  tls: 'tls',
+  dns: 'dns',
+  exposure: 'exposure',
+  file: 'file',
+  other: 'other',
 } as const;
 
 export interface Finding {

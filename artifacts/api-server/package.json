@@ -17,7 +17,10 @@
     "drizzle-orm": "catalog:",
     "express": "^5.2.1",
     "pino": "^9.14.0",
-    "pino-http": "^10.5.0"
+    "pino-http": "^10.5.0",
+    "@workspace/scan-engine": "workspace:*",
+    "@workspace/threat-intel": "workspace:*",
+    "@workspace/ardi-agent": "workspace:*"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.10",

@@ -1,0 +1,59 @@
+[Unit]
+Description=Ardi API server
+Documentation=https://github.com/iamardiblackhat/Ardi-Pen-Test
+After=network-online.target postgresql.service
+Wants=network-online.target
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=ardi
+Group=ardi
+WorkingDirectory=/opt/ardi
+EnvironmentFile=/opt/ardi/.env
+Environment=NODE_ENV=production
+Environment=PORT=8080
+ExecStart=/usr/bin/node --enable-source-maps /opt/ardi/artifacts/api-server/dist/index.mjs
+
+# Keep serving clients across crashes and reboots. This is the whole point of
+# running here rather than on a laptop.
+Restart=always
+RestartSec=5
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ardi-api
+
+# Hardening. This process is internet-reachable and parses untrusted input,
+# so it gets the narrowest surface the app can still function within.
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+ProtectProc=invisible
+RestrictSUIDSGID=true
+RestrictRealtime=true
+RestrictNamespaces=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+LockPersonality=true
+MemoryDenyWriteExecute=false
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+CapabilityBoundingSet=
+AmbientCapabilities=
+
+# The only writable paths. Reports are generated here; everything else is
+# read-only to this service, including its own code.
+ReadWritePaths=/var/lib/ardi
+
+[Install]
+WantedBy=multi-user.target

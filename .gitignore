@@ -44,6 +44,19 @@ Thumbs.db
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
 
-# Replit
+# Local caches and tool state
 .cache/
 .local/
+
+# Secrets. Never commit a filled-in environment file — these hold the JWT
+# signing secret, the database password and the Anthropic API key.
+# deploy/.env.example is the committed template and holds no real values.
+.env
+.env.*
+!.env.example
+!deploy/.env.example
+
+# Stray duplicate workspace and loose design exports — not part of the project.
+Asset-Manager 2/
+/Ardidesignsssss.png
+/Ardi-Design-Systemmmmmmmm.png

@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { startScan, cancelScan } from "../lib/scan-runner";
 import { db, scansTable, assetsTable, findingsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import {
@@ -77,15 +78,25 @@ router.post("/scans/:id/start", async (req, res): Promise<void> => {
   const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const parsed = StartScanParams.safeParse({ id: parseInt(rawId, 10) });
   if (!parsed.success) { res.status(400).json({ error: "Invalid id" }); return; }
-  const [scan] = await db
-    .update(scansTable)
-    .set({ status: "running", startedAt: new Date(), progress: 0 })
-    .where(eq(scansTable.id, parsed.data.id))
-    .returning();
-  if (!scan) { res.status(404).json({ error: "Not found" }); return; }
-  // Update asset status
-  await db.update(assetsTable).set({ status: "scanning" }).where(eq(assetsTable.id, scan.assetId));
-  res.json(StartScanResponse.parse(await serializeScan(scan)));
+  const [existing] = await db.select().from(scansTable).where(eq(scansTable.id, parsed.data.id));
+  if (!existing) { res.status(404).json({ error: "Not found" }); return; }
+
+  if (existing.status === "running") {
+    res.status(409).json({ error: "Scan is already running." });
+    return;
+  }
+
+  // Actually launch the scanner. This spawns nmap/nuclei against the asset's
+  // target and writes real findings; it returns immediately and the scan
+  // continues in the background, reporting progress into the scans table.
+  const result = startScan(parsed.data.id);
+  if (!result.started) {
+    res.status(409).json({ error: result.reason ?? "Could not start scan." });
+    return;
+  }
+
+  const [scan] = await db.select().from(scansTable).where(eq(scansTable.id, parsed.data.id));
+  res.json(StartScanResponse.parse(await serializeScan(scan!)));
 });
 
 // POST /api/scans/:id/stop
@@ -93,6 +104,11 @@ router.post("/scans/:id/stop", async (req, res): Promise<void> => {
   const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const parsed = StopScanParams.safeParse({ id: parseInt(rawId, 10) });
   if (!parsed.success) { res.status(400).json({ error: "Invalid id" }); return; }
+  // Signal the running scanner to abort. If nothing is in flight (e.g. after
+  // a restart) fall through and mark the row stopped anyway, so the UI never
+  // strands on a scan that no longer exists.
+  cancelScan(parsed.data.id);
+
   const [scan] = await db
     .update(scansTable)
     .set({ status: "stopped", completedAt: new Date() })
