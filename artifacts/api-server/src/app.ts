@@ -1,31 +1,28 @@
 import express, { type Express } from "express";
 import cors from "cors";
-import pinoHttp from "pino-http";
+import { pinoHttp, type Options as PinoHttpOptions } from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { tripwire } from "./middlewares/tripwire";
 
 const app: Express = express();
 
-app.use(
-  pinoHttp({
-    logger,
-    serializers: {
-      req(req) {
-        return {
-          id: req.id,
-          method: req.method,
-          url: req.url?.split("?")[0],
-        };
-      },
-      res(res) {
-        return {
-          statusCode: res.statusCode,
-        };
-      },
+const pinoHttpOptions: PinoHttpOptions = {
+  logger,
+  serializers: {
+    req(req) {
+      return {
+        id: req.id,
+        method: req.method,
+        url: (req.url as string)?.split("?")[0],
+      };
     },
-  }),
-);
+    res(res) {
+      return { statusCode: (res as { statusCode: number }).statusCode };
+    },
+  },
+};
+app.use(pinoHttp(pinoHttpOptions));
 
 // CORS restricted to the configured origin. A bare cors() allows any site to
 // call the authenticated API from a user's browser — unacceptable here.
