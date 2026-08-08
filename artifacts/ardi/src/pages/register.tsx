@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { useRegister } from '@workspace/api-client-react';
 import { auth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
+import { backendError } from '@/lib/api-error';
 
 export default function Register() {
   const [, setLocation] = useLocation();
@@ -27,18 +28,18 @@ export default function Register() {
           toast({ title: 'Account created', description: `Welcome to Ardi, ${response.user.name}` });
           setLocation('/onboarding');
         },
-        onError: () => {
-          toast({ title: 'Registration failed', description: 'Please try again', variant: 'destructive' });
+        onError: (err: unknown) => {
+          toast({ title: 'Registration failed', description: backendError(err, 'Please try again.'), variant: 'destructive' });
         },
       }
     );
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background grid-pattern">
+    <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="w-full max-w-md p-8 bg-card border border-card-border rounded-xl shadow-2xl">
         <div className="flex flex-col items-center mb-8">
-          <div className="flex items-center justify-center w-16 h-16 bg-primary rounded-xl glow-primary mb-4">
+          <div className="flex items-center justify-center w-16 h-16 bg-primary rounded-xl mb-4">
             <Shield className="w-10 h-10 text-primary-foreground" />
           </div>
           <h1 className="text-3xl font-bold">Create your account</h1>
@@ -100,7 +101,7 @@ export default function Register() {
 
           <Button
             type="submit"
-            className="w-full glow-primary"
+            className="w-full"
             disabled={registerMutation.isPending}
             data-testid="button-register"
           >

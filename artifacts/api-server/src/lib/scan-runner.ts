@@ -8,6 +8,39 @@ import {
   type RawFinding,
 } from "@workspace/scan-engine";
 import { logger } from "./logger";
+import {
+  cyberStrikeConfigured,
+  cyberStrikeHealthy,
+  runCyberStrikeScan,
+  type CyberStrikeVuln,
+} from "./cyberstrike";
+
+/** Map a CyberStrike vulnerability onto Ardi's RawFinding shape. */
+function cyberStrikeToRaw(v: CyberStrikeVuln, target: string): RawFinding {
+  const remediation = v.recommendation ?? "Review and remediate per the evidence below.";
+  const evidenceParts = [
+    v.attack_vector && `Attack vector: ${v.attack_vector}`,
+    v.endpoint && `Endpoint: ${v.endpoint}`,
+    v.steps_to_reproduce && `Steps: ${v.steps_to_reproduce}`,
+    v.poc && `PoC: ${v.poc}`,
+    v.business_impact && `Impact: ${v.business_impact}`,
+  ].filter(Boolean);
+  return {
+    title: v.title,
+    severity: v.severity,
+    category: "web",
+    source: "nuclei", // schema's source enum; CyberStrike is a scanner source
+    target: v.endpoint ?? target,
+    cve: null,
+    cvss: null,
+    mitre: null,
+    description: v.description ?? v.title,
+    remediation,
+    evidence: evidenceParts.join(" | ") || null,
+    references: v.cwe_id ? [`https://cwe.mitre.org/data/definitions/${v.cwe_id.replace(/\D/g, "")}.html`] : [],
+    fingerprint: `cyberstrike:${target}:${v.id}`,
+  };
+}
 
 /**
  * Executes a scan for real: spawns the scanners, streams progress into the
@@ -127,7 +160,47 @@ async function execute(scanId: number, controller: AbortController): Promise<voi
   const collected: RawFinding[] = [];
 
   try {
-    // ── Port and service discovery ─────────────────────────────────────────
+    // ── Preferred engine: CyberStrike (autonomous AI pentest) ──────────────
+    // If a CyberStrike server is configured and healthy, use it as the real
+    // engine. It does far more than a port+template scan.
+    if (cyberStrikeConfigured() && (await cyberStrikeHealthy())) {
+      logger.info({ scanId }, "using CyberStrike engine");
+      const run = await runCyberStrikeScan({
+        target: asset.target,
+        scanName: scan.name,
+        signal: controller.signal,
+        onProgress: (pct, message) => {
+          logger.info({ scanId, pct, message }, "scan progress");
+          void setProgress(scanId, pct);
+        },
+      });
+      collected.push(...run.vulnerabilities.map((v) => cyberStrikeToRaw(v, asset.target)));
+
+      const written = await persistFindings(scanId, asset.id, collected);
+      const critical = collected.filter((f) => f.severity === "critical").length;
+      const high = collected.filter((f) => f.severity === "high").length;
+      const duration = Math.round((Date.now() - startedAt) / 1000);
+      await db.update(scansTable).set({
+        status: "completed", completedAt: new Date(), progress: 100,
+        findingsCount: written, criticalCount: critical, highCount: high, duration,
+      }).where(eq(scansTable.id, scanId));
+      await db.update(assetsTable).set({
+        status: "active",
+        riskLevel: critical > 0 ? "critical" : high > 0 ? "high" : written > 0 ? "medium" : "low",
+        lastScannedAt: new Date(),
+      }).where(eq(assetsTable.id, asset.id));
+      await db.insert(activityTable).values({
+        type: "scan_completed",
+        title: `CyberStrike scan completed on ${asset.name}`,
+        description: `${written} findings (${critical} critical, ${high} high) in ${duration}s`,
+        severity: critical > 0 ? "critical" : high > 0 ? "high" : "info",
+      });
+      logger.info({ scanId, written, engine: "cyberstrike" }, "scan completed");
+      return;
+    }
+
+    // ── Fallback engine: built-in nmap + nuclei ────────────────────────────
+    // Port and service discovery
     const nmap = await runNmap(asset.target, {
       onProgress: (pct, message) => {
         logger.info({ scanId, pct, message }, "scan progress");

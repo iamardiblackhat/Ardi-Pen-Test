@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { useLogin } from '@workspace/api-client-react';
 import { auth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
+import { backendError } from '@/lib/api-error';
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -25,18 +26,18 @@ export default function Login() {
           toast({ title: 'Login successful', description: `Welcome back, ${response.user.name}` });
           setLocation('/dashboard');
         },
-        onError: () => {
-          toast({ title: 'Login failed', description: 'Invalid email or password', variant: 'destructive' });
+        onError: (err: unknown) => {
+          toast({ title: 'Login failed', description: backendError(err, 'Incorrect email or password.'), variant: 'destructive' });
         },
       }
     );
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background grid-pattern">
+    <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="w-full max-w-md p-8 bg-card border border-card-border rounded-xl shadow-2xl">
         <div className="flex flex-col items-center mb-8">
-          <div className="flex items-center justify-center w-16 h-16 bg-primary rounded-xl glow-primary mb-4">
+          <div className="flex items-center justify-center w-16 h-16 bg-primary rounded-xl mb-4">
             <Shield className="w-10 h-10 text-primary-foreground" />
           </div>
           <h1 className="text-3xl font-bold">Welcome to Ardi</h1>
@@ -72,7 +73,7 @@ export default function Login() {
 
           <Button
             type="submit"
-            className="w-full glow-primary"
+            className="w-full"
             disabled={loginMutation.isPending}
             data-testid="button-login"
           >

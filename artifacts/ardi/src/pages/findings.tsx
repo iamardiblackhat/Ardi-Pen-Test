@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ThreatIntel } from '@/components/threat-intel';
 import { Link } from 'wouter';
 import {
   AlertTriangle, Search, Filter, ExternalLink, ChevronDown, Shield,
@@ -99,6 +100,9 @@ function FindingDetail({ finding, onClose }: { finding: Finding; onClose: () => 
             </div>
           </div>
         )}
+
+        {/* Live threat intelligence (OpenCTI) */}
+        <ThreatIntel findingId={finding.id} />
 
         {/* Asset */}
         <div>

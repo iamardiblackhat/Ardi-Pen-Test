@@ -34,7 +34,9 @@ export function ArdiPanel({ open, onClose, context }: { open: boolean; onClose: 
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch('/api/ardi/status')
+    fetch('/api/ardi/status', {
+      headers: auth.getToken() ? { authorization: `Bearer ${auth.getToken()}` } : {},
+    })
       .then((r) => r.json())
       .then(setStatus)
       .catch(() => setStatus({ configured: false, displayName: 'ARDI', suggestions: [] }));

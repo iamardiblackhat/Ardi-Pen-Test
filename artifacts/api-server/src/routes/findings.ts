@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { db, findingsTable, assetsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import { enrich, threatIntelEnabled } from "../lib/threat-intel";
 import {
   GetFindingsResponse,
   GetFindingParams,
@@ -132,6 +133,33 @@ router.get("/findings/:id", async (req, res): Promise<void> => {
   if (!f) { res.status(404).json({ error: "Not found" }); return; }
   const assetMap = await getAssetMap();
   res.json(GetFindingResponse.parse(serializeFinding(f, assetMap.get(f.assetId) ?? "Unknown")));
+});
+
+// GET /api/findings/:id/threat-intel — live OpenCTI enrichment for one finding.
+// Not part of the generated OpenAPI client; called directly by the finding
+// detail view. Returns real KEV/EPSS/CVSS data and linked threat actors.
+router.get("/findings/:id/threat-intel", async (req, res): Promise<void> => {
+  const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(rawId, 10);
+  if (Number.isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+
+  const [f] = await db.select().from(findingsTable).where(eq(findingsTable.id, id));
+  if (!f) { res.status(404).json({ error: "Not found" }); return; }
+
+  const intel = await enrich({ cve: f.cve ?? null, mitreId: f.mitreId, cvss: f.cvss ?? null });
+  res.json({
+    enabled: threatIntelEnabled(),
+    cve: f.cve ?? null,
+    knownExploited: intel.knownExploited,
+    epssScore: intel.epssScore,
+    epssPercentile: intel.epssPercentile,
+    cvssBaseScore: intel.cvssBaseScore,
+    cvssBaseSeverity: intel.cvssBaseSeverity,
+    threatActors: intel.threatActors,
+    priority: intel.priority,
+    confidence: intel.confidence,
+    retrievedAt: intel.retrievedAt,
+  });
 });
 
 // PATCH /api/findings/:id
