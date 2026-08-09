@@ -30,14 +30,14 @@ export function ArdiAvatar({
 
   return (
     <div
-      className={`relative flex-shrink-0 overflow-hidden rounded-full bg-ardi-surface ${className}`}
+      className={`relative flex-shrink-0 overflow-hidden rounded-full bg-background ${className}`}
       style={{ width: size, height: size }}
       role="img"
       aria-label={`ARDI is ${mood}`}
     >
       {/* Glow ring, brightest while he is actually doing something. */}
       <motion.span
-        className="pointer-events-none absolute inset-0 rounded-full"
+        className="pointer-events-none absolute inset-0 rounded-full z-10"
         style={{ boxShadow: '0 0 12px 1px hsl(var(--ardi-neon) / 0.55)' }}
         animate={
           reduce || mood === 'idle'
@@ -52,12 +52,17 @@ export function ArdiAvatar({
           src={ART[mood]}
           alt=""
           draggable={false}
-          className="h-full w-full object-cover"
-          // The renders are full-body on black; scale up and bias toward the
-          // head so a small avatar shows his face rather than his knees.
-          style={{ objectPosition: '50% 18%', transform: 'scale(2.1)' }}
-          initial={reduce ? { opacity: 0 } : { opacity: 0, scale: 1.9 }}
-          animate={reduce ? { opacity: 1 } : { opacity: 1, scale: 2.1 }}
+          className="h-full w-full object-cover mix-blend-screen"
+          // The renders are shot on flat black, not transparent. Screen-blend
+          // against the container's own background so that baked-in black
+          // drops out and shows whatever is actually behind him — matching
+          // the surface he's placed on, whatever theme that surface is —
+          // instead of carrying his own visibly mismatched black backdrop.
+          // Anchor scale at the top edge, not center: the old center-anchor
+          // zoomed into his chest logo and cropped the head off.
+          style={{ transformOrigin: '50% 0%' }}
+          initial={reduce ? { opacity: 0 } : { opacity: 0, scale: 2.3 }}
+          animate={reduce ? { opacity: 1 } : { opacity: 1, scale: 2.6 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.25 }}
         />
@@ -70,17 +75,19 @@ export function ArdiAvatar({
 export function ArdiFull({ mood = 'idle', size = 200 }: { mood?: ArdiMood; size?: number }) {
   const reduce = useReducedMotion();
   return (
-    <motion.img
-      key={mood}
-      src={ART[mood]}
-      alt={`ARDI is ${mood}`}
-      draggable={false}
-      width={size}
-      height={size}
-      className="select-none"
-      style={{ filter: 'drop-shadow(0 0 24px hsl(var(--ardi-neon) / 0.35))' }}
-      animate={reduce ? undefined : { y: [0, -6, 0] }}
-      transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
-    />
+    <div className="relative inline-block bg-ardi-surface" style={{ width: size, height: size }}>
+      <motion.img
+        key={mood}
+        src={ART[mood]}
+        alt={`ARDI is ${mood}`}
+        draggable={false}
+        width={size}
+        height={size}
+        className="select-none mix-blend-screen"
+        style={{ filter: 'drop-shadow(0 0 24px hsl(var(--ardi-neon) / 0.35))' }}
+        animate={reduce ? undefined : { y: [0, -6, 0] }}
+        transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
+      />
+    </div>
   );
 }
