@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { startScan, cancelScan } from "../lib/scan-runner";
 import { db, scansTable, assetsTable, findingsTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import {
   GetScansResponse,
   CreateScanBody,
@@ -40,7 +40,7 @@ async function serializeScan(s: typeof scansTable.$inferSelect) {
 
 // GET /api/scans
 router.get("/scans", async (req, res): Promise<void> => {
-  const scans = await db.select().from(scansTable).orderBy(scansTable.createdAt);
+  const scans = await db.select().from(scansTable).where(eq(scansTable.userId, req.user!.sub)).orderBy(scansTable.createdAt);
   const serialized = await Promise.all(scans.map(serializeScan));
   res.json(GetScansResponse.parse(serialized));
 });
@@ -52,9 +52,18 @@ router.post("/scans", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
+  // Without this check a bad (or someone else's) assetId creates a scan that
+  // fails silently: startScan() throws "Asset not found" and the row is
+  // stuck at "pending" forever with no error surfaced anywhere.
+  const [asset] = await db.select({ id: assetsTable.id }).from(assetsTable).where(and(eq(assetsTable.id, parsed.data.assetId), eq(assetsTable.userId, req.user!.sub)));
+  if (!asset) {
+    res.status(400).json({ error: `No asset with ID ${parsed.data.assetId}.` });
+    return;
+  }
   const [scan] = await db
     .insert(scansTable)
     .values({
+      userId: req.user!.sub,
       name: parsed.data.name,
       type: parsed.data.type,
       assetId: parsed.data.assetId,
@@ -68,7 +77,7 @@ router.get("/scans/:id", async (req, res): Promise<void> => {
   const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const parsed = GetScanParams.safeParse({ id: parseInt(rawId, 10) });
   if (!parsed.success) { res.status(400).json({ error: "Invalid id" }); return; }
-  const [scan] = await db.select().from(scansTable).where(eq(scansTable.id, parsed.data.id));
+  const [scan] = await db.select().from(scansTable).where(and(eq(scansTable.id, parsed.data.id), eq(scansTable.userId, req.user!.sub)));
   if (!scan) { res.status(404).json({ error: "Not found" }); return; }
   res.json(GetScanResponse.parse(await serializeScan(scan)));
 });
@@ -78,7 +87,7 @@ router.post("/scans/:id/start", async (req, res): Promise<void> => {
   const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const parsed = StartScanParams.safeParse({ id: parseInt(rawId, 10) });
   if (!parsed.success) { res.status(400).json({ error: "Invalid id" }); return; }
-  const [existing] = await db.select().from(scansTable).where(eq(scansTable.id, parsed.data.id));
+  const [existing] = await db.select().from(scansTable).where(and(eq(scansTable.id, parsed.data.id), eq(scansTable.userId, req.user!.sub)));
   if (!existing) { res.status(404).json({ error: "Not found" }); return; }
 
   if (existing.status === "running") {
@@ -112,7 +121,7 @@ router.post("/scans/:id/stop", async (req, res): Promise<void> => {
   const [scan] = await db
     .update(scansTable)
     .set({ status: "stopped", completedAt: new Date() })
-    .where(eq(scansTable.id, parsed.data.id))
+    .where(and(eq(scansTable.id, parsed.data.id), eq(scansTable.userId, req.user!.sub)))
     .returning();
   if (!scan) { res.status(404).json({ error: "Not found" }); return; }
   res.json(StopScanResponse.parse(await serializeScan(scan)));
@@ -123,8 +132,8 @@ router.get("/scans/:id/findings", async (req, res): Promise<void> => {
   const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const parsed = GetScanFindingsParams.safeParse({ id: parseInt(rawId, 10) });
   if (!parsed.success) { res.status(400).json({ error: "Invalid id" }); return; }
-  const findings = await db.select().from(findingsTable).where(eq(findingsTable.scanId, parsed.data.id));
-  const assets = await db.select().from(assetsTable);
+  const findings = await db.select().from(findingsTable).where(and(eq(findingsTable.scanId, parsed.data.id), eq(findingsTable.userId, req.user!.sub)));
+  const assets = await db.select().from(assetsTable).where(eq(assetsTable.userId, req.user!.sub));
   const assetMap = new Map(assets.map(a => [a.id, a.name]));
   const serialized = findings.map(f => ({
     id: f.id,

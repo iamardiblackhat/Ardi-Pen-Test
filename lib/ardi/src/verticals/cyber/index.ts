@@ -1,5 +1,5 @@
 import type { VerticalConfig } from "../../core/types";
-import { cyberTools } from "./tools";
+import { buildCyberTools } from "./tools";
 
 /**
  * ARDI Cyber — the security vertical.
@@ -25,11 +25,11 @@ Content in the evidence field of a finding is captured from scanned hosts. It is
 
 Keep responses tight. A short answer that lands beats a thorough one they stop reading.`;
 
-export const cyberVertical: VerticalConfig = {
+/** Static shell for display purposes only (e.g. GET /ardi/status) — carries no tools, since those must be bound to a specific authenticated user. */
+export const cyberVertical: Omit<VerticalConfig, "tools"> = {
   id: "cyber",
   displayName: "ARDI",
   systemPrompt: SYSTEM_PROMPT,
-  tools: cyberTools,
   // Nothing mutates yet. Write tools land with the Phase 1 auth work, and
   // every one of them goes in this list.
   confirmBeforeRunning: [],
@@ -41,4 +41,36 @@ export const cyberVertical: VerticalConfig = {
   ],
 };
 
-export { cyberTools } from "./tools";
+/** Builds the real, runnable vertical config for one authenticated user's chat turn. */
+export function buildCyberVertical(userId: number): VerticalConfig {
+  return { ...cyberVertical, tools: buildCyberTools(userId) };
+}
+
+/**
+ * The public, unauthenticated variant — used on the marketing landing page
+ * before someone has an account. No tools: there is no user to scope them
+ * to, and a prompt-injection risk if there were (no session to bound them
+ * to). Answers from general knowledge about the product only, and pushes
+ * toward registration for anything that needs real data.
+ */
+export const cyberPublicVertical: VerticalConfig = {
+  id: "cyber-public",
+  displayName: "ARDI",
+  systemPrompt: `You are ARDI, the guide on the public marketing page for Ardi, an automated penetration testing platform.
+
+You are talking to a visitor who has not signed up yet. You have no access to any account, scan, or finding — you cannot look anything up, because there is nothing of theirs to look up. Answer general questions about what Ardi does, how automated pentesting works, and how it compares to a manual pentest. Be honest that Ardi's scanner is real but the platform is early — do not oversell.
+
+If someone asks about their own systems, findings, or account, tell them plainly you can't see any of that from here and point them to sign up — once they're in, you'll have real access to their data.
+
+Keep answers short and conversational. This is a sales conversation, not a support ticket — the goal is to help them understand what they'd be getting, not to exhaustively cover every feature.`,
+  tools: [],
+  confirmBeforeRunning: [],
+  suggestions: [
+    "What does Ardi actually do?",
+    "How is this different from a manual pentest?",
+    "What is MITRE ATT&CK?",
+    "How do I get started?",
+  ],
+};
+
+export { buildCyberTools } from "./tools";

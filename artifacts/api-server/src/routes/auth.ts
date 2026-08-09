@@ -7,10 +7,17 @@ import {
   LoginResponse,
   RegisterResponse,
   GetMeResponse,
+  UpdateMeBody,
+  UpdateMeResponse,
 } from "@workspace/api-zod";
 import { hashPassword, verifyPassword, signToken, verifyToken } from "../lib/auth";
+import { rateLimit } from "../middlewares/rate-limit";
 
 const router = Router();
+
+// 10 attempts per 5 minutes per IP. Generous enough for a real user who
+// mistypes a password a few times, tight enough to blunt brute-forcing.
+const authLimiter = rateLimit(10, 5 * 60 * 1000);
 
 function serializeUser(user: typeof usersTable.$inferSelect) {
   return {
@@ -20,12 +27,15 @@ function serializeUser(user: typeof usersTable.$inferSelect) {
     role: user.role,
     orgName: user.orgName,
     avatarUrl: user.avatarUrl ?? null,
+    notifyScanComplete: user.notifyScanComplete,
+    notifyCritical: user.notifyCritical,
+    notifyWeeklyDigest: user.notifyWeeklyDigest,
     createdAt: user.createdAt.toISOString(),
   };
 }
 
 // POST /api/auth/register
-router.post("/auth/register", async (req, res): Promise<void> => {
+router.post("/auth/register", authLimiter, async (req, res): Promise<void> => {
   const parsed = RegisterBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -59,7 +69,7 @@ router.post("/auth/register", async (req, res): Promise<void> => {
 });
 
 // POST /api/auth/login
-router.post("/auth/login", async (req, res): Promise<void> => {
+router.post("/auth/login", authLimiter, async (req, res): Promise<void> => {
   const parsed = LoginBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -104,6 +114,43 @@ router.get("/auth/me", async (req, res): Promise<void> => {
     return;
   }
   res.json(GetMeResponse.parse(serializeUser(user)));
+});
+
+// PATCH /api/auth/me
+router.patch("/auth/me", async (req, res): Promise<void> => {
+  const header = req.headers.authorization;
+  if (!header?.startsWith("Bearer ")) {
+    res.status(401).json({ error: "Authentication required." });
+    return;
+  }
+  const payload = verifyToken(header.slice(7));
+  if (!payload) {
+    res.status(401).json({ error: "Invalid or expired session." });
+    return;
+  }
+
+  const parsed = UpdateMeBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  // Every field is optional so a client can patch just the notification
+  // switches without resending name/orgName.
+  if (Object.keys(parsed.data).length === 0) {
+    res.status(400).json({ error: "Provide at least one field to update." });
+    return;
+  }
+
+  const [user] = await db
+    .update(usersTable)
+    .set(parsed.data)
+    .where(eq(usersTable.id, payload.sub))
+    .returning();
+  if (!user) {
+    res.status(404).json({ error: "User not found." });
+    return;
+  }
+  res.json(UpdateMeResponse.parse(serializeUser(user)));
 });
 
 // A fixed valid scrypt hash of a random string, used only to equalise login

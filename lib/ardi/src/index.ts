@@ -1,2 +1,2 @@
 export * from "./core";
-export { cyberVertical, cyberTools } from "./verticals/cyber";
+export { cyberVertical, cyberPublicVertical, buildCyberVertical, buildCyberTools } from "./verticals/cyber";

@@ -47,6 +47,7 @@ Thumbs.db
 # Local caches and tool state
 .cache/
 .local/
+.amazonq/
 
 # Secrets. Never commit a filled-in environment file — these hold the JWT
 # signing secret, the database password and the Anthropic API key.

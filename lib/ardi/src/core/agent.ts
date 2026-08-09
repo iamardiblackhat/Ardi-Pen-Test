@@ -77,7 +77,7 @@ export interface RunOptions {
  */
 export async function* runArdi(options: RunOptions): AsyncGenerator<ArdiEvent> {
   if (!isConfigured()) {
-    throw new ArdiNotConfiguredError();
+    throw new ArdiNotConfiguredError(getProvider());
   }
 
   const { vertical, messages, context, signal } = options;

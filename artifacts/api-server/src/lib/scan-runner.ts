@@ -77,6 +77,7 @@ async function setProgress(scanId: number, progress: number): Promise<void> {
 async function persistFindings(
   scanId: number,
   assetId: number,
+  userId: number,
   findings: readonly RawFinding[],
 ): Promise<number> {
   if (findings.length === 0) return 0;
@@ -90,6 +91,7 @@ async function persistFindings(
     if (seen.has(f.fingerprint)) continue;
     seen.add(f.fingerprint);
     rows.push({
+      userId,
       title: f.title,
       severity: f.severity,
       status: "open" as const,
@@ -176,7 +178,7 @@ async function execute(scanId: number, controller: AbortController): Promise<voi
       });
       collected.push(...run.vulnerabilities.map((v) => cyberStrikeToRaw(v, asset.target)));
 
-      const written = await persistFindings(scanId, asset.id, collected);
+      const written = await persistFindings(scanId, asset.id, scan.userId, collected);
       const critical = collected.filter((f) => f.severity === "critical").length;
       const high = collected.filter((f) => f.severity === "high").length;
       const duration = Math.round((Date.now() - startedAt) / 1000);
@@ -190,6 +192,7 @@ async function execute(scanId: number, controller: AbortController): Promise<voi
         lastScannedAt: new Date(),
       }).where(eq(assetsTable.id, asset.id));
       await db.insert(activityTable).values({
+        userId: scan.userId,
         type: "scan_completed",
         title: `CyberStrike scan completed on ${asset.name}`,
         description: `${written} findings (${critical} critical, ${high} high) in ${duration}s`,
@@ -242,7 +245,7 @@ async function execute(scanId: number, controller: AbortController): Promise<voi
     }
 
     // ── Persist ────────────────────────────────────────────────────────────
-    const written = await persistFindings(scanId, asset.id, collected);
+    const written = await persistFindings(scanId, asset.id, scan.userId, collected);
     const critical = collected.filter((f) => f.severity === "critical").length;
     const high = collected.filter((f) => f.severity === "high").length;
     const duration = Math.round((Date.now() - startedAt) / 1000);
@@ -270,6 +273,7 @@ async function execute(scanId: number, controller: AbortController): Promise<voi
       .where(eq(assetsTable.id, asset.id));
 
     await db.insert(activityTable).values({
+      userId: scan.userId,
       type: "scan_completed",
       title: `Scan completed on ${asset.name}`,
       description: `${written} findings (${critical} critical, ${high} high) in ${duration}s`,
@@ -293,6 +297,7 @@ async function execute(scanId: number, controller: AbortController): Promise<voi
     await db.update(assetsTable).set({ status: "active" }).where(eq(assetsTable.id, asset.id));
 
     await db.insert(activityTable).values({
+      userId: scan.userId,
       type: "scan_failed",
       title: cancelled ? `Scan stopped on ${asset.name}` : `Scan failed on ${asset.name}`,
       description: message.slice(0, 500),

@@ -221,16 +221,28 @@ export default function ScanDetail() {
         )}
       </div>
 
-      {/* Log Output */}
+      {/* Status summary — real fields from the scan record. There is no live
+          log stream from the scanner yet, so this deliberately doesn't fake
+          one; it shows what's actually known. */}
       <div className="bg-card border border-card-border rounded-xl p-6">
-        <h2 className="text-lg font-bold mb-6">Scan Output</h2>
-        <div className="bg-black/50 rounded-lg p-4 font-mono text-xs text-green-400 h-64 overflow-y-auto">
-          <p>[{new Date().toISOString()}] Initializing scan engine...</p>
-          <p>[{new Date().toISOString()}] Target: {scan.assetName}</p>
-          <p>[{new Date().toISOString()}] Scan type: {scan.type}</p>
-          <p>[{new Date().toISOString()}] Running reconnaissance modules...</p>
-          {scan.status === 'running' && <p className="animate-pulse">[{new Date().toISOString()}] Scan in progress...</p>}
-          {scan.status === 'completed' && <p>[{new Date().toISOString()}] Scan completed. {scan.findingsCount || 0} findings discovered.</p>}
+        <h2 className="text-lg font-bold mb-6">Scan Status</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+          <div>
+            <p className="text-muted-foreground text-xs mb-1">Target</p>
+            <p className="font-mono">{scan.assetName}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground text-xs mb-1">Type</p>
+            <p className="font-mono">{scan.type}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground text-xs mb-1">Progress</p>
+            <p className="font-mono">{scan.progress ?? 0}%</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground text-xs mb-1">Findings so far</p>
+            <p className="font-mono">{scan.findingsCount ?? 0}</p>
+          </div>
         </div>
       </div>
     </div>

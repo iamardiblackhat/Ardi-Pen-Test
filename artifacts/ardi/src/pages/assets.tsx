@@ -243,6 +243,7 @@ export default function Assets() {
                     <Button
                       variant="ghost"
                       size="icon"
+                      aria-label={`Delete ${asset.name}`}
                       onClick={(e) => {
                         e.preventDefault();
                         handleDelete(asset.id, asset.name);

@@ -15,5 +15,8 @@ export interface User {
   orgName: string;
   /** @nullable */
   avatarUrl?: string | null;
+  notifyScanComplete: boolean;
+  notifyCritical: boolean;
+  notifyWeeklyDigest: boolean;
   createdAt?: string;
 }

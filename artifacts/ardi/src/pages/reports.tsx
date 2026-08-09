@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FileText, Plus, Download, Clock, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
+import { FileText, Plus, Clock, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -244,12 +244,6 @@ export default function Reports() {
                   <span className="text-xs font-mono text-muted-foreground uppercase">
                     {report.format}
                   </span>
-                  {report.status === 'ready' && (
-                    <Button size="sm" variant="outline" className="h-7 text-xs gap-1">
-                      <Download className="w-3 h-3" />
-                      Download
-                    </Button>
-                  )}
                 </div>
               </div>
             </div>

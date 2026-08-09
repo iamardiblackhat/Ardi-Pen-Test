@@ -4,6 +4,7 @@ import { z } from "zod/v4";
 
 export const findingsTable = pgTable("findings", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
   title: text("title").notNull(),
   severity: text("severity").notNull(), // critical | high | medium | low | info
   status: text("status").notNull().default("open"), // open | in_progress | resolved | accepted_risk | false_positive

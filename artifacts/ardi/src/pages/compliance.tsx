@@ -143,6 +143,11 @@ export default function Compliance() {
         </p>
       </div>
 
+      <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-600 dark:text-yellow-400">
+        Sample data — these scores aren't computed from your findings yet. Real
+        compliance mapping is on the roadmap.
+      </div>
+
       {/* Framework overview cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {(frameworks ?? []).map((fw) => {

@@ -1,6 +1,15 @@
 import { Router } from "express";
-import { runArdi, isConfigured, describeProvider, cyberVertical, ArdiNotConfiguredError } from "@workspace/ardi-agent";
+import {
+  runArdi,
+  isConfigured,
+  describeProvider,
+  cyberVertical,
+  cyberPublicVertical,
+  buildCyberVertical,
+  ArdiNotConfiguredError,
+} from "@workspace/ardi-agent";
 import type { ChatMessage } from "@workspace/ardi-agent";
+import { verifyToken } from "../lib/auth";
 import { logger } from "../lib/logger";
 
 const router = Router();
@@ -9,18 +18,32 @@ const router = Router();
 const MAX_MESSAGES = 40;
 const MAX_MESSAGE_CHARS = 8_000;
 
+/**
+ * ARDI serves both the anonymous landing page and the authenticated app, so
+ * unlike every other route here it can't just sit behind `requireAuth` — a
+ * missing/invalid token means "anonymous visitor", not "reject the request".
+ * Only a token that verifies is ever trusted for anything user-scoped.
+ */
+function optionalUserId(req: { headers: { authorization?: string } }): number | null {
+  const header = req.headers.authorization;
+  if (!header?.startsWith("Bearer ")) return null;
+  const payload = verifyToken(header.slice(7));
+  return payload?.sub ?? null;
+}
+
 // GET /api/ardi/status — lets the UI show ARDI as unavailable rather than
 // letting the user type into a box that will fail.
-router.get("/ardi/status", (_req, res): void => {
+router.get("/ardi/status", (req, res): void => {
   const provider = describeProvider();
+  const vertical = optionalUserId(req) !== null ? cyberVertical : cyberPublicVertical;
   res.json({
     configured: isConfigured(),
     provider: provider.provider,
     model: provider.model,
     endpoint: provider.endpoint,
-    displayName: cyberVertical.displayName,
-    vertical: cyberVertical.id,
-    suggestions: cyberVertical.suggestions,
+    displayName: vertical.displayName,
+    vertical: vertical.id,
+    suggestions: vertical.suggestions,
   });
 });
 
@@ -76,9 +99,12 @@ router.post("/ardi/chat", async (req, res): Promise<void> => {
     res.write(`data: ${JSON.stringify(event)}\n\n`);
   };
 
+  const userId = optionalUserId(req);
+  const vertical = userId !== null ? buildCyberVertical(userId) : cyberPublicVertical;
+
   try {
     for await (const event of runArdi({
-      vertical: cyberVertical,
+      vertical,
       messages,
       context: typeof body.context === "string" ? body.context.slice(0, 2_000) : undefined,
       signal: controller.signal,

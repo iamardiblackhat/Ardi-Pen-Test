@@ -24,6 +24,11 @@ tags:
     description: Compliance frameworks
   - name: auth
     description: Authentication
+  - name: ardi
+    description: >-
+      ARDI assistant. Only /ardi/status is documented here — /ardi/chat is a
+      hand-rolled Server-Sent Events stream, not a typed JSON endpoint, so it
+      is intentionally excluded from codegen.
 
 paths:
   /healthz:
@@ -88,6 +93,23 @@ paths:
       responses:
         "200":
           description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    patch:
+      operationId: updateMe
+      tags: [auth]
+      summary: Update the current user's profile and notification preferences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMeInput"
+      responses:
+        "200":
+          description: Updated user
           content:
             application/json:
               schema:
@@ -550,6 +572,19 @@ paths:
               schema:
                 $ref: "#/components/schemas/ComplianceSummary"
 
+  /ardi/status:
+    get:
+      operationId: getArdiStatus
+      tags: [ardi]
+      summary: Whether ARDI is configured and what it can suggest
+      responses:
+        "200":
+          description: ARDI status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArdiStatus"
+
 components:
   schemas:
     HealthStatus:
@@ -596,7 +631,7 @@ components:
 
     User:
       type: object
-      required: [id, email, name, role, orgName]
+      required: [id, email, name, role, orgName, notifyScanComplete, notifyCritical, notifyWeeklyDigest]
       properties:
         id:
           type: number
@@ -611,8 +646,51 @@ components:
           type: string
         avatarUrl:
           type: ["string", "null"]
+        notifyScanComplete:
+          type: boolean
+        notifyCritical:
+          type: boolean
+        notifyWeeklyDigest:
+          type: boolean
         createdAt:
           type: string
+
+    ArdiStatus:
+      type: object
+      required: [configured, provider, displayName, vertical, suggestions]
+      properties:
+        configured:
+          type: boolean
+        provider:
+          type: string
+        model:
+          type: string
+        endpoint:
+          type: ["string", "null"]
+        displayName:
+          type: string
+        vertical:
+          type: string
+        suggestions:
+          type: array
+          items:
+            type: string
+
+    UpdateMeInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        orgName:
+          type: string
+          minLength: 1
+        notifyScanComplete:
+          type: boolean
+        notifyCritical:
+          type: boolean
+        notifyWeeklyDigest:
+          type: boolean
 
     # Dashboard
     DashboardStats:

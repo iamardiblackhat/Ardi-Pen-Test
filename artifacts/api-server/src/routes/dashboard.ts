@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { db, assetsTable, scansTable, findingsTable, activityTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
 import {
   GetDashboardStatsResponse,
   GetDashboardActivityResponse,
@@ -12,9 +13,9 @@ const router = Router();
 // GET /api/dashboard/stats
 router.get("/dashboard/stats", async (req, res): Promise<void> => {
   const [assets, scans, findings] = await Promise.all([
-    db.select().from(assetsTable),
-    db.select().from(scansTable),
-    db.select().from(findingsTable),
+    db.select().from(assetsTable).where(eq(assetsTable.userId, req.user!.sub)),
+    db.select().from(scansTable).where(eq(scansTable.userId, req.user!.sub)),
+    db.select().from(findingsTable).where(eq(findingsTable.userId, req.user!.sub)),
   ]);
 
   const totalAssets = assets.length;
@@ -42,7 +43,7 @@ router.get("/dashboard/stats", async (req, res): Promise<void> => {
 
 // GET /api/dashboard/activity
 router.get("/dashboard/activity", async (req, res): Promise<void> => {
-  const items = await db.select().from(activityTable).orderBy(activityTable.createdAt);
+  const items = await db.select().from(activityTable).where(eq(activityTable.userId, req.user!.sub)).orderBy(activityTable.createdAt);
   const serialized = items.slice(-20).reverse().map(a => ({
     id: a.id,
     type: a.type,
@@ -56,7 +57,7 @@ router.get("/dashboard/activity", async (req, res): Promise<void> => {
 
 // GET /api/dashboard/findings-by-severity
 router.get("/dashboard/findings-by-severity", async (req, res): Promise<void> => {
-  const findings = await db.select().from(findingsTable);
+  const findings = await db.select().from(findingsTable).where(eq(findingsTable.userId, req.user!.sub));
   const severities = ["critical", "high", "medium", "low", "info"];
   const counts = severities.map(severity => ({
     severity,
@@ -68,8 +69,8 @@ router.get("/dashboard/findings-by-severity", async (req, res): Promise<void> =>
 // GET /api/dashboard/scan-trend
 router.get("/dashboard/scan-trend", async (req, res): Promise<void> => {
   const [scans, findings] = await Promise.all([
-    db.select().from(scansTable),
-    db.select().from(findingsTable),
+    db.select().from(scansTable).where(eq(scansTable.userId, req.user!.sub)),
+    db.select().from(findingsTable).where(eq(findingsTable.userId, req.user!.sub)),
   ]);
 
   // Build last 8 weeks of data

@@ -5,13 +5,16 @@ authorized to test, records scans against them, and stores the findings those
 scans produce — with severity, CVE/CVSS metadata, MITRE ATT&CK mapping,
 remediation notes, and compliance-framework rollups.
 
-> **Status: the scanner is not built yet.** The data model, HTTP API, and web UI
-> are real and working, but nothing in this repo executes an actual security
-> scan. `POST /api/scans/:id/start` and `/stop` only transition a scan row's
-> `status`, `startedAt`/`completedAt`, and progress fields in the database.
-> Findings are records you write to the API; they are not produced by a scanning
-> engine. Treat the platform as the system of record that a future scan engine
-> will feed.
+> **Status: the scanner is real, but the platform is single-tenant.** Starting a
+> scan genuinely runs `nmap`/`nuclei` (or a CyberStrike engine, if configured)
+> against the target and writes back real findings — see
+> `artifacts/api-server/src/lib/scan-runner.ts`. What is **not** yet true: no
+> table or query in the API is scoped by user or organization, so any
+> registered account can currently read and edit any other account's assets,
+> scans, and findings. Do not put a second paying customer on this deployment
+> until that's fixed. Compliance framework scores and the dashboard's
+> compliance percentage are also still static sample data, not computed from
+> real findings.
 
 ## Stack
 

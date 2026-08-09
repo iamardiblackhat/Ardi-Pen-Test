@@ -4,6 +4,7 @@ import { z } from "zod/v4";
 
 export const assetsTable = pgTable("assets", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
   name: text("name").notNull(),
   type: text("type").notNull(), // web_app | network | cloud_aws | cloud_azure | cloud_gcp | api | mobile
   target: text("target").notNull(),

@@ -185,6 +185,7 @@ export default function Dashboard() {
             <h3 className="text-sm font-semibold text-muted-foreground mb-4">Compliance Score</h3>
             <div className="flex items-baseline gap-2">
               <span className="text-4xl font-bold font-mono text-primary">{stats?.complianceScore || 0}%</span>
+              <span className="text-xs text-muted-foreground">sample data</span>
             </div>
             <div className="mt-4 h-2 bg-muted rounded-full overflow-hidden">
               <div

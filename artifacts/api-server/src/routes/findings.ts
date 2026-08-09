@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db, findingsTable, assetsTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { enrich, threatIntelEnabled } from "../lib/threat-intel";
 import {
   GetFindingsResponse,
@@ -15,8 +15,8 @@ import {
 
 const router = Router();
 
-async function getAssetMap() {
-  const assets = await db.select({ id: assetsTable.id, name: assetsTable.name }).from(assetsTable);
+async function getAssetMap(userId: number) {
+  const assets = await db.select({ id: assetsTable.id, name: assetsTable.name }).from(assetsTable).where(eq(assetsTable.userId, userId));
   return new Map(assets.map(a => [a.id, a.name]));
 }
 
@@ -46,7 +46,7 @@ function serializeFinding(f: typeof findingsTable.$inferSelect, assetName: strin
 
 // GET /api/findings/mitre-coverage — must be before /:id
 router.get("/findings/mitre-coverage", async (req, res): Promise<void> => {
-  const findings = await db.select().from(findingsTable);
+  const findings = await db.select().from(findingsTable).where(eq(findingsTable.userId, req.user!.sub));
   const tacticMap = new Map<string, Map<string, { count: number; severity: string }>>();
 
   for (const f of findings) {
@@ -95,7 +95,7 @@ router.get("/findings/mitre-coverage", async (req, res): Promise<void> => {
 
 // GET /api/findings/stats — must be before /:id
 router.get("/findings/stats", async (req, res): Promise<void> => {
-  const findings = await db.select().from(findingsTable);
+  const findings = await db.select().from(findingsTable).where(eq(findingsTable.userId, req.user!.sub));
   const total = findings.length;
   const open = findings.filter(f => f.status === "open" || f.status === "in_progress").length;
   const resolved = findings.filter(f => f.status === "resolved").length;
@@ -118,8 +118,8 @@ router.get("/findings/stats", async (req, res): Promise<void> => {
 
 // GET /api/findings
 router.get("/findings", async (req, res): Promise<void> => {
-  const findings = await db.select().from(findingsTable).orderBy(findingsTable.createdAt);
-  const assetMap = await getAssetMap();
+  const findings = await db.select().from(findingsTable).where(eq(findingsTable.userId, req.user!.sub)).orderBy(findingsTable.createdAt);
+  const assetMap = await getAssetMap(req.user!.sub);
   const serialized = findings.map(f => serializeFinding(f, assetMap.get(f.assetId) ?? "Unknown"));
   res.json(GetFindingsResponse.parse(serialized));
 });
@@ -129,9 +129,9 @@ router.get("/findings/:id", async (req, res): Promise<void> => {
   const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const parsed = GetFindingParams.safeParse({ id: parseInt(rawId, 10) });
   if (!parsed.success) { res.status(400).json({ error: "Invalid id" }); return; }
-  const [f] = await db.select().from(findingsTable).where(eq(findingsTable.id, parsed.data.id));
+  const [f] = await db.select().from(findingsTable).where(and(eq(findingsTable.id, parsed.data.id), eq(findingsTable.userId, req.user!.sub)));
   if (!f) { res.status(404).json({ error: "Not found" }); return; }
-  const assetMap = await getAssetMap();
+  const assetMap = await getAssetMap(req.user!.sub);
   res.json(GetFindingResponse.parse(serializeFinding(f, assetMap.get(f.assetId) ?? "Unknown")));
 });
 
@@ -143,7 +143,7 @@ router.get("/findings/:id/threat-intel", async (req, res): Promise<void> => {
   const id = parseInt(rawId, 10);
   if (Number.isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
 
-  const [f] = await db.select().from(findingsTable).where(eq(findingsTable.id, id));
+  const [f] = await db.select().from(findingsTable).where(and(eq(findingsTable.id, id), eq(findingsTable.userId, req.user!.sub)));
   if (!f) { res.status(404).json({ error: "Not found" }); return; }
 
   const intel = await enrich({ cve: f.cve ?? null, mitreId: f.mitreId, cvss: f.cvss ?? null });
@@ -178,10 +178,10 @@ router.patch("/findings/:id", async (req, res): Promise<void> => {
   const [f] = await db
     .update(findingsTable)
     .set(updates)
-    .where(eq(findingsTable.id, paramParsed.data.id))
+    .where(and(eq(findingsTable.id, paramParsed.data.id), eq(findingsTable.userId, req.user!.sub)))
     .returning();
   if (!f) { res.status(404).json({ error: "Not found" }); return; }
-  const assetMap = await getAssetMap();
+  const assetMap = await getAssetMap(req.user!.sub);
   res.json(UpdateFindingResponse.parse(serializeFinding(f, assetMap.get(f.assetId) ?? "Unknown")));
 });
 

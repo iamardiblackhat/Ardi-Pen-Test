@@ -4,6 +4,7 @@ import { z } from "zod/v4";
 
 export const scansTable = pgTable("scans", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
   name: text("name").notNull(),
   type: text("type").notNull(), // web_app | network | cloud | api | full_stack
   status: text("status").notNull().default("pending"), // pending | running | completed | failed | stopped

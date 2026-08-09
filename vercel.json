@@ -1,5 +1,8 @@
 {
-  "buildCommand": "pnpm --filter @workspace/api-server run vercel-build",
-  "outputDirectory": "artifacts/api-server/dist",
-  "framework": null
+  "buildCommand": "pnpm --filter @workspace/ardi run build",
+  "outputDirectory": "artifacts/ardi/dist/public",
+  "framework": null,
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "http://34.156.165.60/api/:path*" }
+  ]
 }

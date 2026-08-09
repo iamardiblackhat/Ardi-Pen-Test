@@ -23,9 +23,29 @@ interface Status {
   suggestions: string[];
 }
 
-export function ArdiPanel({ open, onClose, context }: { open: boolean; onClose: () => void; context?: string }) {
+const UNAUTHENTICATED_SUGGESTIONS = [
+  'What does Ardi actually do?',
+  'How is this different from a manual pentest?',
+  'What is MITRE ATT&CK?',
+  'How do I get started?',
+];
+
+export function ArdiPanel({
+  open,
+  onClose,
+  context,
+  authenticated = true,
+}: {
+  open: boolean;
+  onClose: () => void;
+  context?: string;
+  /** false on the public landing page: no session, so no status fetch or auth header. */
+  authenticated?: boolean;
+}) {
   const reduce = useReducedMotion();
-  const [status, setStatus] = useState<Status | null>(null);
+  const [status, setStatus] = useState<Status | null>(
+    authenticated ? null : { configured: true, displayName: 'ARDI', suggestions: UNAUTHENTICATED_SUGGESTIONS },
+  );
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
   const [mood, setMood] = useState<ArdiMood>('idle');
@@ -34,13 +54,14 @@ export function ArdiPanel({ open, onClose, context }: { open: boolean; onClose: 
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (!authenticated) return;
     fetch('/api/ardi/status', {
       headers: auth.getToken() ? { authorization: `Bearer ${auth.getToken()}` } : {},
     })
       .then((r) => r.json())
       .then(setStatus)
       .catch(() => setStatus({ configured: false, displayName: 'ARDI', suggestions: [] }));
-  }, []);
+  }, [authenticated]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: reduce ? 'auto' : 'smooth' });
@@ -232,7 +253,7 @@ export function ArdiPanel({ open, onClose, context }: { open: boolean; onClose: 
               disabled={streaming || status?.configured === false}
               className="flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm outline-none placeholder:text-ardi-surface-foreground/40 focus:border-ardi-neon/60 disabled:opacity-50"
             />
-            <Button type="submit" size="icon" disabled={streaming || !input.trim() || status?.configured === false}>
+            <Button type="submit" size="icon" aria-label="Send message" disabled={streaming || !input.trim() || status?.configured === false}>
               <Send className="h-4 w-4" />
             </Button>
           </form>

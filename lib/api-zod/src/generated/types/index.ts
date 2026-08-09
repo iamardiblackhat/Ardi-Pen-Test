@@ -8,6 +8,7 @@
 
 export * from './activityItem';
 export * from './activityItemType';
+export * from './ardiStatus';
 export * from './asset';
 export * from './assetInput';
 export * from './assetInputType';
@@ -60,5 +61,6 @@ export * from './scanType';
 export * from './severityCount';
 export * from './severityCountSeverity';
 export * from './trendPoint';
+export * from './updateMeInput';
 export * from './user';
 export * from './userRole';

@@ -38,12 +38,36 @@ export interface User {
   orgName: string;
   /** @nullable */
   avatarUrl?: string | null;
+  notifyScanComplete: boolean;
+  notifyCritical: boolean;
+  notifyWeeklyDigest: boolean;
   createdAt?: string;
 }
 
 export interface AuthResponse {
   user: User;
   token: string;
+}
+
+export interface ArdiStatus {
+  configured: boolean;
+  provider: string;
+  model?: string;
+  /** @nullable */
+  endpoint?: string | null;
+  displayName: string;
+  vertical: string;
+  suggestions: string[];
+}
+
+export interface UpdateMeInput {
+  /** @minLength 1 */
+  name?: string;
+  /** @minLength 1 */
+  orgName?: string;
+  notifyScanComplete?: boolean;
+  notifyCritical?: boolean;
+  notifyWeeklyDigest?: boolean;
 }
 
 export interface DashboardStats {

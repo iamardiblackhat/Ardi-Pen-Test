@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -10,6 +10,9 @@ export const usersTable = pgTable("users", {
   role: text("role").notNull().default("analyst"),
   orgName: text("org_name").notNull().default("Ardi"),
   avatarUrl: text("avatar_url"),
+  notifyScanComplete: boolean("notify_scan_complete").notNull().default(true),
+  notifyCritical: boolean("notify_critical").notNull().default(true),
+  notifyWeeklyDigest: boolean("notify_weekly_digest").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

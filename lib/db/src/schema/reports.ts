@@ -4,6 +4,7 @@ import { z } from "zod/v4";
 
 export const reportsTable = pgTable("reports", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
   title: text("title").notNull(),
   type: text("type").notNull(), // executive | technical | compliance | pentest
   status: text("status").notNull().default("generating"), // generating | ready | failed

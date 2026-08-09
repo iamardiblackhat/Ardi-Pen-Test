@@ -63,11 +63,15 @@ export interface ChatMessage {
 
 /** Thrown when ARDI is asked to work without being configured. */
 export class ArdiNotConfiguredError extends Error {
-  constructor() {
+  constructor(provider: "anthropic" | "openai-compat" = "anthropic") {
+    const missing =
+      provider === "openai-compat"
+        ? "ARDI_BASE_URL is not set (ARDI_PROVIDER=openai-compat expects a local/self-hosted server)"
+        : "ANTHROPIC_API_KEY is not set";
     super(
-      "ARDI is not configured: ANTHROPIC_API_KEY is not set. Add it to your " +
-        ".env file and restart the API server. ARDI will not answer with " +
-        "invented content when unconfigured.",
+      `ARDI is not configured: ${missing}. Add it to your .env file and ` +
+        "restart the API server. ARDI will not answer with invented content " +
+        "when unconfigured.",
     );
     this.name = "ArdiNotConfiguredError";
   }

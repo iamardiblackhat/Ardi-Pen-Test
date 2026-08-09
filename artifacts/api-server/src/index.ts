@@ -1,6 +1,8 @@
 import app from "./app";
 import { logger } from "./lib/logger";
 import { reconcileOrphanedScans } from "./lib/scan-runner";
+import { pruneOffenders } from "./middlewares/tripwire";
+import { pruneRateLimitWindows } from "./middlewares/rate-limit";
 
 const rawPort = process.env["PORT"];
 
@@ -21,6 +23,16 @@ if (Number.isNaN(port) || port <= 0) {
 void reconcileOrphanedScans().catch((err: unknown) => {
   logger.error({ err }, "Failed to reconcile orphaned scans at boot");
 });
+
+// Both maps are per-process, in-memory, and otherwise unbounded — clear
+// expired entries periodically rather than letting them grow forever.
+setInterval(
+  () => {
+    pruneOffenders();
+    pruneRateLimitWindows();
+  },
+  15 * 60 * 1000,
+).unref();
 
 app.listen(port, (err) => {
   if (err) {

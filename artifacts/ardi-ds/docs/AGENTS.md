@@ -1,4 +1,4 @@
-# Ardi Design System design system
+# Ardi Design System
 
 This package defines the visual language for the project. Use it whenever you
 build or restyle UI so every surface looks like the same product. It is a real

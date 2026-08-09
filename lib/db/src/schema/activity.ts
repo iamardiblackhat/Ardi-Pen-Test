@@ -1,9 +1,10 @@
-import { pgTable, text, serial, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
 export const activityTable = pgTable("activity", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
   type: text("type").notNull(), // scan_started | scan_completed | finding_discovered | finding_resolved | asset_added | report_generated
   title: text("title").notNull(),
   description: text("description").notNull(),

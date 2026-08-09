@@ -32,6 +32,9 @@ export const LoginResponse = zod.object({
   "role": zod.enum(['admin', 'analyst', 'viewer']),
   "orgName": zod.string(),
   "avatarUrl": zod.string().nullish(),
+  "notifyScanComplete": zod.boolean(),
+  "notifyCritical": zod.boolean(),
+  "notifyWeeklyDigest": zod.boolean(),
   "createdAt": zod.string().optional()
 }),
   "token": zod.string()
@@ -56,6 +59,9 @@ export const RegisterResponse = zod.object({
   "role": zod.enum(['admin', 'analyst', 'viewer']),
   "orgName": zod.string(),
   "avatarUrl": zod.string().nullish(),
+  "notifyScanComplete": zod.boolean(),
+  "notifyCritical": zod.boolean(),
+  "notifyWeeklyDigest": zod.boolean(),
   "createdAt": zod.string().optional()
 }),
   "token": zod.string()
@@ -72,6 +78,38 @@ export const GetMeResponse = zod.object({
   "role": zod.enum(['admin', 'analyst', 'viewer']),
   "orgName": zod.string(),
   "avatarUrl": zod.string().nullish(),
+  "notifyScanComplete": zod.boolean(),
+  "notifyCritical": zod.boolean(),
+  "notifyWeeklyDigest": zod.boolean(),
+  "createdAt": zod.string().optional()
+})
+
+
+/**
+ * @summary Update the current user's profile and notification preferences
+ */
+
+
+
+
+export const UpdateMeBody = zod.object({
+  "name": zod.string().min(1).optional(),
+  "orgName": zod.string().min(1).optional(),
+  "notifyScanComplete": zod.boolean().optional(),
+  "notifyCritical": zod.boolean().optional(),
+  "notifyWeeklyDigest": zod.boolean().optional()
+})
+
+export const UpdateMeResponse = zod.object({
+  "id": zod.number(),
+  "email": zod.string(),
+  "name": zod.string(),
+  "role": zod.enum(['admin', 'analyst', 'viewer']),
+  "orgName": zod.string(),
+  "avatarUrl": zod.string().nullish(),
+  "notifyScanComplete": zod.boolean(),
+  "notifyCritical": zod.boolean(),
+  "notifyWeeklyDigest": zod.boolean(),
   "createdAt": zod.string().optional()
 })
 
@@ -652,6 +690,20 @@ export const GetComplianceSummaryResponse = zod.object({
   "framework": zod.string(),
   "severity": zod.string()
 }))
+})
+
+
+/**
+ * @summary Whether ARDI is configured and what it can suggest
+ */
+export const GetArdiStatusResponse = zod.object({
+  "configured": zod.boolean(),
+  "provider": zod.string(),
+  "model": zod.string().optional(),
+  "endpoint": zod.string().nullish(),
+  "displayName": zod.string(),
+  "vertical": zod.string(),
+  "suggestions": zod.array(zod.string())
 })
 
 
