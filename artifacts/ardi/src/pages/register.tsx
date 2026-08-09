@@ -36,14 +36,17 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="w-full max-w-md p-8 bg-card border border-card-border rounded-xl shadow-2xl">
+    <div className="dark min-h-screen flex items-center justify-center bg-background text-foreground relative overflow-hidden px-4 py-8">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,hsl(var(--primary)/0.16),transparent_65%)]" />
+      <div className="absolute inset-0 grid-pattern opacity-30 [mask-image:radial-gradient(ellipse_50%_50%_at_50%_40%,black,transparent)]" />
+      <div className="relative w-full max-w-md p-8 bg-card/80 border border-border rounded-2xl backdrop-blur">
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent rounded-t-2xl" />
         <div className="flex flex-col items-center mb-8">
-          <div className="flex items-center justify-center w-16 h-16 bg-primary rounded-xl mb-4">
-            <Shield className="w-10 h-10 text-primary-foreground" />
+          <div className="flex items-center justify-center w-14 h-14 rounded-xl border border-primary/40 bg-primary/10 mb-4">
+            <Shield className="w-7 h-7 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold">Create your account</h1>
-          <p className="text-muted-foreground mt-2">Start securing your infrastructure today</p>
+          <h1 className="text-2xl font-bold tracking-tight">Create your account</h1>
+          <p className="text-muted-foreground text-sm mt-2 font-mono">Start securing your infrastructure today</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -101,7 +104,7 @@ export default function Register() {
 
           <Button
             type="submit"
-            className="w-full"
+            className="w-full glow-primary-strong font-mono"
             disabled={registerMutation.isPending}
             data-testid="button-register"
           >
