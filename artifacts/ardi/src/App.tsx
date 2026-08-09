@@ -6,6 +6,7 @@ import { ProtectedRoute } from '@/components/protected-route';
 import { AppSidebar } from '@/components/app-sidebar';
 import { useState } from 'react';
 import { ArdiPanel, ArdiLauncher } from '@/components/ardi-panel';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 import Landing from '@/pages/landing';
 import Login from '@/pages/login';
@@ -131,6 +132,7 @@ function App() {
           <Router />
         </WouterRouter>
         <Toaster />
+        <SpeedInsights />
       </TooltipProvider>
     </QueryClientProvider>
   );
