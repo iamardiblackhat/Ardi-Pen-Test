@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FileText, Plus, Clock, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
+import { FileText, Plus, Clock, CheckCircle2, Loader2, AlertCircle, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,6 +21,7 @@ import {
 } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
+import { auth } from '@/lib/auth';
 import { formatDistanceToNow, format } from 'date-fns';
 
 const reportTypeLabels: Record<string, string> = {
@@ -32,8 +33,7 @@ const reportTypeLabels: Record<string, string> = {
 };
 
 const formatLabels: Record<string, string> = {
-  pdf: 'PDF',
-  html: 'HTML',
+  html: 'HTML (print to PDF)',
   json: 'JSON',
 };
 
@@ -58,7 +58,7 @@ export default function Reports() {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [type, setType] = useState('executive');
-  const [format, setFormat] = useState('pdf');
+  const [format, setFormat] = useState('html');
   const [scanId, setScanId] = useState('');
   const [assetId, setAssetId] = useState('');
 
@@ -91,6 +91,33 @@ export default function Reports() {
         },
       }
     );
+  };
+
+  const handleDownload = async (report: { downloadUrl?: string | null; title: string }) => {
+    if (!report.downloadUrl) return;
+    try {
+      const res = await fetch(report.downloadUrl, {
+        headers: { authorization: `Bearer ${auth.getToken() ?? ''}` },
+      });
+      if (!res.ok) {
+        toast({ title: 'Download failed', variant: 'destructive' });
+        return;
+      }
+      const blob = await res.blob();
+      const cd = res.headers.get('Content-Disposition') ?? '';
+      const match = cd.match(/filename="([^"]+)"/);
+      const filename = match ? match[1] : `${report.title || 'report'}.html`;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast({ title: 'Download failed', variant: 'destructive' });
+    }
   };
 
   if (isLoading) {
@@ -244,6 +271,18 @@ export default function Reports() {
                   <span className="text-xs font-mono text-muted-foreground uppercase">
                     {report.format}
                   </span>
+                  {report.status === 'ready' && report.downloadUrl && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 px-2.5"
+                      onClick={() => handleDownload(report)}
+                      data-testid={`button-download-${report.id}`}
+                    >
+                      <Download className="w-3.5 h-3.5 mr-1.5" />
+                      Download
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>

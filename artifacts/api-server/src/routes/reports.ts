@@ -8,6 +8,7 @@ import {
   GetReportParams,
   GetReportResponse,
 } from "@workspace/api-zod";
+import { gatherReportData, renderReportHtml, renderReportJson } from "../lib/report-generator";
 
 const router = Router();
 
@@ -62,12 +63,41 @@ router.post("/reports", async (req, res): Promise<void> => {
       assetId: parsed.data.assetId ?? null,
       status: "ready",
       summary: `${parsed.data.type.charAt(0).toUpperCase() + parsed.data.type.slice(1)} report generated for ${parsed.data.title}`,
-      // No file is actually generated yet, so there is nothing real to link
-      // to. Leaving this null rather than fabricating a URL that 404s.
       downloadUrl: null,
     })
     .returning();
-  res.status(201).json(CreateReportResponse.parse(serializeReport(report)));
+
+  // The download endpoint generates the file on demand from live findings, so
+  // the URL is real the moment the row exists. Point at it now.
+  const downloadUrl = `/api/reports/${report.id}/download`;
+  await db.update(reportsTable).set({ downloadUrl }).where(eq(reportsTable.id, report.id));
+  res.status(201).json(CreateReportResponse.parse(serializeReport({ ...report, downloadUrl })));
+});
+
+// GET /api/reports/:id/download — generate and stream the report from real data.
+router.get("/reports/:id/download", async (req, res): Promise<void> => {
+  const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const parsed = GetReportParams.safeParse({ id: parseInt(rawId, 10) });
+  if (!parsed.success) { res.status(400).json({ error: "Invalid id" }); return; }
+
+  const [report] = await db.select().from(reportsTable).where(and(eq(reportsTable.id, parsed.data.id), eq(reportsTable.userId, req.user!.sub)));
+  if (!report) { res.status(404).json({ error: "Not found" }); return; }
+
+  const data = await gatherReportData(req.user!.sub, report);
+  const slug = report.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || `report-${report.id}`;
+
+  if (report.format === "json") {
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="${slug}.json"`);
+    res.send(renderReportJson(data));
+    return;
+  }
+
+  // Both "html" and legacy "pdf" rows are served as a self-contained,
+  // print-ready HTML document (browsers save it to PDF via print).
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.setHeader("Content-Disposition", `attachment; filename="${slug}.html"`);
+  res.send(renderReportHtml(data));
 });
 
 // GET /api/reports/:id
