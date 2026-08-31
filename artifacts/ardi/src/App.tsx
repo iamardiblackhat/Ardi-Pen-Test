@@ -3,9 +3,10 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Route, Switch, Router as WouterRouter } from 'wouter';
 import { ProtectedRoute } from '@/components/protected-route';
-import { AppSidebar } from '@/components/app-sidebar';
-import { useState } from 'react';
+import { AppSidebar, MobileAppHeader, MobileBottomNav } from '@/components/app-sidebar';
+import { useEffect, useState } from 'react';
 import { ArdiPanel, ArdiLauncher } from '@/components/ardi-panel';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 import Landing from '@/pages/landing';
 import Login from '@/pages/login';
@@ -33,19 +34,42 @@ const queryClient = new QueryClient({
 });
 
 function AppLayout({ children }: { children: React.ReactNode }) {
-  // ARDI is present on every page of the app, not tucked behind one route.
+  const isMobile = useIsMobile();
   const [ardiOpen, setArdiOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isMobile) return;
+
+    const introKey = 'ardi-mobile-intro-shown';
+    if (!sessionStorage.getItem(introKey)) {
+      setArdiOpen(true);
+      sessionStorage.setItem(introKey, '1');
+    }
+  }, [isMobile]);
+
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
+    <div className="flex h-dvh overflow-hidden bg-background">
+      <style>{`
+        @media (max-width: 767px) {
+          button[aria-label="Open ARDI"] {
+            right: 1rem;
+            bottom: calc(4.5rem + env(safe-area-inset-bottom));
+          }
+        }
+      `}</style>
       <AppSidebar />
-      <main className="flex-1 overflow-y-auto">
-        {children}
-      </main>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <MobileAppHeader />
+        <main className="min-w-0 flex-1 overflow-y-auto pb-20 md:pb-0">
+          {children}
+        </main>
+      </div>
+      <MobileBottomNav />
       <ArdiLauncher onClick={() => setArdiOpen(true)} />
       <ArdiPanel
         open={ardiOpen}
         onClose={() => setArdiOpen(false)}
-        context={`The user is viewing ${window.location.pathname}`}
+        context={`The user is viewing ${window.location.pathname}. Only describe actions or results that the API has actually confirmed.`}
       />
     </div>
   );
@@ -54,19 +78,16 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 function Router() {
   return (
     <Switch>
-      {/* Public */}
       <Route path="/" component={Landing} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
 
-      {/* Onboarding (protected but no sidebar) */}
       <Route path="/onboarding">
         <ProtectedRoute>
           <Onboarding />
         </ProtectedRoute>
       </Route>
 
-      {/* Protected app routes with sidebar */}
       <Route path="/dashboard">
         <ProtectedRoute>
           <AppLayout><Dashboard /></AppLayout>
