@@ -179,22 +179,8 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Quick Stats */}
+        {/* Live workspace facts only — no calculated posture score without a verified source. */}
         <div className="space-y-6">
-          <div className="bg-card border border-card-border rounded-xl p-6 shadow-md">
-            <h3 className="text-sm font-semibold text-muted-foreground mb-4">Compliance Score</h3>
-            <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-bold font-mono text-primary">{stats?.complianceScore || 0}%</span>
-              <span className="text-xs text-muted-foreground">sample data</span>
-            </div>
-            <div className="mt-4 h-2 bg-muted rounded-full overflow-hidden">
-              <div
-                className="h-full bg-primary rounded-full transition-all"
-                style={{ width: `${stats?.complianceScore || 0}%` }}
-              />
-            </div>
-          </div>
-
           <div className="bg-card border border-card-border rounded-xl p-6 shadow-md">
             <h3 className="text-sm font-semibold text-muted-foreground mb-4">Resolved Findings</h3>
             <div className="flex items-center gap-3">

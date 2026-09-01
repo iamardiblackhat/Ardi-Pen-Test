@@ -9,6 +9,8 @@ import {
   FileText,
   Settings,
   Activity,
+  Radar,
+  Globe2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -20,6 +22,8 @@ const navItems = [
   { path: '/assets', label: 'Assets', icon: Server },
   { path: '/scans', label: 'Scans', icon: Scan },
   { path: '/findings', label: 'Findings', icon: AlertTriangle },
+  { path: '/intelligence', label: 'Intelligence', icon: Radar },
+  { path: '/osint', label: 'OSINT research', icon: Globe2 },
   { path: '/mitre', label: 'MITRE ATT&CK', icon: Grid3x3 },
   { path: '/reports', label: 'Reports', icon: FileText },
   { path: '/compliance', label: 'Compliance', icon: Activity },
@@ -27,11 +31,11 @@ const navItems = [
 ];
 
 const mobileNavItems = [
-  navItems[0],
-  navItems[1],
-  navItems[2],
-  navItems[3],
-  navItems[5],
+  navItems.find((item) => item.path === '/dashboard')!,
+  navItems.find((item) => item.path === '/scans')!,
+  navItems.find((item) => item.path === '/findings')!,
+  navItems.find((item) => item.path === '/intelligence')!,
+  navItems.find((item) => item.path === '/osint')!,
 ];
 
 export function AppSidebar() {
@@ -48,7 +52,7 @@ export function AppSidebar() {
           <Shield className="h-6 w-6 text-primary-foreground" />
         </div>
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-sidebar-foreground">Ardi</h1>
+          <h1 className="text-xl font-bold tracking-tight text-sidebar-foreground">Ardi Sec</h1>
           {hasActiveScans && (
             <div className="flex items-center gap-1.5 text-xs text-primary">
               <div className="h-2 w-2 rounded-full bg-primary animate-pulse-glow" />
@@ -113,7 +117,7 @@ export function MobileAppHeader() {
           <Shield className="h-4 w-4 text-primary" />
         </div>
         <div className="min-w-0">
-          <p className="truncate text-[10px] font-mono uppercase tracking-[0.18em] text-primary">ARDI</p>
+          <p className="truncate text-[10px] font-mono uppercase tracking-[0.18em] text-primary">ARDI SEC</p>
           <p className="truncate text-sm font-semibold text-foreground">{title}</p>
         </div>
       </div>
@@ -150,7 +154,7 @@ export function MobileBottomNav() {
             aria-current={isActive ? 'page' : undefined}
           >
             <Icon className="h-5 w-5" />
-            <span className="max-w-full truncate">{item.label === 'Dashboard' ? 'Home' : item.label}</span>
+            <span className="max-w-full truncate">{item.label === 'Dashboard' ? 'Home' : item.label === 'Intelligence' ? 'Intel' : item.label === 'OSINT research' ? 'OSINT' : item.label}</span>
           </Link>
         );
       })}

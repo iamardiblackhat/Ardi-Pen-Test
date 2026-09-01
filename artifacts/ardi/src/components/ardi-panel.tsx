@@ -43,9 +43,7 @@ export function ArdiPanel({
   authenticated?: boolean;
 }) {
   const reduce = useReducedMotion();
-  const [status, setStatus] = useState<Status | null>(
-    authenticated ? null : { configured: true, displayName: 'ARDI', suggestions: UNAUTHENTICATED_SUGGESTIONS },
-  );
+  const [status, setStatus] = useState<Status | null>(null);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
   const [mood, setMood] = useState<ArdiMood>('idle');
@@ -54,13 +52,12 @@ export function ArdiPanel({
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!authenticated) return;
     fetch('/api/ardi/status', {
       headers: auth.getToken() ? { authorization: `Bearer ${auth.getToken()}` } : {},
     })
-      .then((r) => r.json())
+      .then(async (r) => r.ok ? r.json() as Promise<Status> : Promise.reject(new Error('ARDI status unavailable')))
       .then(setStatus)
-      .catch(() => setStatus({ configured: false, displayName: 'ARDI', suggestions: [] }));
+      .catch(() => setStatus({ configured: false, displayName: 'ARDI', suggestions: authenticated ? [] : UNAUTHENTICATED_SUGGESTIONS }));
   }, [authenticated]);
 
   useEffect(() => {
@@ -68,7 +65,7 @@ export function ArdiPanel({
   }, [messages, activeTool, reduce]);
 
   async function send(text: string) {
-    if (!text.trim() || streaming) return;
+    if (!text.trim() || streaming || !status?.configured) return;
 
     const next: Msg[] = [...messages, { role: 'user', content: text }];
     setMessages(next);
@@ -174,9 +171,13 @@ export function ArdiPanel({
                 >
                   <ArdiFull mood="idle" size={140} />
                   <p className="text-sm text-ardi-surface-foreground/70">
-                    {status?.configured === false
-                      ? 'ARDI needs an ANTHROPIC_API_KEY in the API server before he can answer.'
-                      : 'Ask me about your systems, scans or findings.'}
+                    {status === null
+                      ? 'Checking whether ARDI is connected…'
+                      : status.configured === false
+                        ? 'ARDI is not connected to a model in this environment yet. The workspace owner needs to enable its approved model connection before chat can start.'
+                        : authenticated
+                          ? 'Ask me about your systems, scans or findings.'
+                          : 'Ask ARDI about Ardi Sec, then sign in to investigate your own workspace data.'}
                   </p>
                 </motion.div>
                 <div className="space-y-2">
@@ -250,10 +251,10 @@ export function ArdiPanel({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={status?.configured === false ? 'ARDI is not configured' : 'Ask ARDI…'}
-              disabled={streaming || status?.configured === false}
+              disabled={streaming || !status?.configured}
               className="flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm outline-none placeholder:text-ardi-surface-foreground/40 focus:border-ardi-neon/60 disabled:opacity-50"
             />
-            <Button type="submit" size="icon" aria-label="Send message" disabled={streaming || !input.trim() || status?.configured === false}>
+            <Button type="submit" size="icon" aria-label="Send message" disabled={streaming || !input.trim() || !status?.configured}>
               <Send className="h-4 w-4" />
             </Button>
           </form>
