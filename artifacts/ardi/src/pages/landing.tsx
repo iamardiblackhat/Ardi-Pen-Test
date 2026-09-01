@@ -213,7 +213,7 @@ export default function Landing() {
 
         <section id="assistant" className="ardi-v2-assistant" aria-labelledby="assistant-title">
           <div className="ardi-v2-shell ardi-v2-assistant-layout">
-            <div className="ardi-v2-assistant-figure"><img src="/ardi/ardi-working.jpg" alt="ARDI in an analyst pose" /><span className="ardi-v2-orbit ardi-v2-orbit-one" /><span className="ardi-v2-orbit ardi-v2-orbit-two" /><small>ARDI / GUIDE MODE</small></div>
+            <div className="ardi-v2-assistant-figure"><video src="/ardi/media/ardi-assessment.mp4" poster="/ardi/media/ardi-security-lab-poster.png" autoPlay muted loop playsInline preload="metadata" aria-label="ARDI guiding an authorised security assessment" /><span className="ardi-v2-orbit ardi-v2-orbit-one" /><span className="ardi-v2-orbit ardi-v2-orbit-two" /><small>ARDI / GUIDE MODE</small></div>
             <div className="ardi-v2-assistant-copy"><p className="ardi-v2-kicker"><i /> ASSISTANT CONSOLE</p><h2 id="assistant-title">Talk to the mascot. Move into the work.</h2><p>ARDI is placed as an actual interface, not decoration. Open the chat here for guidance, then continue into the security route that fits the question.</p><div className="ardi-v2-assistant-actions"><button type="button" className="ardi-v2-button ardi-v2-button-primary" onClick={() => setArdiOpen(true)}>Open ARDI chat <ArrowRight /></button><Link href={workspaceRoute('/osint')} className="ardi-v2-text-action">Start a domain investigation <ArrowRight /></Link></div></div>
             <div className="ardi-v2-assistant-meta"><span>ROLE</span><b>GUIDE</b><span>CONTEXT</span><b>WORKSPACE</b><span>ROUTE</span><b>CHAT → ACTION</b></div>
           </div>
