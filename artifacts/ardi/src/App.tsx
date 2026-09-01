@@ -23,6 +23,7 @@ import Compliance from '@/pages/compliance';
 import Mitre from '@/pages/mitre';
 import Intelligence from '@/pages/intelligence';
 import Osint from '@/pages/osint';
+import { Cookies, Faq, Privacy, Terms } from '@/pages/public-info';
 import Settings from '@/pages/settings';
 import NotFound from '@/pages/not-found';
 
@@ -83,6 +84,10 @@ function Router() {
       <Route path="/" component={Landing} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
+      <Route path="/terms" component={Terms} />
+      <Route path="/privacy" component={Privacy} />
+      <Route path="/cookies" component={Cookies} />
+      <Route path="/faq" component={Faq} />
 
       <Route path="/onboarding">
         <ProtectedRoute>

@@ -73,3 +73,52 @@
 @media (prefers-reduced-motion:reduce){
   .ardi-v2-hero-scene-image.is-playing,.ardi-v2-nav a[aria-current="location"]::after{animation:none}
 }
+
+/* Clear workflow explanation and complete footer navigation. */
+.ardi-v2-hero-rail>strong{display:block;color:#fff;font-family:'DM Mono','Courier New',monospace;font-size:8px;letter-spacing:.08em;text-transform:uppercase}
+.ardi-v2-footer-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+
+@media (min-width:700px){
+  .ardi-v2-hero-rail{width:310px;padding:13px 16px;border:1px solid rgba(206,198,255,.24);background:rgba(12,9,31,.62)}
+  .ardi-v2-hero-rail>strong{margin-bottom:5px;color:#c8c2e8;font-size:8px}
+  .ardi-v2-hero-rail>span{min-height:auto;grid-template-columns:29px 1fr;gap:7px;padding:7px 0;color:#ded9ef;font-size:8px;line-height:1.35}
+  .ardi-v2-hero-rail>span+span{border-top:1px solid rgba(206,198,255,.12)}
+  .ardi-v2-footer-grid{grid-template-columns:1.1fr 1fr .45fr}
+  .ardi-v2-nav a{font-size:11px}
+  .ardi-v2-header-start{font-size:10px}
+}
+
+@media (max-width:699px){
+  .ardi-v2-hero-rail{grid-template-columns:repeat(2,minmax(0,1fr));border:1px solid rgba(206,198,255,.24);background:rgba(20,14,53,.62)}
+  .ardi-v2-hero-rail>strong{grid-column:1/-1;padding:11px 10px 9px;border-bottom:1px solid rgba(206,198,255,.18);font-size:10px}
+  .ardi-v2-hero-rail>span{min-height:56px;grid-template-columns:24px 1fr;align-items:center;gap:6px;padding:9px 10px;color:#e0dcf2;font-size:10px;line-height:1.35}
+  .ardi-v2-hero-rail>span b{font-size:10px}
+  .ardi-v2-hero-rail>span:nth-of-type(odd){border-left:1px solid rgba(206,198,255,.15)}
+  .ardi-v2-hero-rail>span:nth-of-type(n+3){border-top:1px solid rgba(206,198,255,.15)}
+  .ardi-v2-assistant-layout{padding-bottom:30px}
+  .ardi-v2-assistant-figure{min-height:238px}
+  .ardi-v2-assistant-figure :is(img,video){object-position:69% center;transform:scale(1.16);transform-origin:69% center}
+  .ardi-v2-assistant-figure small{top:13px;left:13px;padding:5px 7px;background:rgba(9,14,35,.68);font-size:7px}
+  .ardi-v2-assistant-copy{padding-top:25px}
+  .ardi-v2-button,.ardi-v2-video-button{min-height:50px;font-size:11px;letter-spacing:.05em}
+  .ardi-v2-assistant .ardi-v2-button{font-size:12px}
+  .ardi-v2-text-action{font-size:10px}
+  .ardi-v2-hero-scenes button span{font-size:8px}
+  .ardi-v2-hero-scenes button b{font-size:9px}
+  .ardi-v2-capabilities{padding:38px 0}
+  .ardi-v2-capability-head{margin-bottom:17px}
+  .ardi-v2-capability-head h2{font-size:2.15rem}
+  .ardi-v2-capability-head>p{font-size:11px}
+  .ardi-v2-capability-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .ardi-v2-capability{min-height:158px;padding:12px 10px}
+  .ardi-v2-capability>svg{right:9px;top:9px;width:18px}
+  .ardi-v2-capability>p{padding-right:17px;font-size:8px;letter-spacing:.05em}
+  .ardi-v2-capability h3{margin:auto 0 0;font-size:18px;line-height:.92}
+  .ardi-v2-capability>span{gap:3px;margin-top:10px;font-size:7px;line-height:1.25}
+  .ardi-v2-capability>span svg{width:9px}
+  .ardi-v2-capability-intel>img{right:-20px;width:100px;height:135px;opacity:.22}
+  .ardi-v2-footer{padding:34px 0 42px}
+  .ardi-v2-footer-grid{gap:23px}
+  .ardi-v2-footer-links{gap:18px;padding:19px 0;border-top:1px solid rgba(206,198,255,.15);border-bottom:1px solid rgba(206,198,255,.15)}
+  .ardi-v2-footer nav a{font-size:9px}
+}

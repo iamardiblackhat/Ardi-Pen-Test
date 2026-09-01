@@ -173,8 +173,9 @@ export default function Landing() {
                 {heroScenes.map((scene, index) => <button key={scene.id} type="button" role="tab" aria-selected={index === activeHeroScene} className={index === activeHeroScene ? 'active' : ''} onClick={() => selectHeroScene(index)}><span>0{index + 1}</span><b>{scene.label}</b><small>{scene.detail}</small></button>)}
               </div>
             </div>
-            <aside className="ardi-v2-hero-rail" aria-label="Security workspace sequence">
-              <span><b>01</b> Authorise scope</span><span><b>02</b> Assess systems</span><span><b>03</b> Review evidence</span><span><b>04</b> Investigate context</span>
+            <aside className="ardi-v2-hero-rail" aria-label="How an authorised test moves through ARDI">
+              <strong>How the authorised workspace runs</strong>
+              <span><b>01</b> Confirm permission</span><span><b>02</b> Test approved systems</span><span><b>03</b> Review test evidence</span><span><b>04</b> Investigate context</span>
             </aside>
           </div>
         </section>
@@ -233,7 +234,7 @@ export default function Landing() {
       </main>
 
       <ArdiPanel open={ardiOpen} onClose={() => setArdiOpen(false)} authenticated={hasWorkspace} context="The visitor is on the Ardi Sec Live Lab public page." />
-      <footer className="ardi-v2-footer"><div className="ardi-v2-shell ardi-v2-footer-grid"><div><Link href="/" className="ardi-v2-brand"><ArdiMark /><span><b>ARDI SEC</b><small>AUTHORISED SECURITY LAB</small></span></Link><p>Penetration testing, evidence, intelligence, and research routes for approved security work.</p></div><nav><a href="#operations">Operations</a><a href="#intelligence">Threat intelligence</a><a href="#assistant">Talk to ARDI</a><Link href="/login">Sign in</Link></nav><p>UK security product.<br />© {new Date().getFullYear()} Ardi Sec.</p></div></footer>
+      <footer className="ardi-v2-footer"><div className="ardi-v2-shell ardi-v2-footer-grid"><div><Link href="/" className="ardi-v2-brand"><ArdiMark /><span><b>ARDI SEC</b><small>AUTHORISED SECURITY LAB</small></span></Link><p>Penetration testing, evidence, intelligence, and research routes for approved security work.</p></div><div className="ardi-v2-footer-links"><nav aria-label="Product links"><a href="#operations">Operations</a><a href="#intelligence">Threat intelligence</a><a href="#assistant">Talk to ARDI</a><Link href="/login">Sign in</Link></nav><nav aria-label="Legal and support links"><Link href="/terms">Terms</Link><Link href="/privacy">Privacy</Link><Link href="/cookies">Cookies</Link><Link href="/faq">FAQs</Link></nav></div><p>Authorised use only.<br />© {new Date().getFullYear()} Ardi Sec.</p></div></footer>
     </div>
   );
 }
