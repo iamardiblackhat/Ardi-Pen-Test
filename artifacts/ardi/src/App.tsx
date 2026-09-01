@@ -21,7 +21,6 @@ import Findings from '@/pages/findings';
 import Reports from '@/pages/reports';
 import Compliance from '@/pages/compliance';
 import Mitre from '@/pages/mitre';
-import Intelligence from '@/pages/intelligence';
 import Osint from '@/pages/osint';
 import { Cookies, Faq, Privacy, Terms } from '@/pages/public-info';
 import Settings from '@/pages/settings';
@@ -138,11 +137,6 @@ function Router() {
       <Route path="/mitre">
         <ProtectedRoute>
           <AppLayout><Mitre /></AppLayout>
-        </ProtectedRoute>
-      </Route>
-      <Route path="/intelligence">
-        <ProtectedRoute>
-          <AppLayout><Intelligence /></AppLayout>
         </ProtectedRoute>
       </Route>
       <Route path="/osint">

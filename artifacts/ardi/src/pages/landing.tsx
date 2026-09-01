@@ -8,21 +8,18 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'wouter';
 import {
-  ArrowRight, ArrowUpRight, ExternalLink, FileSearch2, Menu, Pause,
-  Play, ScanSearch, Search, Target, X,
+  ArrowRight, ArrowUpRight, FileSearch2, Menu, Pause, Play,
+  ScanSearch, Search, Target, X,
 } from 'lucide-react';
 import { ArdiPanel } from '@/components/ardi-panel';
 import { auth } from '@/lib/auth';
 import './landing-live-lab.css';
 
-const OPENCTI_DEMO_URL = 'https://demo.opencti.io/';
-const OPENCTI_DOCS_URL = 'https://docs.opencti.io/latest/usage/getting-started/';
-
 const securityRoutes = [
-  { code: '01', label: 'Scope', title: 'Map the estate', body: 'Put approved systems in one place before technical work begins.', href: '/assets', icon: Target, external: false },
-  { code: '02', label: 'Assess', title: 'Run a test', body: 'Create and follow a controlled assessment against an approved asset.', href: '/scans', icon: ScanSearch, external: false },
-  { code: '03', label: 'Evidence', title: 'Work findings', body: 'Review the evidence returned by the workspace and take the next action.', href: '/findings', icon: FileSearch2, external: false },
-  { code: '04', label: 'Research', title: 'Open OpenCTI', body: 'Explore the official public OpenCTI demonstration without an ARDI account.', href: OPENCTI_DEMO_URL, icon: Search, external: true },
+  { code: '01', label: 'Scope', title: 'Map the estate', body: 'Put approved systems in one place before technical work begins.', href: '/assets', icon: Target },
+  { code: '02', label: 'Assess', title: 'Run a test', body: 'Create and follow a controlled assessment against an approved asset.', href: '/scans', icon: ScanSearch },
+  { code: '03', label: 'Evidence', title: 'Work findings', body: 'Review the evidence returned by the workspace and take the next action.', href: '/findings', icon: FileSearch2 },
+  { code: '04', label: 'Research', title: 'Investigate', body: 'Use source-backed domain research to shape the next question.', href: '/osint', icon: Search },
 ];
 
 const heroScenes = [
@@ -54,7 +51,6 @@ const heroScenes = [
 
 const primaryNavigation = [
   { id: 'operations', label: 'Operations' },
-  { id: 'intelligence', label: 'Threat intelligence' },
   { id: 'assistant', label: 'Talk to ARDI' },
 ];
 
@@ -132,14 +128,12 @@ export default function Landing() {
           </nav>
           <div className="ardi-v2-header-actions">
             <button type="button" className="ardi-v2-header-chat" onClick={() => setArdiOpen(true)}>Chat with ARDI</button>
-            <a href="#intelligence" className="ardi-v2-header-start">Explore free <ArrowUpRight /></a>
+            <a href="#assistant" className="ardi-v2-header-start">Talk to ARDI <ArrowUpRight /></a>
             <button type="button" className="ardi-v2-menu" onClick={() => setMenuOpen((open) => !open)} aria-label={menuOpen ? 'Close navigation' : 'Open navigation'} aria-expanded={menuOpen}>{menuOpen ? <X /> : <Menu />}</button>
           </div>
         </div>
         {menuOpen && <nav className="ardi-v2-mobile-nav" aria-label="Mobile navigation"><div className="ardi-v2-shell">
           <a href="#operations" onClick={closeMenu}>Security operations <ArrowRight /></a>
-          <a href="#intelligence" onClick={closeMenu}>Threat intelligence <ArrowRight /></a>
-          <a href={OPENCTI_DEMO_URL} target="_blank" rel="noreferrer" onClick={closeMenu}>Open OpenCTI demo <ExternalLink /></a>
           <button type="button" onClick={() => { closeMenu(); setArdiOpen(true); }}>Talk to ARDI <ArrowRight /></button>
           <Link href="/login" onClick={closeMenu}>Sign in <ArrowRight /></Link>
         </div></nav>}
@@ -157,9 +151,9 @@ export default function Landing() {
             <div className="ardi-v2-hero-copy">
               <p className="ardi-v2-kicker"><i /> ARDI SEC / PENETRATION TESTING LAB</p>
               <h1 id="ardi-hero-title">See the risk.<br />Run the test.<br /><em>Work the proof.</em></h1>
-              <p className="ardi-v2-hero-lead">A practical security workspace for authorised testing, evidence, domain research, and source-bound threat intelligence.</p>
+              <p className="ardi-v2-hero-lead">A practical security workspace for authorised testing, evidence, and source-backed domain research.</p>
               <div className="ardi-v2-hero-actions">
-                <a href="#intelligence" className="ardi-v2-button ardi-v2-button-primary">Explore free tools <ArrowRight /></a>
+                <a href="#assistant" className="ardi-v2-button ardi-v2-button-primary">Talk to ARDI free <ArrowRight /></a>
                 <button type="button" className="ardi-v2-button ardi-v2-button-chat" onClick={() => setArdiOpen(true)}>Talk to ARDI <ArrowRight /></button>
                 <button type="button" className="ardi-v2-video-button" onClick={toggleHeroMotion} aria-controls="ardi-v2-hero-scenes" aria-pressed={heroMotionPlaying}>{heroMotionPlaying ? <Pause /> : <Play />} {heroMotionPlaying ? 'Pause ARDI scenes' : 'Play ARDI scenes'}</button>
               </div>
@@ -179,32 +173,15 @@ export default function Landing() {
             <div className="ardi-v2-section-head"><div><p className="ardi-v2-kicker"><span>01</span> SECURITY OPERATIONS</p><h2 id="operations-title">Choose what you need to do.</h2></div><p>Each route is a real product destination—not a label pretending to be a control.</p></div>
             <div className="ardi-v2-route-board">
               <div className="ardi-v2-cable ardi-v2-cable-one" /><div className="ardi-v2-cable ardi-v2-cable-two" />
-              {securityRoutes.map((route) => {
-                const Icon = route.icon;
-                const content = <><span className="ardi-v2-route-index">{route.code} / {route.label}</span><Icon /><h3>{route.title}</h3><p>{route.body}</p><b>{route.external ? 'Open public demo' : 'Open route'} <ArrowUpRight /></b></>;
-                return route.external
-                  ? <a key={route.code} href={route.href} target="_blank" rel="noreferrer" className={`ardi-v2-route ardi-v2-route-${route.code}`}>{content}</a>
-                  : <Link key={route.code} href={workspaceRoute(route.href)} className={`ardi-v2-route ardi-v2-route-${route.code}`}>{content}</Link>;
-              })}
+              {securityRoutes.map((route) => { const Icon = route.icon; return <Link key={route.code} href={workspaceRoute(route.href)} className={`ardi-v2-route ardi-v2-route-${route.code}`}><span className="ardi-v2-route-index">{route.code} / {route.label}</span><Icon /><h3>{route.title}</h3><p>{route.body}</p><b>Open route <ArrowUpRight /></b></Link>; })}
             </div>
-          </div>
-        </section>
-
-        <section id="intelligence" className="ardi-v2-intelligence" aria-labelledby="intelligence-title">
-          <div className="ardi-v2-shell">
-            <div className="ardi-v2-opencti-head"><div><p className="ardi-v2-kicker"><span>02</span> THREAT INTELLIGENCE</p><h2 id="intelligence-title">The actual OpenCTI dashboard.</h2></div><p>This is the official OpenCTI project dashboard—not an ARDI imitation. Open the public demonstration without creating an ARDI account. The demo is maintained by OpenCTI and resets nightly.</p></div>
-            <a className="ardi-v2-opencti-frame" href={OPENCTI_DEMO_URL} target="_blank" rel="noreferrer" aria-label="Open the official public OpenCTI demonstration">
-              <img src="/ardi/opencti-dashboard.png" alt="Official OpenCTI dashboard showing threat actors, campaigns, malware, indicators, observables, maps, vulnerabilities, and reports" />
-              <span><b>OPENCTI / OFFICIAL PUBLIC DEMO</b><small>No ARDI account required</small><strong>Open actual dashboard <ExternalLink /></strong></span>
-            </a>
-            <div className="ardi-v2-opencti-actions"><a href={OPENCTI_DEMO_URL} target="_blank" rel="noreferrer" className="ardi-v2-button ardi-v2-button-primary">Open OpenCTI demo <ExternalLink /></a><a href={OPENCTI_DOCS_URL} target="_blank" rel="noreferrer" className="ardi-v2-button ardi-v2-button-chat">OpenCTI documentation <ExternalLink /></a></div>
           </div>
         </section>
 
         <section id="assistant" className="ardi-v2-assistant" aria-labelledby="assistant-title">
           <div className="ardi-v2-shell ardi-v2-assistant-layout">
             <div className="ardi-v2-assistant-figure"><video src="/ardi/media/ardi-assessment.mp4" poster="/ardi/media/ardi-security-lab-poster.png" autoPlay muted loop playsInline preload="metadata" aria-label="ARDI guiding an authorised security assessment" /><span className="ardi-v2-orbit ardi-v2-orbit-one" /><span className="ardi-v2-orbit ardi-v2-orbit-two" /><small>ARDI / GUIDE MODE</small></div>
-            <div className="ardi-v2-assistant-copy"><p className="ardi-v2-kicker"><i /> ASSISTANT CONSOLE</p><h2 id="assistant-title">Talk to the mascot. Move into the work.</h2><p>ARDI chat is available from the public site without an account. Use it for guidance, then move into the official OpenCTI demo or create a workspace when you need to save authorised testing work.</p><div className="ardi-v2-assistant-actions"><button type="button" className="ardi-v2-button ardi-v2-button-primary" onClick={() => setArdiOpen(true)}>Open ARDI chat <ArrowRight /></button><a href={OPENCTI_DEMO_URL} target="_blank" rel="noreferrer" className="ardi-v2-text-action">Open free OpenCTI demo <ExternalLink /></a></div></div>
+            <div className="ardi-v2-assistant-copy"><p className="ardi-v2-kicker"><i /> ASSISTANT CONSOLE</p><h2 id="assistant-title">Talk to the mascot. Move into the work.</h2><p>ARDI chat is available from the public site without an account. Use it for guidance, then create a workspace when you need to save authorised testing work.</p><div className="ardi-v2-assistant-actions"><button type="button" className="ardi-v2-button ardi-v2-button-primary" onClick={() => setArdiOpen(true)}>Open ARDI chat <ArrowRight /></button><Link href={workspaceRoute('/osint')} className="ardi-v2-text-action">Start domain research <ArrowRight /></Link></div></div>
             <div className="ardi-v2-assistant-meta"><span>ROLE</span><b>GUIDE</b><span>CONTEXT</span><b>WORKSPACE</b><span>ROUTE</span><b>CHAT → ACTION</b></div>
           </div>
         </section>
@@ -214,16 +191,16 @@ export default function Landing() {
             <div className="ardi-v2-capability-grid">
               <Link href={workspaceRoute('/scans')} className="ardi-v2-capability ardi-v2-capability-test"><ScanSearch /><p>ASSESSMENT</p><h3>Test the approved target.</h3><span>Open assessment runs <ArrowUpRight /></span></Link>
               <Link href={workspaceRoute('/findings')} className="ardi-v2-capability ardi-v2-capability-evidence"><FileSearch2 /><p>EVIDENCE</p><h3>Work what the test returns.</h3><span>Open findings <ArrowUpRight /></span></Link>
-              <a href={OPENCTI_DEMO_URL} target="_blank" rel="noreferrer" className="ardi-v2-capability ardi-v2-capability-intel"><img src="/ardi/ardi-celebrating.jpg" alt="ARDI greeting users at the intelligence route" /><p>THREAT CONTEXT</p><h3>Explore the real OpenCTI dashboard.</h3><span>Open public demo <ExternalLink /></span></a>
+              <Link href={workspaceRoute('/osint')} className="ardi-v2-capability ardi-v2-capability-intel"><img src="/ardi/ardi-celebrating.jpg" alt="ARDI greeting users at the research route" /><p>RESEARCH</p><h3>Investigate a public domain.</h3><span>Open domain research <ArrowUpRight /></span></Link>
             </div>
           </div>
         </section>
 
-        <section className="ardi-v2-access" aria-labelledby="access-title"><div className="ardi-v2-shell ardi-v2-access-layout"><div><p className="ardi-v2-kicker"><span>04</span> FREE PUBLIC ACCESS</p><h2 id="access-title">Explore first. Create a workspace when ready.</h2><p>ARDI chat and the official OpenCTI demonstration are available without an ARDI account. A workspace is only required to save authorised scopes, tests, and evidence.</p></div><div className="ardi-v2-access-console"><div><span>NO ARDI ACCOUNT</span><i /> <span>PUBLIC TOOLS</span></div><b>Use the free tools now.</b><p>Open the real OpenCTI demo or ask ARDI a question before registering.</p><div className="ardi-v2-access-actions"><a href={OPENCTI_DEMO_URL} target="_blank" rel="noreferrer" className="ardi-v2-button ardi-v2-button-primary">Open OpenCTI demo <ExternalLink /></a><button type="button" className="ardi-v2-button ardi-v2-button-chat" onClick={() => setArdiOpen(true)}>Talk to ARDI <ArrowRight /></button></div><Link href="/register" className="ardi-v2-console-signin">Create an ARDI workspace <ArrowRight /></Link><Link href="/login" className="ardi-v2-console-signin">Already registered? Sign in <ArrowRight /></Link></div></div></section>
+        <section className="ardi-v2-access" aria-labelledby="access-title"><div className="ardi-v2-shell ardi-v2-access-layout"><div><p className="ardi-v2-kicker"><span>04</span> FREE PUBLIC ACCESS</p><h2 id="access-title">Ask ARDI first. Create a workspace when ready.</h2><p>ARDI chat is available without an account. A workspace is only required to save authorised scopes, tests, evidence, and source-backed research.</p></div><div className="ardi-v2-access-console"><div><span>NO ARDI ACCOUNT</span><i /> <span>ARDI CHAT</span></div><b>Use the assistant now.</b><p>Ask ARDI a question before registering.</p><button type="button" className="ardi-v2-button ardi-v2-button-primary" onClick={() => setArdiOpen(true)}>Talk to ARDI <ArrowRight /></button><Link href="/register" className="ardi-v2-console-signin">Create an ARDI workspace <ArrowRight /></Link><Link href="/login" className="ardi-v2-console-signin">Already registered? Sign in <ArrowRight /></Link></div></div></section>
       </main>
 
       <ArdiPanel open={ardiOpen} onClose={() => setArdiOpen(false)} authenticated={hasWorkspace} context="The visitor is on the Ardi Sec Live Lab public page." />
-      <footer className="ardi-v2-footer"><div className="ardi-v2-shell ardi-v2-footer-grid"><div><Link href="/" className="ardi-v2-brand"><ArdiMark /><span><b>ARDI SEC</b><small>AUTHORISED SECURITY LAB</small></span></Link><p>Penetration testing, evidence, intelligence, and research routes for approved security work.</p></div><div className="ardi-v2-footer-links"><nav aria-label="Product links"><a href="#operations">Operations</a><a href="#intelligence">Threat intelligence</a><a href="#assistant">Talk to ARDI</a><Link href="/login">Sign in</Link></nav><nav aria-label="Legal and support links"><Link href="/terms">Terms</Link><Link href="/privacy">Privacy</Link><Link href="/cookies">Cookies</Link><Link href="/faq">FAQs</Link></nav></div><p>Authorised use only.<br />© {new Date().getFullYear()} Ardi Sec.</p></div></footer>
+      <footer className="ardi-v2-footer"><div className="ardi-v2-shell ardi-v2-footer-grid"><div><Link href="/" className="ardi-v2-brand"><ArdiMark /><span><b>ARDI SEC</b><small>AUTHORISED SECURITY LAB</small></span></Link><p>Penetration testing, evidence, and source-backed research routes for approved security work.</p></div><div className="ardi-v2-footer-links"><nav aria-label="Product links"><a href="#operations">Operations</a><a href="#assistant">Talk to ARDI</a><Link href="/login">Sign in</Link></nav><nav aria-label="Legal and support links"><Link href="/terms">Terms</Link><Link href="/privacy">Privacy</Link><Link href="/cookies">Cookies</Link><Link href="/faq">FAQs</Link></nav></div><p>Authorised use only.<br />© {new Date().getFullYear()} Ardi Sec.</p></div></footer>
     </div>
   );
 }

@@ -74,7 +74,7 @@ export function Faq() {
   return <PublicInfoPage eyebrow="SUPPORT / FAQ" title="Common questions, direct answers." introduction="Short answers about scope, testing, evidence, intelligence, and ARDI." sections={[
     { heading: 'What are the four homepage steps?', body: 'They describe the authorised workflow: confirm permission, test only approved systems, review the returned evidence, then investigate relevant context.' },
     { heading: 'Does ARDI launch tests by itself?', body: 'ARDI guides users into the correct product route. A test should run only after an authorised target and the required assessment details are confirmed.' },
-    { heading: 'Is the threat intelligence data real?', body: 'The interface is ready for connected sources. It does not insert malware, actor, vulnerability, or attack records until the configured source returns them.' },
+    { heading: 'Is OpenCTI connected?', body: 'No OpenCTI deployment is currently connected. Ardi Sec does not show a substitute dashboard or sample threat records. Live enrichment will appear only after a real OpenCTI instance is configured.' },
     { heading: 'Is a finding proof of compromise?', body: 'No. A finding is evidence that requires review. Confirm the affected asset, technical detail, reproducibility, and scope before deciding what it means.' },
     { heading: 'Can I use Ardi Sec on any website?', body: 'No. Use it only where you own the target or have explicit permission to perform the stated security work.' },
   ]} />;

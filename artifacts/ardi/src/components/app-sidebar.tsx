@@ -9,7 +9,6 @@ import {
   FileText,
   Settings,
   Activity,
-  Radar,
   Globe2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -22,7 +21,6 @@ const navItems = [
   { path: '/assets', label: 'Assets', icon: Server },
   { path: '/scans', label: 'Scans', icon: Scan },
   { path: '/findings', label: 'Findings', icon: AlertTriangle },
-  { path: '/intelligence', label: 'Intelligence', icon: Radar },
   { path: '/osint', label: 'OSINT research', icon: Globe2 },
   { path: '/mitre', label: 'MITRE ATT&CK', icon: Grid3x3 },
   { path: '/reports', label: 'Reports', icon: FileText },
@@ -34,7 +32,6 @@ const mobileNavItems = [
   navItems.find((item) => item.path === '/dashboard')!,
   navItems.find((item) => item.path === '/scans')!,
   navItems.find((item) => item.path === '/findings')!,
-  navItems.find((item) => item.path === '/intelligence')!,
   navItems.find((item) => item.path === '/osint')!,
 ];
 
