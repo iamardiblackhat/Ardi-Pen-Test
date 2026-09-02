@@ -1,249 +1,61 @@
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
+import { CheckCircle2, Loader2, Play, Server, Shield } from 'lucide-react';
 import { useLocation } from 'wouter';
-import { Shield, CheckCircle2, Server, Play } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useCreateAsset, useCreateScan, getGetAssetsQueryKey } from '@workspace/api-client-react';
-import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
+import { getGetAssetsQueryKey, getGetScansQueryKey, useCreateAsset, useCreateScan, useStartScan, type AssetInputType } from '@workspace/api-client-react';
+import { Button } from '@workspace/ardi-ds/components/ui/button';
+import { Input } from '@workspace/ardi-ds/components/ui/input';
+import { Label } from '@workspace/ardi-ds/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@workspace/ardi-ds/components/ui/select';
+import { backendError } from '@/lib/api-error';
+import { routes } from '@/shared/config/routes';
 
 export default function Onboarding() {
-  const [, setLocation] = useLocation();
-  const { toast } = useToast();
+  const [, navigate] = useLocation();
   const queryClient = useQueryClient();
-  const [step, setStep] = useState(1);
-  const [assetName, setAssetName] = useState('');
-  const [assetType, setAssetType] = useState('web_app');
-  const [assetTarget, setAssetTarget] = useState('');
-  const [createdAssetId, setCreatedAssetId] = useState<number | null>(null);
-  
   const createAsset = useCreateAsset();
   const createScan = useCreateScan();
+  const startScan = useStartScan();
+  const [step, setStep] = useState(1);
+  const [assetName, setAssetName] = useState('');
+  const [assetType, setAssetType] = useState<AssetInputType>('web_app');
+  const [assetTarget, setAssetTarget] = useState('');
+  const [assetId, setAssetId] = useState<number | null>(null);
+  const [authorised, setAuthorised] = useState(false);
+  const [startedScanId, setStartedScanId] = useState<number | null>(null);
+  const [error, setError] = useState('');
 
-  const handleAddAsset = () => {
-    createAsset.mutate(
-      { data: { name: assetName, type: assetType as any, target: assetTarget } },
-      {
-        onSuccess: (asset) => {
-          setCreatedAssetId(asset.id);
-          queryClient.invalidateQueries({ queryKey: getGetAssetsQueryKey() });
-          toast({ title: 'Asset added', description: `${asset.name} has been added to your inventory` });
-          setStep(3);
-        },
-        onError: () => {
-          toast({ title: 'Failed to add asset', variant: 'destructive' });
-        },
-      }
-    );
-  };
+  async function addTarget(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setError('');
+    try {
+      const asset = await createAsset.mutateAsync({ data: { name: assetName.trim(), type: assetType, target: assetTarget.trim() } });
+      await queryClient.invalidateQueries({ queryKey: getGetAssetsQueryKey() });
+      setAssetId(asset.id); setStep(3);
+    } catch (requestError) { setError(backendError(requestError, 'The target could not be added.')); }
+  }
 
-  const handleStartScan = () => {
-    if (!createdAssetId) return;
-    createScan.mutate(
-      { data: { name: 'Initial Scan', type: 'web_app', assetId: createdAssetId } },
-      {
-        onSuccess: () => {
-          toast({ title: 'Scan started', description: 'Your first scan is now running' });
-          setStep(4);
-        },
-      }
-    );
-  };
+  async function startPenTest() {
+    if (!assetId || !authorised) return;
+    setError('');
+    try {
+      const created = await createScan.mutateAsync({ data: { name: 'Initial authorised Pen Test', type: 'web_app', assetId } });
+      const started = await startScan.mutateAsync({ id: created.id });
+      await queryClient.invalidateQueries({ queryKey: getGetScansQueryKey() });
+      setStartedScanId(started.id); setStep(4);
+    } catch (requestError) { setError(backendError(requestError, 'The Pen Test could not be started.')); }
+  }
 
+  const pending = createAsset.isPending || createScan.isPending || startScan.isPending;
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background grid-pattern">
-      <div className="w-full max-w-2xl p-8">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="flex items-center justify-center w-12 h-12 bg-primary rounded-lg glow-primary">
-            <Shield className="w-7 h-7 text-primary-foreground" />
-          </div>
-          <h1 className="text-3xl font-bold">Welcome to Ardi</h1>
-        </div>
-
-        {/* Progress */}
-        <div className="flex items-center justify-between mb-12">
-          {[1, 2, 3, 4].map((s) => (
-            <div key={s} className="flex items-center">
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                  s <= step ? 'bg-primary text-primary-foreground glow-primary' : 'bg-muted text-muted-foreground'
-                }`}
-              >
-                {s < step ? <CheckCircle2 className="w-5 h-5" /> : s}
-              </div>
-              {s < 4 && (
-                <div className={`w-24 h-1 mx-2 ${s < step ? 'bg-primary' : 'bg-muted'}`} />
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* Step 1: Welcome */}
-        {step === 1 && (
-          <div className="bg-card border border-card-border rounded-xl p-8">
-            <h2 className="text-2xl font-bold mb-4">Let's get started</h2>
-            <p className="text-muted-foreground mb-6">
-              We'll help you set up your first asset and launch your initial security scan. This will only take a few minutes.
-            </p>
-            <ul className="space-y-3 mb-8">
-              <li className="flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                <span>Add your first asset to scan</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                <span>Configure your initial security scan</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                <span>Start discovering vulnerabilities</span>
-              </li>
-            </ul>
-            <Button onClick={() => setStep(2)} className="glow-primary" data-testid="button-start-onboarding">
-              Get Started
-            </Button>
-          </div>
-        )}
-
-        {/* Step 2: Add Asset */}
-        {step === 2 && (
-          <div className="bg-card border border-card-border rounded-xl p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                <Server className="w-6 h-6 text-primary" />
-              </div>
-              <h2 className="text-2xl font-bold">Add your first asset</h2>
-            </div>
-            <p className="text-muted-foreground mb-6">
-              Tell us about the first asset you'd like to scan. This could be a web application, API, or network.
-            </p>
-
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="asset-name">Asset Name</Label>
-                <Input
-                  id="asset-name"
-                  placeholder="Production Web App"
-                  value={assetName}
-                  onChange={(e) => setAssetName(e.target.value)}
-                  data-testid="input-asset-name"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="asset-type">Asset Type</Label>
-                <Select value={assetType} onValueChange={setAssetType}>
-                  <SelectTrigger id="asset-type" data-testid="select-asset-type">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="web_app">Web Application</SelectItem>
-                    <SelectItem value="api">API</SelectItem>
-                    <SelectItem value="network">Network</SelectItem>
-                    <SelectItem value="cloud_aws">AWS Cloud</SelectItem>
-                    <SelectItem value="cloud_azure">Azure Cloud</SelectItem>
-                    <SelectItem value="cloud_gcp">GCP Cloud</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="asset-target">Target URL or IP</Label>
-                <Input
-                  id="asset-target"
-                  placeholder="https://app.example.com"
-                  value={assetTarget}
-                  onChange={(e) => setAssetTarget(e.target.value)}
-                  data-testid="input-asset-target"
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-3 mt-8">
-              <Button variant="outline" onClick={() => setStep(1)} data-testid="button-back">
-                Back
-              </Button>
-              <Button
-                onClick={handleAddAsset}
-                disabled={!assetName || !assetTarget || createAsset.isPending}
-                className="glow-primary"
-                data-testid="button-add-asset"
-              >
-                {createAsset.isPending ? 'Adding...' : 'Add Asset'}
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Step 3: Configure Scan */}
-        {step === 3 && (
-          <div className="bg-card border border-card-border rounded-xl p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                <Play className="w-6 h-6 text-primary" />
-              </div>
-              <h2 className="text-2xl font-bold">Launch your first scan</h2>
-            </div>
-            <p className="text-muted-foreground mb-6">
-              Your asset has been added. Ready to start scanning for vulnerabilities?
-            </p>
-
-            <div className="bg-muted/30 border border-border rounded-lg p-4 mb-6">
-              <h3 className="font-semibold mb-2">Initial Scan Configuration</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-primary" />
-                  OWASP Top 10 vulnerability tests
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-primary" />
-                  SSL/TLS configuration analysis
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-primary" />
-                  Common misconfiguration detection
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-primary" />
-                  Automated report generation
-                </li>
-              </ul>
-            </div>
-
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={() => setStep(2)} data-testid="button-back-scan">
-                Back
-              </Button>
-              <Button
-                onClick={handleStartScan}
-                disabled={createScan.isPending}
-                className="glow-primary"
-                data-testid="button-start-scan"
-              >
-                {createScan.isPending ? 'Starting...' : 'Start Scan'}
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Step 4: Done */}
-        {step === 4 && (
-          <div className="bg-card border border-card-border rounded-xl p-8 text-center">
-            <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6 glow-primary">
-              <CheckCircle2 className="w-10 h-10 text-primary" />
-            </div>
-            <h2 className="text-2xl font-bold mb-4">You're all set!</h2>
-            <p className="text-muted-foreground mb-8">
-              Your first scan is now running. Head to the dashboard to monitor progress and view findings as they're discovered.
-            </p>
-            <Button onClick={() => setLocation('/dashboard')} className="glow-primary" data-testid="button-go-to-dashboard">
-              Go to Dashboard
-            </Button>
-          </div>
-        )}
+    <main className="grid min-h-screen place-items-center bg-background p-4 grid-pattern sm:p-8">
+      <div className="w-full max-w-2xl">
+        <header className="mb-8 flex items-center gap-3"><span className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary glow-primary"><Shield className="h-7 w-7 text-primary-foreground" aria-hidden="true" /></span><div><p className="text-xs font-mono uppercase tracking-widest text-primary">ARDI SEC</p><h1 className="text-3xl font-bold">Set up authorised testing</h1></div></header>
+        <ol className="mb-8 grid grid-cols-4 gap-2" aria-label="Setup progress">{['Welcome', 'Scope', 'Authorise', 'Running'].map((label, index) => { const number = index + 1; return <li key={label} className="text-center"><span className={`mx-auto flex h-10 w-10 items-center justify-center rounded-full font-bold ${number <= step ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>{number < step ? <CheckCircle2 className="h-5 w-5" aria-hidden="true" /> : number}</span><span className="mt-2 hidden text-xs text-muted-foreground sm:block">{label}</span></li>; })}</ol>
+        {step === 1 ? <section className="rounded-xl border bg-card p-6 sm:p-8"><h2 className="text-2xl font-bold">Start with permission and scope</h2><p className="mt-4 leading-7 text-muted-foreground">Add a system you own or have explicit permission to test. ARDI will then create and start a real Pen Test through the connected security API.</p><Button className="mt-8 glow-primary" onClick={() => setStep(2)}>Set authorised scope</Button></section> : null}
+        {step === 2 ? <form className="space-y-5 rounded-xl border bg-card p-6 sm:p-8" onSubmit={addTarget}><div><Server className="mb-3 h-8 w-8 text-primary" aria-hidden="true" /><h2 className="text-2xl font-bold">Add an authorised target</h2></div><div className="space-y-2"><Label htmlFor="onboarding-name">Target name</Label><Input id="onboarding-name" required value={assetName} onChange={(event) => setAssetName(event.target.value)} placeholder="Production web app" /></div><div className="space-y-2"><Label htmlFor="onboarding-type">Target type</Label><Select value={assetType} onValueChange={(value) => setAssetType(value as AssetInputType)}><SelectTrigger id="onboarding-type"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="web_app">Web application</SelectItem><SelectItem value="api">API</SelectItem><SelectItem value="network">Network</SelectItem><SelectItem value="cloud_aws">AWS cloud</SelectItem><SelectItem value="cloud_azure">Azure cloud</SelectItem><SelectItem value="cloud_gcp">GCP cloud</SelectItem></SelectContent></Select></div><div className="space-y-2"><Label htmlFor="onboarding-target">URL or IP address</Label><Input id="onboarding-target" required value={assetTarget} onChange={(event) => setAssetTarget(event.target.value)} placeholder="https://app.example.com" /></div>{error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}<div className="flex gap-3"><Button type="button" variant="outline" onClick={() => setStep(1)}>Back</Button><Button type="submit" disabled={!assetName.trim() || !assetTarget.trim() || pending} className="glow-primary">{createAsset.isPending ? 'Adding target…' : 'Add target'}</Button></div></form> : null}
+        {step === 3 ? <section className="rounded-xl border bg-card p-6 sm:p-8"><Play className="mb-3 h-8 w-8 text-primary" aria-hidden="true" /><h2 className="text-2xl font-bold">Confirm and start the Pen Test</h2><p className="mt-4 text-muted-foreground">The target is in scope. The scanner starts only after your explicit confirmation.</p><label className="mt-6 flex items-start gap-3 rounded-lg border border-primary/25 bg-primary/5 p-4 text-sm leading-6"><input type="checkbox" checked={authorised} onChange={(event) => setAuthorised(event.target.checked)} className="mt-1 h-4 w-4 accent-primary" /><span>I own this target or have explicit permission to test it.</span></label>{error ? <p role="alert" className="mt-4 text-sm text-destructive">{error}</p> : null}<div className="mt-6 flex gap-3"><Button variant="outline" onClick={() => setStep(2)}>Back</Button><Button onClick={startPenTest} disabled={!authorised || pending} className="glow-primary">{pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" /> : null}{startScan.isPending ? 'Starting scanner…' : 'Start Pen Test'}</Button></div></section> : null}
+        {step === 4 ? <section className="rounded-xl border bg-card p-8 text-center"><CheckCircle2 className="mx-auto h-14 w-14 text-primary" aria-hidden="true" /><h2 className="mt-5 text-2xl font-bold">Pen Test running</h2><p className="mt-3 text-muted-foreground">The security API confirmed that the scanner started.</p><Button className="mt-7 glow-primary" onClick={() => navigate(startedScanId ? routes.scan(startedScanId) : routes.scans)}>Open Pen Test</Button></section> : null}
       </div>
-    </div>
+    </main>
   );
 }

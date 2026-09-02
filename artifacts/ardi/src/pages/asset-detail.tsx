@@ -1,6 +1,6 @@
 import { useParams, Link } from 'wouter';
 import { ArrowLeft, Play, Server, AlertTriangle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@workspace/ardi-ds/components/ui/button';
 import { StatusBadge } from '@/components/status-badge';
 import { SeverityBadge } from '@/components/severity-badge';
 import {
@@ -13,7 +13,7 @@ import {
   getGetFindingsQueryKey,
 } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@workspace/ardi-ds/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 
 export default function AssetDetail() {

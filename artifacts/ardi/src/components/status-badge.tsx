@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn } from '@workspace/ardi-ds/lib/utils';
 
 type Status = 'pending' | 'running' | 'completed' | 'failed' | 'stopped' | 'open' | 'in_progress' | 'resolved' | 'accepted_risk' | 'false_positive' | 'active' | 'inactive' | 'scanning' | 'generating' | 'ready';
 
@@ -6,7 +6,6 @@ interface StatusBadgeProps {
   status: Status;
   className?: string;
 }
-
 const statusConfig: Record<Status, { label: string; className: string }> = {
   pending: { label: 'Pending', className: 'bg-muted text-muted-foreground border-muted-foreground/50' },
   running: { label: 'Running', className: 'bg-primary/20 text-primary border-primary/50 animate-pulse' },

@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Shield } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Button } from '@workspace/ardi-ds/components/ui/button';
+import { Input } from '@workspace/ardi-ds/components/ui/input';
+import { Label } from '@workspace/ardi-ds/components/ui/label';
 import { useRegister } from '@workspace/api-client-react';
 import { auth } from '@/lib/auth';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@workspace/ardi-ds/hooks/use-toast';
 import { backendError } from '@/lib/api-error';
 
 export default function Register() {

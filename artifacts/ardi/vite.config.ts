@@ -40,6 +40,17 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, 'dist/public'),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('/node_modules/.pnpm/react@') || id.includes('/node_modules/.pnpm/react-dom@')) return 'vendor-react';
+          if (id.includes('/node_modules/.pnpm/@radix-ui+')) return 'vendor-radix';
+          if (id.includes('/node_modules/.pnpm/@tanstack+')) return 'vendor-query';
+          if (id.includes('/node_modules/.pnpm/recharts@')) return 'vendor-charts';
+          return undefined;
+        },
+      },
+    },
   },
   server: {
     port,

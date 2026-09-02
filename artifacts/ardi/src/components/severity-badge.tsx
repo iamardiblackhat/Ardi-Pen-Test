@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn } from '@workspace/ardi-ds/lib/utils';
 
 type Severity = 'critical' | 'high' | 'medium' | 'low' | 'info';
 
@@ -6,7 +6,6 @@ interface SeverityBadgeProps {
   severity: Severity;
   className?: string;
 }
-
 const severityConfig = {
   critical: {
     label: 'Critical',

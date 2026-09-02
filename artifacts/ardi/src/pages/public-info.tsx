@@ -18,8 +18,8 @@ function PublicInfoPage({ eyebrow, title, introduction, sections }: PublicInfoPa
   return (
     <div className="ardi-info-page">
       <header className="ardi-info-header">
-        <Link href="/" className="ardi-info-brand">ARDI SEC <small>AUTHORISED SECURITY LAB</small></Link>
-        <Link href="/" className="ardi-info-back"><ArrowLeft /> Back to security lab</Link>
+        <Link href="/" className="ardi-info-brand">ARDI SEC <small>AUTHORISED SECURITY PLATFORM</small></Link>
+        <Link href="/" className="ardi-info-back"><ArrowLeft /> Back to ARDI SEC</Link>
       </header>
       <main className="ardi-info-main">
         <p className="ardi-info-eyebrow">{eyebrow}</p>

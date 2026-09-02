@@ -1,5 +1,5 @@
 /**
- * ARDI SECURITY LAB DESIGN REMINDER
+ * ARDI SEC OSINT DESIGN REMINDER
  * Domain research uses real public sources only. There are no example profiles,
  * synthetic certificates, invented provider counts or fake enrichment results.
  */

@@ -8,23 +8,21 @@ import {
   Grid3x3,
   FileText,
   Settings,
-  Activity,
   Globe2,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { cn } from '@workspace/ardi-ds/lib/utils';
+import { Avatar, AvatarFallback } from '@workspace/ardi-ds/components/ui/avatar';
 import { useGetMe, getGetMeQueryKey } from '@workspace/api-client-react';
 import { useGetScans, getGetScansQueryKey } from '@workspace/api-client-react';
 
 const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/assets', label: 'Assets', icon: Server },
-  { path: '/scans', label: 'Scans', icon: Scan },
+  { path: '/scans', label: 'Pen Testing', icon: Scan },
   { path: '/findings', label: 'Findings', icon: AlertTriangle },
   { path: '/osint', label: 'OSINT research', icon: Globe2 },
   { path: '/mitre', label: 'MITRE ATT&CK', icon: Grid3x3 },
   { path: '/reports', label: 'Reports', icon: FileText },
-  { path: '/compliance', label: 'Compliance', icon: Activity },
   { path: '/settings', label: 'Settings', icon: Settings },
 ];
 

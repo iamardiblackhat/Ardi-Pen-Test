@@ -1,5 +1,5 @@
 import { LucideIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@workspace/ardi-ds/lib/utils';
 
 interface StatCardProps {
   title: string;
@@ -11,7 +11,6 @@ interface StatCardProps {
   };
   className?: string;
 }
-
 export function StatCard({ title, value, icon: Icon, trend, className }: StatCardProps) {
   return (
     <div className={cn('bg-card border border-card-border rounded-lg p-6 shadow-md', className)}>
