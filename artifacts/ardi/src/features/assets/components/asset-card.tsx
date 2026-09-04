@@ -1,4 +1,4 @@
-import { Cloud, Globe, Server, Smartphone, Trash2, type LucideIcon } from 'lucide-react';
+import { Globe, Server, Smartphone, Trash2, type LucideIcon } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'wouter';
 import type { Asset } from '@workspace/api-client-react';
@@ -6,7 +6,7 @@ import { Button } from '@workspace/ardi-ds/components/ui/button';
 import { StatusBadge } from '@/components/status-badge';
 import { routes } from '@/shared/config/routes';
 
-const assetIcons: Record<string, LucideIcon> = { web_app: Globe, network: Server, cloud_aws: Cloud, cloud_azure: Cloud, cloud_gcp: Cloud, api: Server, mobile: Smartphone };
+const assetIcons: Record<string, LucideIcon> = { web_app: Globe, network: Server, api: Server, mobile: Smartphone };
 const riskColors: Record<string, string> = { critical: 'text-destructive', high: 'text-orange-500', medium: 'text-yellow-500', low: 'text-blue-500', none: 'text-muted-foreground' };
 
 export function AssetCard({ asset, onDelete }: { asset: Asset; onDelete: (asset: Asset) => void }) {

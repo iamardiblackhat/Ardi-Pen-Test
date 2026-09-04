@@ -194,11 +194,11 @@ async function execute(scanId: number, controller: AbortController): Promise<voi
       await db.insert(activityTable).values({
         userId: scan.userId,
         type: "scan_completed",
-        title: `CyberStrike scan completed on ${asset.name}`,
+        title: `ARDI Pen Test completed on ${asset.name}`,
         description: `${written} findings (${critical} critical, ${high} high) in ${duration}s`,
         severity: critical > 0 ? "critical" : high > 0 ? "high" : "info",
       });
-      logger.info({ scanId, written, engine: "cyberstrike" }, "scan completed");
+      logger.info({ scanId, written, engine: "premium" }, "scan completed");
       return;
     }
 

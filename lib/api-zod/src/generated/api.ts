@@ -189,6 +189,7 @@ export const CreateAssetBody = zod.object({
   "name": zod.string(),
   "type": zod.enum(['web_app', 'network', 'cloud_aws', 'cloud_azure', 'cloud_gcp', 'api', 'mobile']),
   "target": zod.string(),
+  "authorizationConfirmed": zod.boolean().describe('Confirms the caller owns the target or has explicit permission to test it.'),
   "description": zod.string().optional(),
   "tags": zod.array(zod.string()).optional()
 })

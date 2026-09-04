@@ -1,7 +1,11 @@
-import { useEffect, useState } from 'react';
-import { AppSidebar, MobileAppHeader, MobileBottomNav } from '@/components/app-sidebar';
-import { ArdiLauncher, ArdiPanel } from '@/components/ardi-panel';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useEffect, useState } from "react";
+import {
+  AppSidebar,
+  MobileAppHeader,
+  MobileBottomNav,
+} from "@/components/app-sidebar";
+import { ArdiLauncher, ArdiPanel } from "@/components/ardi-panel";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function WorkspaceLayout({ children }: { children: React.ReactNode }) {
   const isMobile = useIsMobile();
@@ -10,19 +14,21 @@ export function WorkspaceLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isMobile) return;
 
-    const introKey = 'ardi-mobile-intro-shown';
+    const introKey = "ardi-mobile-intro-shown";
     if (!sessionStorage.getItem(introKey)) {
       setArdiOpen(true);
-      sessionStorage.setItem(introKey, '1');
+      sessionStorage.setItem(introKey, "1");
     }
   }, [isMobile]);
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-background">
+    <div className="dark flex h-dvh overflow-hidden bg-background text-foreground">
       <AppSidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <MobileAppHeader />
-        <main className="min-w-0 flex-1 overflow-y-auto pb-20 md:pb-0">{children}</main>
+        <main className="min-w-0 flex-1 overflow-y-auto pb-20 md:pb-0">
+          {children}
+        </main>
       </div>
       <MobileBottomNav />
       <ArdiLauncher
@@ -37,4 +43,3 @@ export function WorkspaceLayout({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
-

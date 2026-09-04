@@ -602,7 +602,7 @@ components:
       properties:
         email:
           type: string
-          
+
         password:
           type: string
 
@@ -612,7 +612,7 @@ components:
       properties:
         email:
           type: string
-          
+
         password:
           type: string
         name:
@@ -631,7 +631,17 @@ components:
 
     User:
       type: object
-      required: [id, email, name, role, orgName, notifyScanComplete, notifyCritical, notifyWeeklyDigest]
+      required:
+        [
+          id,
+          email,
+          name,
+          role,
+          orgName,
+          notifyScanComplete,
+          notifyCritical,
+          notifyWeeklyDigest,
+        ]
       properties:
         id:
           type: number
@@ -695,7 +705,16 @@ components:
     # Dashboard
     DashboardStats:
       type: object
-      required: [totalAssets, activeScans, openFindings, criticalFindings, resolvedFindings, complianceScore, lastScanAt]
+      required:
+        [
+          totalAssets,
+          activeScans,
+          openFindings,
+          criticalFindings,
+          resolvedFindings,
+          complianceScore,
+          lastScanAt,
+        ]
       properties:
         totalAssets:
           type: number
@@ -720,7 +739,15 @@ components:
           type: number
         type:
           type: string
-          enum: [scan_started, scan_completed, finding_discovered, finding_resolved, asset_added, report_generated]
+          enum:
+            [
+              scan_started,
+              scan_completed,
+              finding_discovered,
+              finding_resolved,
+              asset_added,
+              report_generated,
+            ]
         title:
           type: string
         description:
@@ -762,7 +789,8 @@ components:
           type: string
         type:
           type: string
-          enum: [web_app, network, cloud_aws, cloud_azure, cloud_gcp, api, mobile]
+          enum:
+            [web_app, network, cloud_aws, cloud_azure, cloud_gcp, api, mobile]
         target:
           type: string
         status:
@@ -786,15 +814,19 @@ components:
 
     AssetInput:
       type: object
-      required: [name, type, target]
+      required: [name, type, target, authorizationConfirmed]
       properties:
         name:
           type: string
         type:
           type: string
-          enum: [web_app, network, cloud_aws, cloud_azure, cloud_gcp, api, mobile]
+          enum:
+            [web_app, network, cloud_aws, cloud_azure, cloud_gcp, api, mobile]
         target:
           type: string
+        authorizationConfirmed:
+          type: boolean
+          description: Confirms the caller owns the target or has explicit permission to test it.
         description:
           type: string
         tags:
@@ -905,7 +937,24 @@ components:
     # Findings
     Finding:
       type: object
-      required: [id, title, severity, status, category, assetId, assetName, scanId, cve, mitreId, mitreTactic, mitreTechnique, description, remediation, createdAt]
+      required:
+        [
+          id,
+          title,
+          severity,
+          status,
+          category,
+          assetId,
+          assetName,
+          scanId,
+          cve,
+          mitreId,
+          mitreTactic,
+          mitreTechnique,
+          description,
+          remediation,
+          createdAt,
+        ]
       properties:
         id:
           type: number
@@ -924,7 +973,26 @@ components:
           # web, file, other). The engine is the source of truth here: a
           # category it can produce but the spec rejects makes the whole
           # findings endpoint fail Zod validation and return 500.
-          enum: [injection, broken_auth, xss, idor, misconfiguration, exposed_data, privilege_escalation, lateral_movement, persistence, exfiltration, network, web, tls, dns, exposure, file, other]
+          enum:
+            [
+              injection,
+              broken_auth,
+              xss,
+              idor,
+              misconfiguration,
+              exposed_data,
+              privilege_escalation,
+              lateral_movement,
+              persistence,
+              exfiltration,
+              network,
+              web,
+              tls,
+              dns,
+              exposure,
+              file,
+              other,
+            ]
         assetId:
           type: number
         assetName:
@@ -1067,7 +1135,17 @@ components:
     # Compliance
     ComplianceFramework:
       type: object
-      required: [id, name, version, score, controlsPassed, controlsFailed, controlsTotal, lastAssessedAt]
+      required:
+        [
+          id,
+          name,
+          version,
+          score,
+          controlsPassed,
+          controlsFailed,
+          controlsTotal,
+          lastAssessedAt,
+        ]
       properties:
         id:
           type: string

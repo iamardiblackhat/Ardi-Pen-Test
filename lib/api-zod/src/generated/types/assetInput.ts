@@ -11,6 +11,8 @@ export interface AssetInput {
   name: string;
   type: AssetInputType;
   target: string;
+  /** Confirms the caller owns the target or has explicit permission to test it. */
+  authorizationConfirmed: boolean;
   description?: string;
   tags?: string[];
 }

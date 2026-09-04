@@ -22,7 +22,11 @@ interface ToolSpec {
 interface OaiMessage {
   role: "system" | "user" | "assistant" | "tool";
   content: string | null;
-  tool_calls?: { id: string; type: "function"; function: { name: string; arguments: string } }[];
+  tool_calls?: {
+    id: string;
+    type: "function";
+    function: { name: string; arguments: string };
+  }[];
   tool_call_id?: string;
 }
 
@@ -41,7 +45,8 @@ function toOpenAiTools(vertical: VerticalConfig): ToolSpec[] {
       function: {
         name: anyTool.name,
         description: anyTool.description ?? "",
-        parameters: anyTool.input_schema ?? anyTool.parameters ?? { type: "object", properties: {} },
+        parameters: anyTool.input_schema ??
+          anyTool.parameters ?? { type: "object", properties: {} },
       },
     };
   });
@@ -64,14 +69,18 @@ async function runTool(
     // Failing the whole turn over it is worse than telling the model to retry.
     args = rawArgs ? JSON.parse(rawArgs) : {};
   } catch {
-    return JSON.stringify({ error: "Arguments were not valid JSON. Retry with valid JSON." });
+    return JSON.stringify({
+      error: "Arguments were not valid JSON. Retry with valid JSON.",
+    });
   }
 
   try {
     const result = await tool.run(args);
     return typeof result === "string" ? result : JSON.stringify(result);
   } catch (error) {
-    return JSON.stringify({ error: error instanceof Error ? error.message : String(error) });
+    return JSON.stringify({
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 }
 
@@ -90,10 +99,13 @@ export interface OpenAiCompatOptions {
 export async function* runOpenAiCompat(
   options: OpenAiCompatOptions,
 ): AsyncGenerator<ArdiEvent> {
-  const { baseUrl, model, apiKey, vertical, messages, context, signal } = options;
+  const { baseUrl, model, apiKey, vertical, messages, context, signal } =
+    options;
   const maxIterations = options.maxIterations ?? 6;
 
-  const convo: OaiMessage[] = [{ role: "system", content: vertical.systemPrompt }];
+  const convo: OaiMessage[] = [
+    { role: "system", content: vertical.systemPrompt },
+  ];
   if (context) convo.push({ role: "system", content: `Context: ${context}` });
   for (const m of messages) convo.push({ role: m.role, content: m.content });
 
@@ -102,25 +114,28 @@ export async function* runOpenAiCompat(
 
   try {
     for (let iteration = 0; iteration < maxIterations; iteration++) {
-      const response = await fetch(`${baseUrl.replace(/\/+$/, "")}/chat/completions`, {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          ...(apiKey ? { authorization: `Bearer ${apiKey}` } : {}),
+      const response = await fetch(
+        `${baseUrl.replace(/\/+$/, "")}/chat/completions`,
+        {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            ...(apiKey ? { authorization: `Bearer ${apiKey}` } : {}),
+          },
+          body: JSON.stringify({
+            model,
+            messages: convo,
+            tools,
+            stream: true,
+            temperature: 0.4,
+            // Reasoning models (qwen3, deepseek-r1, …) spend tokens thinking
+            // before they answer. Too low a ceiling and the response ends
+            // mid-thought with finish_reason "length" and no visible content.
+            max_tokens: 4096,
+          }),
+          signal,
         },
-        body: JSON.stringify({
-          model,
-          messages: convo,
-          tools,
-          stream: true,
-          temperature: 0.4,
-          // Reasoning models (qwen3, deepseek-r1, …) spend tokens thinking
-          // before they answer. Too low a ceiling and the response ends
-          // mid-thought with finish_reason "length" and no visible content.
-          max_tokens: 4096,
-        }),
-        signal,
-      });
+      );
 
       if (!response.ok || !response.body) {
         const detail = await response.text().catch(() => "");
@@ -167,7 +182,10 @@ export async function* runOpenAiCompat(
           // field and only later emit `content`. Surface it as a "thinking"
           // signal, never as the answer — otherwise the user reads the
           // model's scratchpad as if it were advice.
-          if (typeof delta.reasoning_content === "string" && delta.reasoning_content) {
+          if (
+            typeof delta.reasoning_content === "string" &&
+            delta.reasoning_content
+          ) {
             if (!thinking) {
               thinking = true;
               yield { type: "tool_start", name: "thinking", label: "Thinking" };
@@ -190,10 +208,15 @@ export async function* runOpenAiCompat(
           // Tool-call deltas arrive fragmented and indexed; accumulate by index.
           for (const tc of delta.tool_calls ?? []) {
             const index: number = tc.index ?? 0;
-            toolCalls[index] ??= { id: tc.id ?? `call_${index}`, name: "", args: "" };
+            toolCalls[index] ??= {
+              id: tc.id ?? `call_${index}`,
+              name: "",
+              args: "",
+            };
             if (tc.id) toolCalls[index]!.id = tc.id;
             if (tc.function?.name) toolCalls[index]!.name += tc.function.name;
-            if (tc.function?.arguments) toolCalls[index]!.args += tc.function.arguments;
+            if (tc.function?.arguments)
+              toolCalls[index]!.args += tc.function.arguments;
           }
         }
       }
@@ -228,10 +251,26 @@ export async function* runOpenAiCompat(
       });
 
       for (const call of calls) {
-        yield { type: "tool_start", name: call.name, label: humanLabel(call.name) };
+        yield {
+          type: "tool_start",
+          name: call.name,
+          label: humanLabel(call.name),
+        };
         const result = await runTool(vertical, call.name, call.args);
-        yield { type: "tool_end", name: call.name, ok: !result.includes('"error"') };
+        const ok = !result.includes('"error"');
+        yield { type: "tool_end", name: call.name, ok };
         convo.push({ role: "tool", tool_call_id: call.id, content: result });
+        if (ok && vertical.confirmBeforeRunning.includes(call.name)) {
+          yield {
+            type: "confirm_required",
+            name: call.name,
+            input: parseToolInput(call.args),
+            label: confirmationLabel(call.name),
+          };
+          yield { type: "mood", mood: "idle" };
+          yield { type: "done", stopReason: "confirmation_required" };
+          return;
+        }
       }
     }
 
@@ -257,6 +296,25 @@ function humanLabel(toolName: string): string {
     list_assets: "Looking at your systems",
     list_scans: "Reviewing recent scans",
     get_security_summary: "Working out your overall posture",
+    start_pen_test: "Preparing the Pen Test",
+    research_domain: "Researching the public domain",
+    generate_report: "Preparing the security report",
   };
   return labels[toolName] ?? `Running ${toolName.replace(/_/g, " ")}`;
+}
+
+function parseToolInput(rawArgs: string): unknown {
+  try {
+    return rawArgs ? JSON.parse(rawArgs) : {};
+  } catch {
+    return {};
+  }
+}
+
+function confirmationLabel(toolName: string): string {
+  const labels: Record<string, string> = {
+    start_pen_test: "Start this Pen Test",
+    generate_report: "Generate this security report",
+  };
+  return labels[toolName] ?? `Confirm ${toolName.replace(/_/g, " ")}`;
 }

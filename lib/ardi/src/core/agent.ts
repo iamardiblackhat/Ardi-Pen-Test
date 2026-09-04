@@ -51,7 +51,11 @@ export function isConfigured(): boolean {
     : Boolean(process.env["ANTHROPIC_API_KEY"]);
 }
 
-export function describeProvider(): { provider: ArdiProvider; model: string; endpoint: string | null } {
+export function describeProvider(): {
+  provider: ArdiProvider;
+  model: string;
+  endpoint: string | null;
+} {
   if (getProvider() === "openai-compat") {
     return {
       provider: "openai-compat",
@@ -172,11 +176,27 @@ export async function* runArdi(options: RunOptions): AsyncGenerator<ArdiEvent> {
       }
 
       const message = await stream.finalMessage();
+      let confirmationRequired = false;
 
       for (const block of message.content) {
         if (block.type === "tool_use") {
           yield { type: "tool_end", name: block.name, ok: true };
+          if (vertical.confirmBeforeRunning.includes(block.name)) {
+            confirmationRequired = true;
+            yield {
+              type: "confirm_required",
+              name: block.name,
+              input: block.input,
+              label: confirmationLabel(block.name),
+            };
+          }
         }
+      }
+
+      if (confirmationRequired) {
+        yield { type: "mood", mood: "idle" };
+        yield { type: "done", stopReason: "confirmation_required" };
+        return;
       }
 
       // A refusal is a normal 200 response, not an exception. Check it before
@@ -210,6 +230,17 @@ function humanLabel(toolName: string): string {
     get_scan_status: "Checking the scan",
     list_scans: "Reviewing recent scans",
     get_security_summary: "Working out your overall posture",
+    start_pen_test: "Preparing the Pen Test",
+    research_domain: "Researching the public domain",
+    generate_report: "Preparing the security report",
   };
   return labels[toolName] ?? `Running ${toolName.replace(/_/g, " ")}`;
+}
+
+function confirmationLabel(toolName: string): string {
+  const labels: Record<string, string> = {
+    start_pen_test: "Start this Pen Test",
+    generate_report: "Generate this security report",
+  };
+  return labels[toolName] ?? `Confirm ${toolName.replace(/_/g, " ")}`;
 }

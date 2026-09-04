@@ -1,40 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1"
+    />
     <title>ARDI SEC — Authorised Pen Testing and Security Operations</title>
-    <meta name="description" content="Ardi — an autonomous penetration testing platform for tracking authorized assets, running scans, and triaging findings with CVE, CVSS, and MITRE ATT&amp;CK context." />
+    <meta
+      name="description"
+      content="Ardi — an autonomous penetration testing platform for tracking authorized assets, running scans, and triaging findings with CVE, CVSS, and MITRE ATT&amp;CK context."
+    />
     <meta name="robots" content="index, follow" />
-    <meta property="og:title" content="ARDI SEC — Authorised Pen Testing and Security Operations" />
-    <meta property="og:description" content="Ardi — an autonomous penetration testing platform for tracking authorized assets, running scans, and triaging findings with CVE, CVSS, and MITRE ATT&amp;CK context." />
+    <meta
+      property="og:title"
+      content="ARDI SEC — Authorised Pen Testing and Security Operations"
+    />
+    <meta
+      property="og:description"
+      content="Ardi — an autonomous penetration testing platform for tracking authorized assets, running scans, and triaging findings with CVE, CVSS, and MITRE ATT&amp;CK context."
+    />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="ARDI SEC — Authorised Pen Testing and Security Operations" />
-    <meta name="twitter:description" content="Ardi — an autonomous penetration testing platform for tracking authorized assets, running scans, and triaging findings with CVE, CVSS, and MITRE ATT&amp;CK context." />
+    <meta
+      name="twitter:title"
+      content="ARDI SEC — Authorised Pen Testing and Security Operations"
+    />
+    <meta
+      name="twitter:description"
+      content="Ardi — an autonomous penetration testing platform for tracking authorized assets, running scans, and triaging findings with CVE, CVSS, and MITRE ATT&amp;CK context."
+    />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="color-scheme" content="light dark" />
-    <!--
-      Applies the saved or system theme before first paint. This must be inline
-      and blocking: doing it from React means the page renders in the wrong
-      theme for a frame and visibly flashes. Light is the default, so an
-      unreadable value or a blocked script degrades to the intended theme.
-    -->
-    <script>
-      (function () {
-        try {
-          var saved = localStorage.getItem('ardi-theme');
-          var prefersDark =
-            window.matchMedia &&
-            window.matchMedia('(prefers-color-scheme: dark)').matches;
-          if (saved === 'dark' || (saved !== 'light' && prefersDark)) {
-            document.documentElement.classList.add('dark');
-          }
-        } catch (e) {
-          /* Private mode can throw on localStorage. Fall through to light. */
-        }
-      })();
-    </script>
+    <meta name="color-scheme" content="dark" />
   </head>
   <body>
     <div id="root"></div>

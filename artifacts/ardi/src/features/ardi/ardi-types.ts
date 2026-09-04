@@ -6,8 +6,19 @@ export type ArdiStatus = {
 
 export type ArdiMessage = {
   id: string;
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
   tools?: string[];
 };
 
+export type ArdiConfirmation = {
+  name: string;
+  label: string;
+  input: unknown;
+};
+
+export type ArdiCompletedAction = {
+  message: string;
+  href: string;
+  linkLabel: string;
+};
