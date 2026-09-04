@@ -64,6 +64,10 @@
   .ardi-v2-hero-media video,.ardi-v2-hero-scene-image{object-position:62% center}
   .ardi-v2-hero-fade{background:linear-gradient(180deg,rgba(16,12,42,.05) 35%,#100c2a 100%),linear-gradient(90deg,rgba(16,12,42,.42),transparent 72%)}
   .ardi-v2-hero-content{z-index:1;justify-content:flex-start;margin-top:-38px;padding:0 0 24px}
+  .ardi-v2-hero-copy{width:100%;min-width:0}
+  .ardi-v2-hero-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ardi-v2-hero-actions :is(.ardi-v2-button,.ardi-v2-video-button){min-width:0;padding-inline:8px;text-align:center;white-space:normal}
+  .ardi-v2-hero-actions svg{flex:0 0 auto}
   .ardi-v2-assistant-layout{grid-template-columns:1fr;gap:0;align-items:stretch;padding:0 0 38px}
   .ardi-v2-assistant-figure{width:100%;min-height:306px;border-right:1px solid var(--v2-line);border-left:1px solid var(--v2-line)}
   .ardi-v2-assistant-figure :is(img,video){position:absolute;inset:0;width:100%;height:100%;min-height:0;object-fit:cover;object-position:58% center;mix-blend-mode:normal}
@@ -160,3 +164,4 @@
 @media (max-width:699px){.ardi-v2-brand small{font-size:8px}.ardi-v2-hero-scenes button b{font-size:11px}.ardi-v2-hero-scenes button small{display:none}.ardi-v2-route-board-tools .ardi-v2-route{min-height:172px}.ardi-v2-route-board-tools .ardi-v2-route>svg{margin-top:11px}.ardi-v2-route-board-tools .ardi-v2-route h3{font-size:18px}.ardi-v2-route-board-tools .ardi-v2-route p{display:none}.ardi-v2-route-index{font-size:11px}.ardi-v2-route b{font-size:12px}.ardi-v2-footer-grid>div>p{font-size:13px}.ardi-v2-footer nav a{font-size:12px}.ardi-v2-footer-grid>p{font-size:12px}}
 .ardi-v2-kicker{font-size:12px}.ardi-v2-button,.ardi-v2-video-button{font-size:14px}.ardi-v2-route-index{font-size:12px}.ardi-v2-route b{font-size:13px}.ardi-v2-hero-scenes button span{font-size:11px}.ardi-v2-hero-scenes button b{font-size:13px}.ardi-v2-text-action{font-size:14px}.ardi-v2-capability>p{font-size:12px}.ardi-v2-capability>span{font-size:12px}.ardi-v2-footer nav a{font-size:14px}
 @media (min-width:700px){.ardi-v2-nav a{font-size:13px}.ardi-v2-header-start{font-size:13px}.ardi-v2-hero-scenes button small{font-size:12px}.ardi-v2-float-chat{font-size:13px}}
+@media (max-width:699px){.ardi-v2-hero-scenes button{padding-inline:8px}.ardi-v2-hero-scenes button b{font-size:12px;letter-spacing:.03em}}
