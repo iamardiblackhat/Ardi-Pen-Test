@@ -8,7 +8,7 @@ import { routes } from '@/shared/config/routes';
 type Props = {
   activeSection: string;
   onOpenAssistant: () => void;
-  onSelectSection: (section: string) => void;
+  onSelectSection?: (section: string) => void;
 };
 
 export function SecurityHeader({ activeSection, onOpenAssistant, onSelectSection }: Props) {
@@ -21,20 +21,20 @@ export function SecurityHeader({ activeSection, onOpenAssistant, onSelectSection
         <SecurityBrand onClick={closeMenu} />
         <nav className="ardi-v2-nav" aria-label="Primary navigation">
           {primaryNavigation.map((item) => (
-            <a
+            <Link
               key={item.id}
-              href={`#${item.id}`}
-              onClick={() => onSelectSection(item.id)}
+              href={item.href}
+              onClick={() => onSelectSection?.(item.id)}
               aria-current={activeSection === item.id ? 'location' : undefined}
             >
               {item.label}
-            </a>
+            </Link>
           ))}
           <Link href={routes.login}>Sign in</Link>
         </nav>
         <div className="ardi-v2-header-actions">
           <button type="button" className="ardi-v2-header-chat" onClick={onOpenAssistant}>Open ARDI</button>
-          <a href="#pen-testing" className="ardi-v2-header-start">Start Pen Test <ArrowUpRight /></a>
+          <Link href={routes.capabilities} className="ardi-v2-header-start">Explore operations <ArrowUpRight /></Link>
           <button
             type="button"
             className="ardi-v2-menu"
@@ -50,7 +50,7 @@ export function SecurityHeader({ activeSection, onOpenAssistant, onSelectSection
         <nav className="ardi-v2-mobile-nav" aria-label="Mobile navigation">
           <div className="ardi-v2-shell">
             {primaryNavigation.map((item) => (
-              <a key={item.id} href={`#${item.id}`} onClick={closeMenu}>{item.label} <ArrowRight /></a>
+              <Link key={item.id} href={item.href} onClick={closeMenu}>{item.label} <ArrowRight /></Link>
             ))}
             <button type="button" onClick={() => { closeMenu(); onOpenAssistant(); }}>Open ARDI <ArrowRight /></button>
             <Link href={routes.login} onClick={closeMenu}>Sign in <ArrowRight /></Link>
@@ -60,4 +60,3 @@ export function SecurityHeader({ activeSection, onOpenAssistant, onSelectSection
     </header>
   );
 }
-

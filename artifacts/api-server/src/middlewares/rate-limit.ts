@@ -30,7 +30,7 @@ function clientIp(req: Request): string {
 /** `max` requests per `windowMs`, keyed by client IP. */
 export function rateLimit(max: number, windowMs: number) {
   return (req: Request, res: Response, next: NextFunction): void => {
-    const key = clientIp(req);
+    const key = `${req.method}:${req.baseUrl}${req.path}:${clientIp(req)}`;
     const now = Date.now();
     const existing = windows.get(key);
 

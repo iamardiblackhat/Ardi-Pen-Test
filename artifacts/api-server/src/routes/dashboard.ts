@@ -23,7 +23,6 @@ router.get("/dashboard/stats", async (req, res): Promise<void> => {
   const openFindings = findings.filter(f => f.status === "open" || f.status === "in_progress").length;
   const criticalFindings = findings.filter(f => f.severity === "critical" && f.status === "open").length;
   const resolvedFindings = findings.filter(f => f.status === "resolved").length;
-  const complianceScore = 74; // static for demo
 
   const completedScans = scans.filter(s => s.completedAt);
   const lastScanAt = completedScans.length > 0
@@ -36,7 +35,6 @@ router.get("/dashboard/stats", async (req, res): Promise<void> => {
     openFindings,
     criticalFindings,
     resolvedFindings,
-    complianceScore,
     lastScanAt,
   }));
 });

@@ -3,6 +3,7 @@ import { z } from "zod/v4";
 import { db, findingsTable, assetsTable, scansTable } from "@workspace/db";
 import { and, eq, desc } from "drizzle-orm";
 import { researchDomain } from "./domain-research";
+import { researchOpenSources } from "./open-source-research";
 
 /**
  * ARDI Cyber's tools — read-only, over the real database.
@@ -38,7 +39,7 @@ function createDomainResearchTool() {
 }
 
 export function buildPublicCyberTools() {
-  return [createDomainResearchTool()] as const;
+  return [] as const;
 }
 
 /** Builds ARDI's cyber tools scoped to one authenticated user's own data. */
@@ -82,6 +83,28 @@ export function buildCyberTools(userId: number) {
   });
 
   const researchPublicDomain = createDomainResearchTool();
+
+  const researchPublicSources = betaZodTool({
+    name: "research_open_sources",
+    description:
+      "Run a live, cited open-source investigation across current public web sources. " +
+      "Use this for people, organisations, domains, incidents, threats, or exposed public signals. " +
+      "It supports UK, European, and global research and must be used before making current public-source claims.",
+    inputSchema: z.object({
+      subject: z.string().min(2).max(300),
+      objective: z.enum([
+        "person",
+        "organisation",
+        "domain",
+        "incident",
+        "threat",
+        "exposure",
+      ]),
+      region: z.enum(["uk", "europe", "global"]).default("global"),
+      question: z.string().min(4).max(800),
+    }),
+    run: async (input) => JSON.stringify(await researchOpenSources(input)),
+  });
 
   const generateReport = betaZodTool({
     name: "generate_report",
@@ -333,6 +356,7 @@ export function buildCyberTools(userId: number) {
   return [
     startPenTest,
     researchPublicDomain,
+    researchPublicSources,
     generateReport,
     listFindings,
     getFinding,

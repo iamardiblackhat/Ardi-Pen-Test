@@ -3,7 +3,7 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: Ardi - Autonomous Penetration Testing Platform API
+  description: ARDI Security Operations Platform API
 servers:
   - url: /api
     description: Base API path
@@ -20,8 +20,6 @@ tags:
     description: Security findings
   - name: reports
     description: Report generation
-  - name: compliance
-    description: Compliance frameworks
   - name: auth
     description: Authentication
   - name: ardi
@@ -524,54 +522,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/Report"
 
-  # Compliance
-  /compliance/frameworks:
-    get:
-      operationId: getComplianceFrameworks
-      tags: [compliance]
-      summary: Get all compliance frameworks and their status
-      responses:
-        "200":
-          description: Frameworks
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ComplianceFramework"
-
-  /compliance/frameworks/{id}:
-    get:
-      operationId: getComplianceFramework
-      tags: [compliance]
-      summary: Get detailed compliance framework with control mapping
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Framework detail
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ComplianceFrameworkDetail"
-
-  /compliance/summary:
-    get:
-      operationId: getComplianceSummary
-      tags: [compliance]
-      summary: Get overall compliance posture summary
-      responses:
-        "200":
-          description: Compliance summary
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ComplianceSummary"
-
   /ardi/status:
     get:
       operationId: getArdiStatus
@@ -712,7 +662,6 @@ components:
           openFindings,
           criticalFindings,
           resolvedFindings,
-          complianceScore,
           lastScanAt,
         ]
       properties:
@@ -725,8 +674,6 @@ components:
         criticalFindings:
           type: number
         resolvedFindings:
-          type: number
-        complianceScore:
           type: number
         lastScanAt:
           type: ["string", "null"]
@@ -1131,101 +1078,3 @@ components:
               type: string
             to:
               type: string
-
-    # Compliance
-    ComplianceFramework:
-      type: object
-      required:
-        [
-          id,
-          name,
-          version,
-          score,
-          controlsPassed,
-          controlsFailed,
-          controlsTotal,
-          lastAssessedAt,
-        ]
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        version:
-          type: string
-        score:
-          type: number
-        controlsPassed:
-          type: number
-        controlsFailed:
-          type: number
-        controlsTotal:
-          type: number
-        lastAssessedAt:
-          type: ["string", "null"]
-        status:
-          type: string
-          enum: [compliant, non_compliant, partial, not_assessed]
-
-    ComplianceFrameworkDetail:
-      type: object
-      required: [id, name, version, score, controls]
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        version:
-          type: string
-        score:
-          type: number
-        controls:
-          type: array
-          items:
-            type: object
-            required: [id, name, status, category]
-            properties:
-              id:
-                type: string
-              name:
-                type: string
-              status:
-                type: string
-                enum: [passed, failed, partial, not_assessed]
-              category:
-                type: string
-              findings:
-                type: array
-                items:
-                  type: number
-              description:
-                type: string
-
-    ComplianceSummary:
-      type: object
-      required: [overallScore, frameworks, topGaps]
-      properties:
-        overallScore:
-          type: number
-        frameworks:
-          type: array
-          items:
-            type: object
-            required: [name, score]
-            properties:
-              name:
-                type: string
-              score:
-                type: number
-        topGaps:
-          type: array
-          items:
-            type: object
-            required: [control, framework, severity]
-            properties:
-              control:
-                type: string
-              framework:
-                type: string
-              severity:
-                type: string

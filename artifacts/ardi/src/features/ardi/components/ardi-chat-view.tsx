@@ -46,7 +46,9 @@ export function ArdiChatView({
               {chat.status === null
                 ? "Connecting ARDI…"
                 : chat.status.configured
-                  ? "Ask about your security workspace. ARDI uses account-scoped tools before making claims."
+                  ? authenticated
+                    ? "Ask ARDI to investigate public sources or work with the real assets, scans, findings, and reports in your workspace."
+                    : "Ask ARDI which investigation or security operation fits your question. You can review every capability before creating a workspace."
                   : "ARDI is not connected to an approved model in this environment."}
             </p>
             <div className="grid gap-2">
@@ -144,7 +146,9 @@ export function ArdiChatView({
           placeholder={
             chat.status?.configured === false
               ? "ARDI is not configured"
-              : "Ask ARDI to investigate or start a Pen Test…"
+              : authenticated
+                ? "Ask ARDI to investigate, assess, or report…"
+                : "Ask which security operation fits…"
           }
           disabled={
             chat.streaming ||

@@ -23,6 +23,7 @@ const router = Router();
 const MAX_MESSAGES = 40;
 const MAX_MESSAGE_CHARS = 8_000;
 const actionLimiter = rateLimit(12, 60_000);
+const chatLimiter = rateLimit(20, 60_000);
 
 /**
  * ARDI serves both the anonymous landing page and the authenticated app, so
@@ -81,7 +82,7 @@ router.post(
 );
 
 // POST /api/ardi/chat — Server-Sent Events.
-router.post("/ardi/chat", async (req, res): Promise<void> => {
+router.post("/ardi/chat", chatLimiter, async (req, res): Promise<void> => {
   const body = req.body as { messages?: unknown; context?: unknown };
 
   if (!Array.isArray(body.messages) || body.messages.length === 0) {

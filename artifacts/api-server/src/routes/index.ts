@@ -5,7 +5,6 @@ import assetsRouter from "./assets";
 import scansRouter from "./scans";
 import findingsRouter from "./findings";
 import reportsRouter from "./reports";
-import complianceRouter from "./compliance";
 import dashboardRouter from "./dashboard";
 import osintRouter from "./osint";
 import ardiRouter from "./ardi";
@@ -29,7 +28,6 @@ router.use(assetsRouter);
 router.use(scansRouter);
 router.use(findingsRouter);
 router.use(reportsRouter);
-router.use(complianceRouter);
 router.use(dashboardRouter);
 router.use(osintRouter);
 

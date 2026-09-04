@@ -34,11 +34,11 @@ export function SecurityHero(props: Props) {
       </div>
       <div className="ardi-v2-shell ardi-v2-hero-content">
         <div className="ardi-v2-hero-copy">
-          <p className="ardi-v2-kicker"><i /> ARDI SEC / AUTHORISED PEN TESTING</p>
-          <h1 id="ardi-hero-title">Scope it.<br />Run the test.<br /><em>See the proof.</em></h1>
-          <p className="ardi-v2-hero-lead">Pen Testing, evidence, OSINT, MITRE context, reports, and ARDI-assisted security work in one operating surface.</p>
+          <p className="ardi-v2-kicker"><i /> ARDI SEC / SECURITY OPERATIONS</p>
+          <h1 id="ardi-hero-title">Find the signal.<br />Run the work.<br /><em>See the proof.</em></h1>
+          <p className="ardi-v2-hero-lead">Investigate people, organisations, domains, incidents, and threats from current public evidence. Test authorised systems and turn verified findings into action.</p>
           <div className="ardi-v2-hero-actions">
-            <Link href={routes.scans} className="ardi-v2-button ardi-v2-button-primary">Start Pen Test <ArrowRight /></Link>
+            <Link href={routes.capabilities} className="ardi-v2-button ardi-v2-button-primary">Explore capabilities <ArrowRight /></Link>
             <button type="button" className="ardi-v2-button ardi-v2-button-chat" onClick={props.onOpenAssistant}>Execute with ARDI <ArrowRight /></button>
             <button type="button" className="ardi-v2-video-button" onClick={props.onToggle} aria-controls="ardi-v2-hero-scenes" aria-pressed={props.isPlaying}>
               {props.isPlaying ? <Pause /> : <Play />} {props.isPlaying ? 'Pause scenes' : 'Play scenes'}
@@ -52,12 +52,11 @@ export function SecurityHero(props: Props) {
             ))}
           </div>
         </div>
-        <aside className="ardi-v2-hero-rail" aria-label="Authorised Pen Test workflow">
-          <strong>How an authorised Pen Test runs</strong>
-          <span><b>01</b> Confirm scope</span><span><b>02</b> Start assessment</span><span><b>03</b> Review evidence</span><span><b>04</b> Report action</span>
+        <aside className="ardi-v2-hero-rail" aria-label="ARDI security operation workflow">
+          <strong>How ARDI turns a question into action</strong>
+          <span><b>01</b> Choose the outcome</span><span><b>02</b> Investigate the evidence</span><span><b>03</b> Run approved checks</span><span><b>04</b> Produce the result</span>
         </aside>
       </div>
     </section>
   );
 }
-

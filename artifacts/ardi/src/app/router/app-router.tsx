@@ -6,6 +6,7 @@ import { PageLoading } from '@/shared/ui/page-state';
 import { routes } from '@/shared/config/routes';
 
 const SecurityHomePage = lazy(() => import('@/features/security-home/security-home-page'));
+const PublicCapabilitiesPage = lazy(() => import('@/features/capabilities/public-capabilities-page'));
 const Login = lazy(() => import('@/pages/login'));
 const Register = lazy(() => import('@/pages/register'));
 const Onboarding = lazy(() => import('@/pages/onboarding'));
@@ -30,6 +31,7 @@ type PageComponent = ComponentType<Record<string, never>>;
 
 const publicRoutes: Array<{ path: string; component: PageComponent }> = [
   { path: routes.home, component: SecurityHomePage },
+  { path: routes.capabilities, component: PublicCapabilitiesPage },
   { path: routes.login, component: Login },
   { path: routes.register, component: Register },
   { path: routes.terms, component: Terms },

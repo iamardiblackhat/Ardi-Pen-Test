@@ -27,7 +27,7 @@ export function SecurityAssistantSection({ onOpenAssistant }: { onOpenAssistant:
         <div className="ardi-v2-assistant-copy">
           <p className="ardi-v2-kicker"><i /> SITE-WIDE ASSISTANT</p>
           <h2 id="assistant-title">Ask, navigate, and execute from ARDI.</h2>
-          <p>ARDI can inspect authenticated assets, scans, and findings, route users across the complete product, and start a confirmed Pen Test against an already authorised target.</p>
+          <p>ARDI can run sourced open-web investigations, map domain infrastructure, inspect authenticated assets and findings, start confirmed testing against approved targets, and generate reports from the real work.</p>
           <div className="ardi-v2-assistant-actions"><button type="button" className="ardi-v2-button ardi-v2-button-primary" onClick={onOpenAssistant}>Open ARDI command <ArrowRight /></button></div>
         </div>
         <div className="ardi-v2-assistant-meta"><span>ACCESS</span><b>SITE-WIDE</b><span>DATA</span><b>USER-SCOPED</b><span>EXECUTION</span><b>CONFIRMED</b></div>

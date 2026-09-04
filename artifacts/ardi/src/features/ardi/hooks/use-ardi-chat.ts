@@ -10,9 +10,9 @@ import { readArdiStream } from "@/features/ardi/lib/read-ardi-stream";
 
 const PUBLIC_SUGGESTIONS = [
   "What does ARDI SEC actually do?",
-  "How does the Pen Test workflow work?",
-  "What can I research with OSINT?",
-  "How do I get started?",
+  "What investigations can ARDI run?",
+  "Show me the security testing workflow",
+  "Which capability fits my question?",
 ];
 
 const messageId = () =>

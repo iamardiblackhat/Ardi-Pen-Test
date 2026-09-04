@@ -125,7 +125,7 @@ export async function* runOpenAiCompat(
           body: JSON.stringify({
             model,
             messages: convo,
-            tools,
+            ...(tools.length ? { tools } : {}),
             stream: true,
             temperature: 0.4,
             // Reasoning models (qwen3, deepseek-r1, …) spend tokens thinking
