@@ -4,6 +4,8 @@ import {
   enrichFinding,
   priorityScore,
   emptyContext,
+  loadIntelligenceFeed,
+  type IntelligenceFeed,
   type ThreatContext,
 } from "@workspace/threat-intel";
 import { logger } from "./logger";
@@ -33,6 +35,23 @@ if (config.enabled) {
 
 export function threatIntelEnabled(): boolean {
   return config.enabled;
+}
+
+export function threatIntelPlatformUrl(): string | null {
+  return config.url;
+}
+
+export async function getThreatIntelHealth(): Promise<{ version: string; supported: boolean }> {
+  if (!client) throw new Error("Threat intelligence is not configured.");
+  return client.healthCheck();
+}
+
+export async function getIntelligenceFeed(options: {
+  search?: string;
+  firstPerType?: number;
+} = {}): Promise<IntelligenceFeed> {
+  if (!client) throw new Error("Threat intelligence is not configured.");
+  return loadIntelligenceFeed(client, options);
 }
 
 export interface EnrichedThreat extends ThreatContext {

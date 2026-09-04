@@ -14,6 +14,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "0.115.0",
     "@workspace/db": "workspace:*",
+    "@workspace/threat-intel": "workspace:*",
     "drizzle-orm": "catalog:",
     "zod": "catalog:"
   },

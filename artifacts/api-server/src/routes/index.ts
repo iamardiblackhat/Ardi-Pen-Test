@@ -8,6 +8,7 @@ import reportsRouter from "./reports";
 import dashboardRouter from "./dashboard";
 import osintRouter from "./osint";
 import ardiRouter from "./ardi";
+import intelligenceRouter from "./intelligence";
 import { requireAuth } from "../middlewares/require-auth";
 
 const router: IRouter = Router();
@@ -30,5 +31,6 @@ router.use(findingsRouter);
 router.use(reportsRouter);
 router.use(dashboardRouter);
 router.use(osintRouter);
+router.use(intelligenceRouter);
 
 export default router;

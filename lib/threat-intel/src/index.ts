@@ -1,5 +1,11 @@
 export { OpenCtiClient, OpenCtiError, type OpenCtiClientOptions } from "./opencti";
 export {
+  loadIntelligenceFeed,
+  type IntelligenceFeed,
+  type IntelligenceRecord,
+  type IntelligenceRecordKind,
+} from "./opencti";
+export {
   enrichFinding,
   enrichFindings,
   emptyContext,

@@ -12,7 +12,7 @@
  */
 
 /** OpenCTI releases this client has been exercised against. */
-export const SUPPORTED_OPENCTI_MAJOR = 6;
+export const SUPPORTED_OPENCTI_MAJOR = 7;
 
 export type FilterOperator = "eq" | "not_eq" | "gt" | "lt" | "match";
 export type FilterMode = "and" | "or";
@@ -85,6 +85,35 @@ export interface OpenCtiThreatRef {
   name: string;
   description: string | null;
   aliases: string[] | null;
+}
+
+export type IntelligenceRecordKind =
+  | "campaign"
+  | "threat-actor"
+  | "malware"
+  | "attack-pattern"
+  | "indicator"
+  | "report"
+  | "vulnerability";
+
+export interface IntelligenceRecord {
+  id: string;
+  standardId: string;
+  kind: IntelligenceRecordKind;
+  name: string;
+  description: string | null;
+  aliases: string[];
+  confidence: number | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+  reference: string | null;
+  pattern: string | null;
+}
+
+export interface IntelligenceFeed {
+  generatedAt: string;
+  totals: Record<IntelligenceRecordKind, number>;
+  records: IntelligenceRecord[];
 }
 
 export interface GraphQLError {

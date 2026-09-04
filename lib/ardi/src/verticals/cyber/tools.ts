@@ -4,6 +4,7 @@ import { db, findingsTable, assetsTable, scansTable } from "@workspace/db";
 import { and, eq, desc } from "drizzle-orm";
 import { researchDomain } from "./domain-research";
 import { researchOpenSources } from "./open-source-research";
+import { searchThreatIntelligence } from "./threat-intelligence";
 
 /**
  * ARDI Cyber's tools — read-only, over the real database.
@@ -104,6 +105,19 @@ export function buildCyberTools(userId: number) {
       question: z.string().min(4).max(800),
     }),
     run: async (input) => JSON.stringify(await researchOpenSources(input)),
+  });
+
+  const searchLiveThreatIntelligence = betaZodTool({
+    name: "search_threat_intelligence",
+    description:
+      "Search ARDI's live threat intelligence records for campaigns, threat actors, " +
+      "malware, indicators, vulnerabilities, reports, and attack techniques. Use this " +
+      "before answering questions about known threats or current intelligence records.",
+    inputSchema: z.object({
+      query: z.string().min(2).max(200),
+      limit: z.number().int().min(1).max(20).default(10),
+    }),
+    run: async (input) => JSON.stringify(await searchThreatIntelligence(input)),
   });
 
   const generateReport = betaZodTool({
@@ -357,6 +371,7 @@ export function buildCyberTools(userId: number) {
     startPenTest,
     researchPublicDomain,
     researchPublicSources,
+    searchLiveThreatIntelligence,
     generateReport,
     listFindings,
     getFinding,

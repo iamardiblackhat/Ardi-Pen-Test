@@ -18,5 +18,6 @@ export const routes = {
   reports: '/reports',
   mitre: '/mitre',
   osint: '/osint',
+  intelligence: '/intelligence',
   settings: '/settings',
 } as const;

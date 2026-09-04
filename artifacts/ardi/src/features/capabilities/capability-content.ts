@@ -5,6 +5,7 @@ import {
   FileSearch2,
   Globe2,
   Network,
+  Radar,
   type LucideIcon,
 } from 'lucide-react';
 import { routes } from '@/shared/config/routes';
@@ -69,9 +70,20 @@ export const publicCapabilities: PublicCapability[] = [
   {
     id: 'threat-context',
     code: '05',
-    label: 'Threat context',
-    title: 'Connect a finding to how attacks actually unfold.',
-    summary: 'Translate verified findings into attack tactics and techniques, so teams can understand the likely path and prioritise the controls that interrupt it.',
+    label: 'Threat intelligence',
+    title: 'Search the campaigns, actors, malware, and techniques behind real attacks.',
+    summary: 'Use a live connected intelligence workspace to investigate known threats, track their relationships, and add current context to security decisions.',
+    outcomes: ['Live campaign and actor records', 'Malware and indicator research', 'Attack-technique context', 'Searchable source intelligence'],
+    coverage: 'Live connected intelligence',
+    workspaceHref: routes.intelligence,
+    icon: Radar,
+  },
+  {
+    id: 'attack-context',
+    code: '06',
+    label: 'Attack-path context',
+    title: 'Connect verified findings to how attacks unfold.',
+    summary: 'Translate verified findings into attack tactics and techniques, so teams can understand likely paths and prioritise controls that interrupt them.',
     outcomes: ['Attack-technique mapping', 'Tactic-level coverage', 'Evidence-linked context', 'Priority without inflated claims'],
     coverage: 'Built from verified findings',
     workspaceHref: routes.mitre,
@@ -79,7 +91,7 @@ export const publicCapabilities: PublicCapability[] = [
   },
   {
     id: 'evidence-reporting',
-    code: '06',
+    code: '07',
     label: 'Evidence and reporting',
     title: 'Move from investigation to a defensible result.',
     summary: 'Review the real work, preserve the evidence, track remediation, and generate a technical or executive report from the assessment data already in your workspace.',

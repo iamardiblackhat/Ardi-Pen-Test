@@ -86,3 +86,36 @@ export const THREATS_RELATED_TO_ENTITY = `
     }
   }
 `;
+
+export const INTELLIGENCE_FEED = `
+  query ArdiIntelligenceFeed($first: Int!, $search: String) {
+    campaigns(first: $first, search: $search) {
+      pageInfo { globalCount }
+      edges { node { id standard_id name description aliases created modified confidence } }
+    }
+    intrusionSets(first: $first, search: $search) {
+      pageInfo { globalCount }
+      edges { node { id standard_id name description aliases created modified confidence } }
+    }
+    malwares(first: $first, search: $search) {
+      pageInfo { globalCount }
+      edges { node { id standard_id name description aliases created modified confidence } }
+    }
+    attackPatterns(first: $first, search: $search) {
+      pageInfo { globalCount }
+      edges { node { id standard_id name description aliases created modified confidence x_mitre_id } }
+    }
+    indicators(first: $first, search: $search) {
+      pageInfo { globalCount }
+      edges { node { id standard_id name description created modified confidence pattern } }
+    }
+    reports(first: $first, search: $search) {
+      pageInfo { globalCount }
+      edges { node { id standard_id name description created modified confidence report_types } }
+    }
+    vulnerabilities(first: $first, search: $search) {
+      pageInfo { globalCount }
+      edges { node { id standard_id name description created modified confidence x_opencti_cvss_base_severity } }
+    }
+  }
+`;

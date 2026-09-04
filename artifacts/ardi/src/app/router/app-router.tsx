@@ -19,6 +19,7 @@ const Findings = lazy(() => import('@/pages/findings'));
 const Reports = lazy(() => import('@/pages/reports'));
 const Mitre = lazy(() => import('@/pages/mitre'));
 const Osint = lazy(() => import('@/pages/osint'));
+const Intelligence = lazy(() => import('@/features/intelligence/intelligence-page'));
 const Settings = lazy(() => import('@/pages/settings'));
 const NotFound = lazy(() => import('@/pages/not-found'));
 const publicInfo = import('@/pages/public-info');
@@ -51,6 +52,7 @@ const workspaceRoutes: Array<{ path: string; component: PageComponent }> = [
   { path: routes.reports, component: Reports },
   { path: routes.mitre, component: Mitre },
   { path: routes.osint, component: Osint },
+  { path: routes.intelligence, component: Intelligence },
   { path: routes.settings, component: Settings },
 ];
 

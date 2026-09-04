@@ -9,7 +9,9 @@ import {
   FileText,
   Settings,
   Globe2,
+  Radar,
 } from 'lucide-react';
+import { routes } from '@/shared/config/routes';
 import { cn } from '@workspace/ardi-ds/lib/utils';
 import { Avatar, AvatarFallback } from '@workspace/ardi-ds/components/ui/avatar';
 import { useGetMe, getGetMeQueryKey } from '@workspace/api-client-react';
@@ -21,6 +23,7 @@ const navItems = [
   { path: '/scans', label: 'Pen Testing', icon: Scan },
   { path: '/findings', label: 'Findings', icon: AlertTriangle },
   { path: '/osint', label: 'OSINT research', icon: Globe2 },
+  { path: routes.intelligence, label: 'Threat intelligence', icon: Radar },
   { path: '/mitre', label: 'MITRE ATT&CK', icon: Grid3x3 },
   { path: '/reports', label: 'Reports', icon: FileText },
   { path: '/settings', label: 'Settings', icon: Settings },
@@ -31,6 +34,7 @@ const mobileNavItems = [
   navItems.find((item) => item.path === '/scans')!,
   navItems.find((item) => item.path === '/findings')!,
   navItems.find((item) => item.path === '/osint')!,
+  navItems.find((item) => item.path === routes.intelligence)!,
 ];
 
 export function AppSidebar() {
@@ -149,7 +153,7 @@ export function MobileBottomNav() {
             aria-current={isActive ? 'page' : undefined}
           >
             <Icon className="h-5 w-5" />
-            <span className="max-w-full truncate">{item.label === 'Dashboard' ? 'Home' : item.label === 'Intelligence' ? 'Intel' : item.label === 'OSINT research' ? 'OSINT' : item.label}</span>
+            <span className="max-w-full truncate">{item.label === 'Dashboard' ? 'Home' : item.path === routes.intelligence ? 'Intel' : item.label === 'OSINT research' ? 'OSINT' : item.label}</span>
           </Link>
         );
       })}
