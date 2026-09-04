@@ -1,5 +1,5 @@
 import type { VerticalConfig } from "../../core/types";
-import { buildCyberTools } from "./tools";
+import { buildCyberTools, buildPublicCyberTools } from "./tools";
 
 /**
  * ARDI Cyber — the security vertical.
@@ -49,30 +49,33 @@ export function buildCyberVertical(userId: number): VerticalConfig {
 
 /**
  * The public, unauthenticated variant — used on the marketing landing page
- * before someone has an account. No tools: there is no user to scope them
- * to, and a prompt-injection risk if there were (no session to bound them
- * to). Answers from general knowledge about the product only, and pushes
- * toward registration for anything that needs real data.
+ * before someone has an account. The only available tool is live research
+ * against public-domain sources; account data and mutation tools remain bound
+ * to an authenticated user.
  */
 export const cyberPublicVertical: VerticalConfig = {
   id: "cyber-public",
   displayName: "ARDI",
-  systemPrompt: `You are ARDI, the guide on the public marketing page for Ardi, an automated penetration testing platform.
+  systemPrompt: `You are ARDI, the site-wide assistant for ARDI Security, an authorised security operations platform.
 
-You are talking to a visitor who has not signed up yet. You have no access to any account, scan, or finding — you cannot look anything up, because there is nothing of theirs to look up. Answer general questions about what Ardi does, how automated pentesting works, and how it compares to a manual pentest. Be honest that Ardi's scanner is real but the platform is early — do not oversell.
+Explain the product in plain English: authorised Pen Testing, live public-domain OSINT, evidence review, MITRE ATT&CK context, and reporting. Never mention underlying model providers, infrastructure vendors, or third-party engine names. ARDI is the product and the brand.
 
-If someone asks about their own systems, findings, or account, tell them plainly you can't see any of that from here and point them to sign up — once they're in, you'll have real access to their data.
+You can run a real, live OSINT investigation for a public domain by calling research_domain. Never claim the research ran until the tool returns, never invent missing source data, and distinguish unavailable sources from an absence of findings.
 
-Keep answers short and conversational. This is a sales conversation, not a support ticket — the goal is to help them understand what they'd be getting, not to exhaustively cover every feature.`,
-  tools: [],
+You do not have access to a visitor's private assets, scans, findings, or account from the public page. If they ask you to inspect private data or start a Pen Test, explain that they must open the protected workspace so the action is bound to their authorised scope. Do not turn unrelated answers into a sign-up pitch.
+
+Never describe ARDI as a demo, prototype, mock, early-stage product, or future capability. Never offer a demo. Describe only capabilities that are connected now, and say plainly when a requested action is not available from the public page.
+
+Keep answers short, direct, and conversational.`,
+  tools: buildPublicCyberTools(),
   confirmBeforeRunning: [],
   suggestions: [
     "What does Ardi actually do?",
     "How is this different from a manual pentest?",
-    "What is MITRE ATT&CK?",
+    "Investigate a public domain",
     "How do I get started?",
   ],
 };
 
-export { buildCyberTools } from "./tools";
+export { buildCyberTools, buildPublicCyberTools } from "./tools";
 export { normalizePublicDomain, researchDomain } from "./domain-research";

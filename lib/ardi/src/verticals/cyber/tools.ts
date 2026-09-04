@@ -20,6 +20,27 @@ import { researchDomain } from "./domain-research";
 
 const SEVERITIES = ["critical", "high", "medium", "low", "info"] as const;
 
+function createDomainResearchTool() {
+  return betaZodTool({
+    name: "research_domain",
+    description:
+      "Run a live OSINT investigation for a public domain using domain registration, " +
+      "DNS, and certificate-transparency sources. Never invent missing source data.",
+    inputSchema: z.object({
+      domain: z
+        .string()
+        .min(4)
+        .max(253)
+        .describe("A public domain such as example.com."),
+    }),
+    run: async ({ domain }) => JSON.stringify(await researchDomain(domain)),
+  });
+}
+
+export function buildPublicCyberTools() {
+  return [createDomainResearchTool()] as const;
+}
+
 /** Builds ARDI's cyber tools scoped to one authenticated user's own data. */
 export function buildCyberTools(userId: number) {
   const startPenTest = betaZodTool({
@@ -60,20 +81,7 @@ export function buildCyberTools(userId: number) {
     },
   });
 
-  const researchPublicDomain = betaZodTool({
-    name: "research_domain",
-    description:
-      "Run a live OSINT investigation for a public domain using domain registration, " +
-      "DNS, and certificate-transparency sources. Never invent missing source data.",
-    inputSchema: z.object({
-      domain: z
-        .string()
-        .min(4)
-        .max(253)
-        .describe("A public domain such as example.com."),
-    }),
-    run: async ({ domain }) => JSON.stringify(await researchDomain(domain)),
-  });
+  const researchPublicDomain = createDomainResearchTool();
 
   const generateReport = betaZodTool({
     name: "generate_report",
