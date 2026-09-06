@@ -8,7 +8,7 @@ import { IntelligenceRecordList } from "./components/intelligence-record-list";
 import { LiveResearch } from "./components/live-research";
 import { IntelligenceBreakdown } from "./components/intelligence-breakdown";
 import "./intelligence-dashboard.css";
-import { Link, useLocation } from "wouter";
+import { Link } from "wouter";
 import { ArdiLauncher, ArdiPanel } from "@/components/ardi-panel";
 import { auth } from "@/lib/auth";
 import { routes } from "@/shared/config/routes";
@@ -19,19 +19,13 @@ export default function IntelligencePage() {
   const [query, setQuery] = useState(initialSearch);
   const [search, setSearch] = useState(initialSearch);
   const [ardiOpen, setArdiOpen] = useState(false);
-  const [, navigate] = useLocation();
   const [feed, setFeed] = useState<IntelligenceFeed | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [reloadKey, setReloadKey] = useState(0);
   const signedIn = auth.isAuthenticated();
-  const loginUrl = `${routes.login}?next=intelligence&search=${encodeURIComponent(query.trim())}`;
 
   useEffect(() => {
-    if (!signedIn) {
-      setLoading(false);
-      return;
-    }
     const controller = new AbortController();
     setLoading(true);
     setError("");
@@ -52,15 +46,9 @@ export default function IntelligencePage() {
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-  }, [search, reloadKey, signedIn]);
+  }, [search, reloadKey]);
 
   function runSearch(value: string) {
-    if (!signedIn) {
-      navigate(
-        `${routes.login}?next=intelligence&search=${encodeURIComponent(value)}`,
-      );
-      return;
-    }
     setQuery(value);
     setSearch(value);
     setReloadKey((revision) => revision + 1);
@@ -75,7 +63,7 @@ export default function IntelligencePage() {
         >
           <Link href={routes.home}>ARDI SEC</Link>
           <Link href={routes.capabilities}>All tools</Link>
-          <Link href={signedIn ? routes.dashboard : loginUrl}>
+          <Link href={signedIn ? routes.dashboard : routes.login}>
             {signedIn ? "Your workspace" : "Sign in"}
           </Link>
         </nav>
@@ -90,23 +78,6 @@ export default function IntelligencePage() {
         {loading ? (
           <PageLoading label="Loading live threat intelligence" />
         ) : null}
-        {!signedIn ? (
-          <section className="rounded-xl border border-cyan-300/30 p-5">
-            <h2 className="text-xl font-semibold">
-              Sign in to search the live intelligence collection
-            </h2>
-            <p className="mt-2">
-              Choose what to search here, then sign in to run it. Your search
-              will be kept.
-            </p>
-            <Link
-              href={loginUrl}
-              className="mt-4 inline-block rounded-lg bg-cyan-200 px-5 py-3 font-semibold text-indigo-950"
-            >
-              Sign in
-            </Link>
-          </section>
-        ) : null}
         {error ? (
           <PageError
             title="Live intelligence is unavailable"
@@ -117,7 +88,7 @@ export default function IntelligencePage() {
         {!loading && !error && feed ? (
           <IntelligenceSummary feed={feed} />
         ) : null}
-        {signedIn ? <LiveResearch /> : null}
+        <LiveResearch />
         {feed && !loading && !error ? (
           <IntelligenceBreakdown feed={feed} />
         ) : null}

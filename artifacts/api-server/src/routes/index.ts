@@ -22,6 +22,7 @@ const router: IRouter = Router();
 router.use(healthRouter);
 router.use(authRouter);
 router.use(ardiRouter);
+router.use(intelligenceRouter);
 
 router.use(requireAuth);
 
@@ -31,6 +32,5 @@ router.use(findingsRouter);
 router.use(reportsRouter);
 router.use(dashboardRouter);
 router.use(osintRouter);
-router.use(intelligenceRouter);
 
 export default router;

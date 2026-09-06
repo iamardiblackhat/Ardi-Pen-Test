@@ -18,6 +18,14 @@ export function LiveResearch() {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const fields = new FormData(event.currentTarget);
+    if (!auth.isAuthenticated()) {
+      const params = new URLSearchParams({
+        next: "intelligence",
+        search: String(fields.get("subject") ?? ""),
+      });
+      window.location.assign(`/login?${params.toString()}`);
+      return;
+    }
     request.current?.abort();
     const controller = new AbortController();
     request.current = controller;
@@ -113,7 +121,11 @@ export function LiveResearch() {
           disabled={loading}
           className="min-h-12 rounded-lg bg-cyan-200 px-5 font-semibold text-indigo-950 disabled:opacity-60"
         >
-          {loading ? "Searching public sources…" : "Run live research"}
+          {loading
+            ? "Searching public sources…"
+            : auth.isAuthenticated()
+              ? "Run live research"
+              : "Sign in to run research"}
         </button>
       </form>
       {loading ? (
