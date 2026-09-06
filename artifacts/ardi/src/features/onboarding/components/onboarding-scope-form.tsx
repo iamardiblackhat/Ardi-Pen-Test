@@ -50,7 +50,7 @@ export function OnboardingScopeForm(props: Props) {
           required
           value={props.assetName}
           onChange={(event) => props.onAssetNameChange(event.target.value)}
-          placeholder="Production web app"
+          placeholder="Name this target"
         />
       </div>
       <div className="space-y-2">
@@ -83,7 +83,7 @@ export function OnboardingScopeForm(props: Props) {
           required
           value={props.assetTarget}
           onChange={(event) => props.onAssetTargetChange(event.target.value)}
-          placeholder="https://app.example.com"
+          placeholder="Enter the URL, hostname, or IP address"
         />
       </div>
       <label className="flex items-start gap-3 rounded-xl border border-cyan-300/20 bg-cyan-300/5 p-4 text-base leading-6">

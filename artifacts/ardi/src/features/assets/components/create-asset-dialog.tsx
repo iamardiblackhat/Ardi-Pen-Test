@@ -93,7 +93,7 @@ export function CreateAssetDialog({
             <Input
               id="asset-name"
               required
-              placeholder="Production API"
+              placeholder="Name this target"
               value={name}
               onChange={(event) => setName(event.target.value)}
             />
@@ -120,7 +120,7 @@ export function CreateAssetDialog({
             <Input
               id="asset-target"
               required
-              placeholder="https://api.example.com"
+              placeholder="Enter the URL, hostname, or IP address"
               value={target}
               onChange={(event) => setTarget(event.target.value)}
             />
@@ -132,7 +132,7 @@ export function CreateAssetDialog({
             </Label>
             <Input
               id="asset-description"
-              placeholder="Customer-facing REST API"
+              placeholder="Add notes for your team"
               value={description}
               onChange={(event) => setDescription(event.target.value)}
             />

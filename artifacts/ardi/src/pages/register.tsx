@@ -69,7 +69,7 @@ export default function Register() {
             <Input
               id="name"
               type="text"
-              placeholder="Jane Smith"
+              placeholder="Enter your full name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -82,7 +82,7 @@ export default function Register() {
             <Input
               id="email"
               type="email"
-              placeholder="jane@company.com"
+              placeholder="Enter your email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -95,7 +95,7 @@ export default function Register() {
             <Input
               id="orgName"
               type="text"
-              placeholder="Acme Security Corp"
+              placeholder="Enter your organisation name"
               value={orgName}
               onChange={(e) => setOrgName(e.target.value)}
               required
