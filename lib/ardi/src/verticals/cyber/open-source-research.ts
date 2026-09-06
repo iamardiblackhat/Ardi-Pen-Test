@@ -77,7 +77,10 @@ export async function researchOpenSources(input: {
       "content-type": "application/json",
     },
     body: JSON.stringify({
-      model: process.env["ARDI_RESEARCH_MODEL"] ?? RESEARCH_MODEL,
+      model:
+        process.env["ARDI_RESEARCH_MODEL"] ??
+        process.env["ARDI_MODEL"] ??
+        RESEARCH_MODEL,
       messages: [
         {
           role: "user",
