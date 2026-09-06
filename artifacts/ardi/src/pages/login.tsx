@@ -1,19 +1,20 @@
-import { useState } from 'react';
-import { Link, useLocation } from 'wouter';
-import { Shield } from 'lucide-react';
-import { Button } from '@workspace/ardi-ds/components/ui/button';
-import { Input } from '@workspace/ardi-ds/components/ui/input';
-import { Label } from '@workspace/ardi-ds/components/ui/label';
-import { useLogin } from '@workspace/api-client-react';
-import { auth } from '@/lib/auth';
-import { useToast } from '@workspace/ardi-ds/hooks/use-toast';
-import { backendError } from '@/lib/api-error';
+import { useState } from "react";
+import { Link, useLocation } from "wouter";
+import { Shield } from "lucide-react";
+import { Button } from "@workspace/ardi-ds/components/ui/button";
+import { Input } from "@workspace/ardi-ds/components/ui/input";
+import { Label } from "@workspace/ardi-ds/components/ui/label";
+import { useLogin } from "@workspace/api-client-react";
+import { auth } from "@/lib/auth";
+import { useToast } from "@workspace/ardi-ds/hooks/use-toast";
+import { backendError } from "@/lib/api-error";
+import { authContinuation, intelligenceReturn } from "@/lib/auth-return";
 
 export default function Login() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const loginMutation = useLogin();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -23,13 +24,22 @@ export default function Login() {
       {
         onSuccess: (response) => {
           auth.setToken(response.token);
-          toast({ title: 'Login successful', description: `Welcome back, ${response.user.name}` });
-          setLocation('/dashboard');
+          toast({
+            title: "Login successful",
+            description: `Welcome back, ${response.user.name}`,
+          });
+          setLocation(
+            intelligenceReturn(window.location.search) ?? "/dashboard",
+          );
         },
         onError: (err: unknown) => {
-          toast({ title: 'Login failed', description: backendError(err, 'Incorrect email or password.'), variant: 'destructive' });
+          toast({
+            title: "Login failed",
+            description: backendError(err, "Incorrect email or password."),
+            variant: "destructive",
+          });
         },
-      }
+      },
     );
   };
 
@@ -44,7 +54,9 @@ export default function Login() {
             <Shield className="w-7 h-7 text-primary" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight">Welcome to Ardi</h1>
-          <p className="text-muted-foreground text-sm mt-2 font-mono">Sign in to your security command center</p>
+          <p className="text-muted-foreground text-sm mt-2 font-mono">
+            Sign in to your security command center
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -80,14 +92,17 @@ export default function Login() {
             disabled={loginMutation.isPending}
             data-testid="button-login"
           >
-            {loginMutation.isPending ? 'Signing in...' : 'Sign In'}
+            {loginMutation.isPending ? "Signing in..." : "Sign In"}
           </Button>
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-sm text-muted-foreground">
-            Don't have an account?{' '}
-            <Link href="/register" className="text-primary hover:underline font-medium">
+            Don't have an account?{" "}
+            <Link
+              href={`/register${authContinuation(window.location.search)}`}
+              className="text-primary hover:underline font-medium"
+            >
               Create one
             </Link>
           </p>

@@ -78,3 +78,4 @@ Keep answers short, direct, and conversational.`,
 
 export { buildCyberTools, buildPublicCyberTools } from "./tools";
 export { normalizePublicDomain, researchDomain } from "./domain-research";
+export { researchOpenSources } from "./open-source-research";

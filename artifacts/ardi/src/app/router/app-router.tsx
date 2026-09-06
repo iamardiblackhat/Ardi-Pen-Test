@@ -1,31 +1,43 @@
-import { lazy, Suspense, type ComponentType } from 'react';
-import { Route, Switch } from 'wouter';
-import { ProtectedRoute } from '@/components/protected-route';
-import { WorkspaceLayout } from '@/app/layouts/workspace-layout';
-import { PageLoading } from '@/shared/ui/page-state';
-import { routes } from '@/shared/config/routes';
+import { lazy, Suspense, type ComponentType } from "react";
+import { Route, Switch } from "wouter";
+import { ProtectedRoute } from "@/components/protected-route";
+import { WorkspaceLayout } from "@/app/layouts/workspace-layout";
+import { PageLoading } from "@/shared/ui/page-state";
+import { routes } from "@/shared/config/routes";
 
-const SecurityHomePage = lazy(() => import('@/features/security-home/security-home-page'));
-const PublicCapabilitiesPage = lazy(() => import('@/features/capabilities/public-capabilities-page'));
-const Login = lazy(() => import('@/pages/login'));
-const Register = lazy(() => import('@/pages/register'));
-const Onboarding = lazy(() => import('@/pages/onboarding'));
-const Dashboard = lazy(() => import('@/pages/dashboard'));
-const Assets = lazy(() => import('@/pages/assets'));
-const AssetDetail = lazy(() => import('@/pages/asset-detail'));
-const Scans = lazy(() => import('@/pages/scans'));
-const ScanDetail = lazy(() => import('@/pages/scan-detail'));
-const Findings = lazy(() => import('@/pages/findings'));
-const Reports = lazy(() => import('@/pages/reports'));
-const Mitre = lazy(() => import('@/pages/mitre'));
-const Osint = lazy(() => import('@/pages/osint'));
-const Intelligence = lazy(() => import('@/features/intelligence/intelligence-page'));
-const Settings = lazy(() => import('@/pages/settings'));
-const NotFound = lazy(() => import('@/pages/not-found'));
-const publicInfo = import('@/pages/public-info');
-const Terms = lazy(() => publicInfo.then((module) => ({ default: module.Terms })));
-const Privacy = lazy(() => publicInfo.then((module) => ({ default: module.Privacy })));
-const Cookies = lazy(() => publicInfo.then((module) => ({ default: module.Cookies })));
+const SecurityHomePage = lazy(
+  () => import("@/features/security-home/security-home-page"),
+);
+const PublicCapabilitiesPage = lazy(
+  () => import("@/features/capabilities/public-capabilities-page"),
+);
+const Login = lazy(() => import("@/pages/login"));
+const Register = lazy(() => import("@/pages/register"));
+const Onboarding = lazy(() => import("@/pages/onboarding"));
+const Dashboard = lazy(() => import("@/pages/dashboard"));
+const Assets = lazy(() => import("@/pages/assets"));
+const AssetDetail = lazy(() => import("@/pages/asset-detail"));
+const Scans = lazy(() => import("@/pages/scans"));
+const ScanDetail = lazy(() => import("@/pages/scan-detail"));
+const Findings = lazy(() => import("@/pages/findings"));
+const Reports = lazy(() => import("@/pages/reports"));
+const Mitre = lazy(() => import("@/pages/mitre"));
+const Osint = lazy(() => import("@/pages/osint"));
+const Intelligence = lazy(
+  () => import("@/features/intelligence/intelligence-page"),
+);
+const Settings = lazy(() => import("@/pages/settings"));
+const NotFound = lazy(() => import("@/pages/not-found"));
+const publicInfo = import("@/pages/public-info");
+const Terms = lazy(() =>
+  publicInfo.then((module) => ({ default: module.Terms })),
+);
+const Privacy = lazy(() =>
+  publicInfo.then((module) => ({ default: module.Privacy })),
+);
+const Cookies = lazy(() =>
+  publicInfo.then((module) => ({ default: module.Cookies })),
+);
 const Faq = lazy(() => publicInfo.then((module) => ({ default: module.Faq })));
 
 type PageComponent = ComponentType<Record<string, never>>;
@@ -33,6 +45,7 @@ type PageComponent = ComponentType<Record<string, never>>;
 const publicRoutes: Array<{ path: string; component: PageComponent }> = [
   { path: routes.home, component: SecurityHomePage },
   { path: routes.capabilities, component: PublicCapabilitiesPage },
+  { path: routes.intelligence, component: Intelligence },
   { path: routes.login, component: Login },
   { path: routes.register, component: Register },
   { path: routes.terms, component: Terms },
@@ -43,16 +56,15 @@ const publicRoutes: Array<{ path: string; component: PageComponent }> = [
 
 const workspaceRoutes: Array<{ path: string; component: PageComponent }> = [
   { path: routes.dashboard, component: Dashboard },
-  { path: '/assets/:id', component: AssetDetail },
+  { path: "/assets/:id", component: AssetDetail },
   { path: routes.assets, component: Assets },
-  { path: '/scans/:id', component: ScanDetail },
+  { path: "/scans/:id", component: ScanDetail },
   { path: routes.scans, component: Scans },
-  { path: '/findings/:id', component: Findings },
+  { path: "/findings/:id", component: Findings },
   { path: routes.findings, component: Findings },
   { path: routes.reports, component: Reports },
   { path: routes.mitre, component: Mitre },
   { path: routes.osint, component: Osint },
-  { path: routes.intelligence, component: Intelligence },
   { path: routes.settings, component: Settings },
 ];
 

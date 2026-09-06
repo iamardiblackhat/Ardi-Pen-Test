@@ -2,12 +2,7 @@ const RESEARCH_MODEL = "openai/gpt-oss-120b";
 
 export type ResearchRegion = "uk" | "europe" | "global";
 export type ResearchObjective =
-  | "person"
-  | "organisation"
-  | "domain"
-  | "incident"
-  | "threat"
-  | "exposure";
+  "person" | "organisation" | "domain" | "incident" | "threat" | "exposure";
 
 export type OpenSourceResearch = {
   subject: string;
@@ -36,13 +31,23 @@ function configuredEndpoint(): { endpoint: string; apiKey: string } {
   return { endpoint: `${baseUrl}/chat/completions`, apiKey };
 }
 
-function sourceUrls(content: string, executedTools: unknown[]): string[] {
-  const sourceText = `${content}\n${JSON.stringify(executedTools)}`;
-  const matches = sourceText.match(/https?:\/\/[^\s<>"')\]]+/g) ?? [];
-  return [...new Set(matches.map((url) => url.replace(/[.,;:]+$/, "")))].slice(
-    0,
-    20,
-  );
+function sourceUrls(executedTools: unknown[]): string[] {
+  const urls = new Set<string>();
+  for (const tool of executedTools) {
+    if (!tool || typeof tool !== "object") continue;
+    const results = (tool as { search_results?: { results?: unknown } })
+      .search_results?.results;
+    if (!Array.isArray(results)) continue;
+    for (const result of results) {
+      if (!result || typeof result.url !== "string") continue;
+      try {
+        const url = new URL(result.url);
+        if (url.protocol === "https:" || url.protocol === "http:")
+          urls.add(url.href);
+      } catch {}
+    }
+  }
+  return [...urls].slice(0, 20);
 }
 
 export async function researchOpenSources(input: {
@@ -53,7 +58,8 @@ export async function researchOpenSources(input: {
 }): Promise<OpenSourceResearch> {
   const subject = input.subject.trim();
   const question = input.question.trim();
-  if (!subject || !question) throw new Error("A subject and objective are required.");
+  if (!subject || !question)
+    throw new Error("A subject and objective are required.");
 
   const { endpoint, apiKey } = configuredEndpoint();
   const regionalFocus =
@@ -100,15 +106,19 @@ export async function researchOpenSources(input: {
   const payload = (await response.json()) as ResearchResponse;
   const message = payload.choices?.[0]?.message;
   const answer = message?.content?.trim();
-  if (!answer) throw new Error("Open-source research returned no usable result.");
+  if (!answer)
+    throw new Error("Open-source research returned no usable result.");
 
   const executedTools = message?.executed_tools ?? [];
+  const sources = sourceUrls(executedTools);
+  if (!sources.length)
+    throw new Error("Live research returned no verifiable search sources.");
   return {
     subject,
     objective: input.objective,
     region: input.region,
     researchedAt: new Date().toISOString(),
     answer,
-    sources: sourceUrls(answer, executedTools),
+    sources,
   };
 }

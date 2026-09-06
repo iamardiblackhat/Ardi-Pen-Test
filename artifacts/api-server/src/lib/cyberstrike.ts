@@ -53,9 +53,13 @@ export function cyberStrikeConfigured(): boolean {
  * CYBERSTRIKE_MODEL if set, otherwise takes the first provider CyberStrike has
  * credentials for and its first model. Model-agnostic by design.
  */
-async function resolveModel(): Promise<{ providerID: string; modelID: string }> {
+async function resolveModel(): Promise<{
+  providerID: string;
+  modelID: string;
+}> {
   const c = config();
-  if (c.provider && c.model) return { providerID: c.provider, modelID: c.model };
+  if (c.provider && c.model)
+    return { providerID: c.provider, modelID: c.model };
 
   const data = await api<{
     providers: { id: string; models: Record<string, unknown> }[];
@@ -63,7 +67,14 @@ async function resolveModel(): Promise<{ providerID: string; modelID: string }> 
 
   // Prefer a local/free provider first so scans don't silently spend on a paid
   // API unless the operator explicitly chose one.
-  const order = ["ollama", "ollama-cloud", "lmstudio", "openrouter", "anthropic", "openai"];
+  const order = [
+    "ollama",
+    "ollama-cloud",
+    "lmstudio",
+    "openrouter",
+    "anthropic",
+    "openai",
+  ];
   const providers = data.providers ?? [];
   const ranked = [...providers].sort(
     (a, b) => rank(order, a.id) - rank(order, b.id),
@@ -71,11 +82,14 @@ async function resolveModel(): Promise<{ providerID: string; modelID: string }> 
   for (const p of ranked) {
     const first = Object.keys(p.models ?? {})[0];
     if (first) {
-      if (c.provider && !c.model) return { providerID: c.provider, modelID: first };
+      if (c.provider && !c.model)
+        return { providerID: c.provider, modelID: first };
       return { providerID: p.id, modelID: first };
     }
   }
-  throw new Error("CyberStrike has no provider/model configured. Run `cyberstrike auth` to add one.");
+  throw new Error(
+    "CyberStrike has no provider/model configured. Run `cyberstrike auth` to add one.",
+  );
 }
 
 function rank(order: string[], id: string): number {
@@ -92,7 +106,8 @@ async function api<T>(
   init: RequestInit & { timeoutMs?: number } = {},
 ): Promise<T> {
   const c = config();
-  if (!c.password) throw new Error("CyberStrike not configured (CYBERSTRIKE_PASSWORD).");
+  if (!c.password)
+    throw new Error("CyberStrike not configured (CYBERSTRIKE_PASSWORD).");
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), init.timeoutMs ?? 30_000);
@@ -107,7 +122,12 @@ async function api<T>(
       signal: controller.signal,
     });
     if (!res.ok) {
-      throw new Error(`CyberStrike ${path} -> ${res.status} ${await res.text().catch(() => "")}`.slice(0, 300));
+      throw new Error(
+        `CyberStrike ${path} -> ${res.status} ${await res.text().catch(() => "")}`.slice(
+          0,
+          300,
+        ),
+      );
     }
     const text = await res.text();
     return (text ? JSON.parse(text) : null) as T;
@@ -119,7 +139,9 @@ async function api<T>(
 /** True if the CyberStrike server answers its health check. */
 export async function cyberStrikeHealthy(): Promise<boolean> {
   try {
-    const h = await api<{ healthy: boolean }>("/global/health", { timeoutMs: 4000 });
+    const h = await api<{ healthy: boolean }>("/global/health", {
+      timeoutMs: 4000,
+    });
     return h?.healthy === true;
   } catch {
     return false;
@@ -149,7 +171,10 @@ export async function runCyberStrikeScan(opts: {
   const model = await resolveModel();
 
   const deadline = Date.now() + (opts.deadlineMs ?? 20 * 60 * 1000);
-  opts.onProgress?.(4, `Starting CyberStrike engine (${model.providerID}/${model.modelID})`);
+  opts.onProgress?.(
+    4,
+    `Starting CyberStrike engine (${model.providerID}/${model.modelID})`,
+  );
 
   // 1. Create a session for this scan.
   const session = await api<{ id: string }>("/session", {
@@ -157,7 +182,10 @@ export async function runCyberStrikeScan(opts: {
     body: JSON.stringify({ title: opts.scanName }),
   });
   const sessionId = session.id;
-  logger.info({ sessionId, target: opts.target }, "CyberStrike session created");
+  logger.info(
+    { sessionId, target: opts.target },
+    "CyberStrike session created",
+  );
 
   // 2. Send the mission. The prompt is the whole instruction set — CyberStrike
   //    picks the skills and tools. Kept explicit about authorisation and scope.
@@ -184,20 +212,37 @@ export async function runCyberStrikeScan(opts: {
   let idleChecks = 0;
   while (Date.now() < deadline) {
     if (opts.signal?.aborted) {
-      await api(`/session/${sessionId}/abort`, { method: "POST" }).catch(() => {});
+      await api(`/session/${sessionId}/abort`, { method: "POST" }).catch(
+        () => {},
+      );
       throw new Error("cancelled");
     }
     await sleep(6000);
 
-    const vulns = await api<CyberStrikeVuln[]>(`/session/${sessionId}/vulnerability`).catch(() => []);
-    const status = await api<{ active?: boolean; running?: boolean }>(`/session/status`).catch(
-      () => ({}) as { active?: boolean; running?: boolean },
+    const vulns = await api<CyberStrikeVuln[]>(
+      `/session/${sessionId}/vulnerability`,
     );
+    const status = await api<{ active?: boolean; running?: boolean }>(
+      `/session/status`,
+    );
+    if (
+      !Array.isArray(vulns) ||
+      !status ||
+      (typeof status.active !== "boolean" &&
+        typeof status.running !== "boolean")
+    ) {
+      throw new Error(
+        "The assessment engine returned an unrecognised response; completion could not be verified.",
+      );
+    }
 
     if (vulns.length !== lastCount) {
       lastCount = vulns.length;
       idleChecks = 0;
-      opts.onProgress?.(Math.min(90, 20 + vulns.length * 8), `Found ${vulns.length} issues so far`);
+      opts.onProgress?.(
+        Math.min(90, 20 + vulns.length * 8),
+        `Found ${vulns.length} issues so far`,
+      );
     } else {
       idleChecks++;
     }
@@ -205,11 +250,31 @@ export async function runCyberStrikeScan(opts: {
     const stillRunning = status.active === true || status.running === true;
     // Settle: no new findings for several checks and the session reports idle.
     if (!stillRunning && idleChecks >= 3) break;
-    if (idleChecks >= 20) break; // hard stop on a stuck session
+    if (idleChecks >= 20) {
+      await api(`/session/${sessionId}/abort`, { method: "POST" }).catch(
+        () => undefined,
+      );
+      throw new Error("The assessment stopped responding before completion.");
+    }
   }
 
-  const vulnerabilities = await api<CyberStrikeVuln[]>(`/session/${sessionId}/vulnerability`).catch(() => []);
-  opts.onProgress?.(95, `CyberStrike finished: ${vulnerabilities.length} findings`);
+  if (Date.now() >= deadline) {
+    await api(`/session/${sessionId}/abort`, { method: "POST" }).catch(
+      () => undefined,
+    );
+    throw new Error(
+      "The assessment exceeded its time limit before completion.",
+    );
+  }
+  const vulnerabilities = await api<CyberStrikeVuln[]>(
+    `/session/${sessionId}/vulnerability`,
+  );
+  if (!Array.isArray(vulnerabilities))
+    throw new Error("The assessment returned invalid findings.");
+  opts.onProgress?.(
+    95,
+    `CyberStrike finished: ${vulnerabilities.length} findings`,
+  );
 
   return { sessionId, vulnerabilities };
 }

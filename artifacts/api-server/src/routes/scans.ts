@@ -19,7 +19,10 @@ import {
 const router = Router();
 
 async function serializeScan(s: typeof scansTable.$inferSelect) {
-  const asset = await db.select({ name: assetsTable.name }).from(assetsTable).where(eq(assetsTable.id, s.assetId));
+  const asset = await db
+    .select({ name: assetsTable.name })
+    .from(assetsTable)
+    .where(eq(assetsTable.id, s.assetId));
   return {
     id: s.id,
     name: s.name,
@@ -40,7 +43,11 @@ async function serializeScan(s: typeof scansTable.$inferSelect) {
 
 // GET /api/scans
 router.get("/scans", async (req, res): Promise<void> => {
-  const scans = await db.select().from(scansTable).where(eq(scansTable.userId, req.user!.sub)).orderBy(scansTable.createdAt);
+  const scans = await db
+    .select()
+    .from(scansTable)
+    .where(eq(scansTable.userId, req.user!.sub))
+    .orderBy(scansTable.createdAt);
   const serialized = await Promise.all(scans.map(serializeScan));
   res.json(GetScansResponse.parse(serialized));
 });
@@ -55,7 +62,15 @@ router.post("/scans", async (req, res): Promise<void> => {
   // Without this check a bad (or someone else's) assetId creates a scan that
   // fails silently: startScan() throws "Asset not found" and the row is
   // stuck at "pending" forever with no error surfaced anywhere.
-  const [asset] = await db.select({ id: assetsTable.id }).from(assetsTable).where(and(eq(assetsTable.id, parsed.data.assetId), eq(assetsTable.userId, req.user!.sub)));
+  const [asset] = await db
+    .select({ id: assetsTable.id })
+    .from(assetsTable)
+    .where(
+      and(
+        eq(assetsTable.id, parsed.data.assetId),
+        eq(assetsTable.userId, req.user!.sub),
+      ),
+    );
   if (!asset) {
     res.status(400).json({ error: `No asset with ID ${parsed.data.assetId}.` });
     return;
@@ -76,9 +91,23 @@ router.post("/scans", async (req, res): Promise<void> => {
 router.get("/scans/:id", async (req, res): Promise<void> => {
   const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const parsed = GetScanParams.safeParse({ id: parseInt(rawId, 10) });
-  if (!parsed.success) { res.status(400).json({ error: "Invalid id" }); return; }
-  const [scan] = await db.select().from(scansTable).where(and(eq(scansTable.id, parsed.data.id), eq(scansTable.userId, req.user!.sub)));
-  if (!scan) { res.status(404).json({ error: "Not found" }); return; }
+  if (!parsed.success) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
+  const [scan] = await db
+    .select()
+    .from(scansTable)
+    .where(
+      and(
+        eq(scansTable.id, parsed.data.id),
+        eq(scansTable.userId, req.user!.sub),
+      ),
+    );
+  if (!scan) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
   res.json(GetScanResponse.parse(await serializeScan(scan)));
 });
 
@@ -86,9 +115,23 @@ router.get("/scans/:id", async (req, res): Promise<void> => {
 router.post("/scans/:id/start", async (req, res): Promise<void> => {
   const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const parsed = StartScanParams.safeParse({ id: parseInt(rawId, 10) });
-  if (!parsed.success) { res.status(400).json({ error: "Invalid id" }); return; }
-  const [existing] = await db.select().from(scansTable).where(and(eq(scansTable.id, parsed.data.id), eq(scansTable.userId, req.user!.sub)));
-  if (!existing) { res.status(404).json({ error: "Not found" }); return; }
+  if (!parsed.success) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
+  const [existing] = await db
+    .select()
+    .from(scansTable)
+    .where(
+      and(
+        eq(scansTable.id, parsed.data.id),
+        eq(scansTable.userId, req.user!.sub),
+      ),
+    );
+  if (!existing) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
 
   if (existing.status === "running") {
     res.status(409).json({ error: "Scan is already running." });
@@ -104,7 +147,10 @@ router.post("/scans/:id/start", async (req, res): Promise<void> => {
     return;
   }
 
-  const [scan] = await db.select().from(scansTable).where(eq(scansTable.id, parsed.data.id));
+  const [scan] = await db
+    .select()
+    .from(scansTable)
+    .where(eq(scansTable.id, parsed.data.id));
   res.json(StartScanResponse.parse(await serializeScan(scan!)));
 });
 
@@ -112,18 +158,42 @@ router.post("/scans/:id/start", async (req, res): Promise<void> => {
 router.post("/scans/:id/stop", async (req, res): Promise<void> => {
   const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const parsed = StopScanParams.safeParse({ id: parseInt(rawId, 10) });
-  if (!parsed.success) { res.status(400).json({ error: "Invalid id" }); return; }
+  if (!parsed.success) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
   // Signal the running scanner to abort. If nothing is in flight (e.g. after
   // a restart) fall through and mark the row stopped anyway, so the UI never
   // strands on a scan that no longer exists.
-  cancelScan(parsed.data.id);
+  const [ownedScan] = await db
+    .select({ id: scansTable.id })
+    .from(scansTable)
+    .where(
+      and(
+        eq(scansTable.id, parsed.data.id),
+        eq(scansTable.userId, req.user!.sub),
+      ),
+    );
+  if (!ownedScan) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+  cancelScan(ownedScan.id);
 
   const [scan] = await db
     .update(scansTable)
     .set({ status: "stopped", completedAt: new Date() })
-    .where(and(eq(scansTable.id, parsed.data.id), eq(scansTable.userId, req.user!.sub)))
+    .where(
+      and(
+        eq(scansTable.id, parsed.data.id),
+        eq(scansTable.userId, req.user!.sub),
+      ),
+    )
     .returning();
-  if (!scan) { res.status(404).json({ error: "Not found" }); return; }
+  if (!scan) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
   res.json(StopScanResponse.parse(await serializeScan(scan)));
 });
 
@@ -131,11 +201,25 @@ router.post("/scans/:id/stop", async (req, res): Promise<void> => {
 router.get("/scans/:id/findings", async (req, res): Promise<void> => {
   const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const parsed = GetScanFindingsParams.safeParse({ id: parseInt(rawId, 10) });
-  if (!parsed.success) { res.status(400).json({ error: "Invalid id" }); return; }
-  const findings = await db.select().from(findingsTable).where(and(eq(findingsTable.scanId, parsed.data.id), eq(findingsTable.userId, req.user!.sub)));
-  const assets = await db.select().from(assetsTable).where(eq(assetsTable.userId, req.user!.sub));
-  const assetMap = new Map(assets.map(a => [a.id, a.name]));
-  const serialized = findings.map(f => ({
+  if (!parsed.success) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
+  const findings = await db
+    .select()
+    .from(findingsTable)
+    .where(
+      and(
+        eq(findingsTable.scanId, parsed.data.id),
+        eq(findingsTable.userId, req.user!.sub),
+      ),
+    );
+  const assets = await db
+    .select()
+    .from(assetsTable)
+    .where(eq(assetsTable.userId, req.user!.sub));
+  const assetMap = new Map(assets.map((a) => [a.id, a.name]));
+  const serialized = findings.map((f) => ({
     id: f.id,
     title: f.title,
     severity: f.severity,

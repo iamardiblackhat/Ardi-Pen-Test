@@ -1,4 +1,10 @@
-import { db, assetsTable, scansTable, findingsTable, activityTable } from "@workspace/db";
+import {
+  db,
+  assetsTable,
+  scansTable,
+  findingsTable,
+  activityTable,
+} from "@workspace/db";
 import { eq } from "drizzle-orm";
 import {
   runNmap,
@@ -17,7 +23,8 @@ import {
 
 /** Map a CyberStrike vulnerability onto Ardi's RawFinding shape. */
 function cyberStrikeToRaw(v: CyberStrikeVuln, target: string): RawFinding {
-  const remediation = v.recommendation ?? "Review and remediate per the evidence below.";
+  const remediation =
+    v.recommendation ?? "Review and remediate per the evidence below.";
   const evidenceParts = [
     v.attack_vector && `Attack vector: ${v.attack_vector}`,
     v.endpoint && `Endpoint: ${v.endpoint}`,
@@ -37,7 +44,11 @@ function cyberStrikeToRaw(v: CyberStrikeVuln, target: string): RawFinding {
     description: v.description ?? v.title,
     remediation,
     evidence: evidenceParts.join(" | ") || null,
-    references: v.cwe_id ? [`https://cwe.mitre.org/data/definitions/${v.cwe_id.replace(/\D/g, "")}.html`] : [],
+    references: v.cwe_id
+      ? [
+          `https://cwe.mitre.org/data/definitions/${v.cwe_id.replace(/\D/g, "")}.html`,
+        ]
+      : [],
     fingerprint: `cyberstrike:${target}:${v.id}`,
   };
 }
@@ -144,20 +155,32 @@ export function startScan(scanId: number): StartScanResult {
   return { started: true };
 }
 
-async function execute(scanId: number, controller: AbortController): Promise<void> {
+async function execute(
+  scanId: number,
+  controller: AbortController,
+): Promise<void> {
   const startedAt = Date.now();
 
-  const [scan] = await db.select().from(scansTable).where(eq(scansTable.id, scanId));
+  const [scan] = await db
+    .select()
+    .from(scansTable)
+    .where(eq(scansTable.id, scanId));
   if (!scan) throw new Error(`Scan ${scanId} not found`);
 
-  const [asset] = await db.select().from(assetsTable).where(eq(assetsTable.id, scan.assetId));
+  const [asset] = await db
+    .select()
+    .from(assetsTable)
+    .where(eq(assetsTable.id, scan.assetId));
   if (!asset) throw new Error(`Asset ${scan.assetId} not found`);
 
   await db
     .update(scansTable)
     .set({ status: "running", startedAt: new Date(), progress: 0 })
     .where(eq(scansTable.id, scanId));
-  await db.update(assetsTable).set({ status: "scanning" }).where(eq(assetsTable.id, asset.id));
+  await db
+    .update(assetsTable)
+    .set({ status: "scanning" })
+    .where(eq(assetsTable.id, asset.id));
 
   const collected: RawFinding[] = [];
 
@@ -165,7 +188,12 @@ async function execute(scanId: number, controller: AbortController): Promise<voi
     // ── Preferred engine: CyberStrike (autonomous AI pentest) ──────────────
     // If a CyberStrike server is configured and healthy, use it as the real
     // engine. It does far more than a port+template scan.
-    if (cyberStrikeConfigured() && (await cyberStrikeHealthy())) {
+    if (cyberStrikeConfigured()) {
+      if (!(await cyberStrikeHealthy())) {
+        throw new Error(
+          "The configured assessment engine is unavailable. The test did not run.",
+        );
+      }
       logger.info({ scanId }, "using CyberStrike engine");
       const run = await runCyberStrikeScan({
         target: asset.target,
@@ -176,21 +204,48 @@ async function execute(scanId: number, controller: AbortController): Promise<voi
           void setProgress(scanId, pct);
         },
       });
-      collected.push(...run.vulnerabilities.map((v) => cyberStrikeToRaw(v, asset.target)));
+      collected.push(
+        ...run.vulnerabilities.map((v) => cyberStrikeToRaw(v, asset.target)),
+      );
 
-      const written = await persistFindings(scanId, asset.id, scan.userId, collected);
-      const critical = collected.filter((f) => f.severity === "critical").length;
+      const written = await persistFindings(
+        scanId,
+        asset.id,
+        scan.userId,
+        collected,
+      );
+      const critical = collected.filter(
+        (f) => f.severity === "critical",
+      ).length;
       const high = collected.filter((f) => f.severity === "high").length;
       const duration = Math.round((Date.now() - startedAt) / 1000);
-      await db.update(scansTable).set({
-        status: "completed", completedAt: new Date(), progress: 100,
-        findingsCount: written, criticalCount: critical, highCount: high, duration,
-      }).where(eq(scansTable.id, scanId));
-      await db.update(assetsTable).set({
-        status: "active",
-        riskLevel: critical > 0 ? "critical" : high > 0 ? "high" : written > 0 ? "medium" : "low",
-        lastScannedAt: new Date(),
-      }).where(eq(assetsTable.id, asset.id));
+      await db
+        .update(scansTable)
+        .set({
+          status: "completed",
+          completedAt: new Date(),
+          progress: 100,
+          findingsCount: written,
+          criticalCount: critical,
+          highCount: high,
+          duration,
+        })
+        .where(eq(scansTable.id, scanId));
+      await db
+        .update(assetsTable)
+        .set({
+          status: "active",
+          riskLevel:
+            critical > 0
+              ? "critical"
+              : high > 0
+                ? "high"
+                : written > 0
+                  ? "medium"
+                  : "low",
+          lastScannedAt: new Date(),
+        })
+        .where(eq(assetsTable.id, asset.id));
       await db.insert(activityTable).values({
         userId: scan.userId,
         type: "scan_completed",
@@ -212,17 +267,22 @@ async function execute(scanId: number, controller: AbortController): Promise<voi
     });
     collected.push(...nmap.findings);
 
-    if (controller.signal.aborted) throw new ScanEngineError("Scan cancelled.", { code: "cancelled" });
+    if (controller.signal.aborted)
+      throw new ScanEngineError("Scan cancelled.", { code: "cancelled" });
 
     // ── Vulnerability templates (web targets only) ─────────────────────────
     // A bare host with no HTTP service has nothing for nuclei to test, and
     // running it anyway wastes minutes per scan.
     const hasWeb = nmap.findings.some(
-      (f) => /\b(80|443|8080|8443)\/tcp\b/.test(f.target) || /http/i.test(f.evidence ?? ""),
+      (f) =>
+        /\b(80|443|8080|8443)\/tcp\b/.test(f.target) ||
+        /http/i.test(f.evidence ?? ""),
     );
 
     if (hasWeb) {
-      const url = asset.target.startsWith("http") ? asset.target : `http://${asset.target}`;
+      const url = asset.target.startsWith("http")
+        ? asset.target
+        : `http://${asset.target}`;
       try {
         const nuclei = await runNuclei(url, {
           onProgress: (pct, message) => {
@@ -232,12 +292,18 @@ async function execute(scanId: number, controller: AbortController): Promise<voi
         });
         collected.push(...nuclei.findings);
         if (nuclei.skipped > 0) {
-          logger.warn({ scanId, skipped: nuclei.skipped }, "nuclei lines skipped as malformed");
+          logger.warn(
+            { scanId, skipped: nuclei.skipped },
+            "nuclei lines skipped as malformed",
+          );
         }
       } catch (error) {
         // A missing nuclei binary must not void a successful port scan.
         if (error instanceof ScanEngineError && error.code === "tool_missing") {
-          logger.warn({ scanId }, "nuclei not installed — port scan results retained");
+          await persistFindings(scanId, asset.id, scan.userId, collected);
+          throw new Error(
+            "The vulnerability checker is unavailable. Service-discovery findings were saved, but the security test is incomplete.",
+          );
         } else {
           throw error;
         }
@@ -245,7 +311,12 @@ async function execute(scanId: number, controller: AbortController): Promise<voi
     }
 
     // ── Persist ────────────────────────────────────────────────────────────
-    const written = await persistFindings(scanId, asset.id, scan.userId, collected);
+    const written = await persistFindings(
+      scanId,
+      asset.id,
+      scan.userId,
+      collected,
+    );
     const critical = collected.filter((f) => f.severity === "critical").length;
     const high = collected.filter((f) => f.severity === "high").length;
     const duration = Math.round((Date.now() - startedAt) / 1000);
@@ -267,7 +338,14 @@ async function execute(scanId: number, controller: AbortController): Promise<voi
       .update(assetsTable)
       .set({
         status: "active",
-        riskLevel: critical > 0 ? "critical" : high > 0 ? "high" : written > 0 ? "medium" : "low",
+        riskLevel:
+          critical > 0
+            ? "critical"
+            : high > 0
+              ? "high"
+              : written > 0
+                ? "medium"
+                : "low",
         lastScannedAt: new Date(),
       })
       .where(eq(assetsTable.id, asset.id));
@@ -280,9 +358,13 @@ async function execute(scanId: number, controller: AbortController): Promise<voi
       severity: critical > 0 ? "critical" : high > 0 ? "high" : "info",
     });
 
-    logger.info({ scanId, written, critical, high, duration }, "scan completed");
+    logger.info(
+      { scanId, written, critical, high, duration },
+      "scan completed",
+    );
   } catch (error) {
-    const cancelled = error instanceof ScanEngineError && error.code === "cancelled";
+    const cancelled =
+      error instanceof ScanEngineError && error.code === "cancelled";
     const message = error instanceof Error ? error.message : String(error);
 
     await db
@@ -294,12 +376,17 @@ async function execute(scanId: number, controller: AbortController): Promise<voi
       })
       .where(eq(scansTable.id, scanId));
 
-    await db.update(assetsTable).set({ status: "active" }).where(eq(assetsTable.id, asset.id));
+    await db
+      .update(assetsTable)
+      .set({ status: "active" })
+      .where(eq(assetsTable.id, asset.id));
 
     await db.insert(activityTable).values({
       userId: scan.userId,
       type: "scan_failed",
-      title: cancelled ? `Scan stopped on ${asset.name}` : `Scan failed on ${asset.name}`,
+      title: cancelled
+        ? `Scan stopped on ${asset.name}`
+        : `Scan failed on ${asset.name}`,
       description: message.slice(0, 500),
       severity: "medium",
     });
@@ -316,7 +403,10 @@ async function execute(scanId: number, controller: AbortController): Promise<voi
  * Call once at boot, before accepting traffic.
  */
 export async function reconcileOrphanedScans(): Promise<number> {
-  const orphaned = await db.select().from(scansTable).where(eq(scansTable.status, "running"));
+  const orphaned = await db
+    .select()
+    .from(scansTable)
+    .where(eq(scansTable.status, "running"));
   if (orphaned.length === 0) return 0;
 
   for (const scan of orphaned) {
@@ -330,6 +420,9 @@ export async function reconcileOrphanedScans(): Promise<number> {
       .where(eq(assetsTable.id, scan.assetId));
   }
 
-  logger.warn({ count: orphaned.length }, "Marked orphaned scans as failed after restart");
+  logger.warn(
+    { count: orphaned.length },
+    "Marked orphaned scans as failed after restart",
+  );
   return orphaned.length;
 }

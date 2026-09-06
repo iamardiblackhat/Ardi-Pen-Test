@@ -1,21 +1,22 @@
-import { useState } from 'react';
-import { Link, useLocation } from 'wouter';
-import { Shield } from 'lucide-react';
-import { Button } from '@workspace/ardi-ds/components/ui/button';
-import { Input } from '@workspace/ardi-ds/components/ui/input';
-import { Label } from '@workspace/ardi-ds/components/ui/label';
-import { useRegister } from '@workspace/api-client-react';
-import { auth } from '@/lib/auth';
-import { useToast } from '@workspace/ardi-ds/hooks/use-toast';
-import { backendError } from '@/lib/api-error';
+import { useState } from "react";
+import { Link, useLocation } from "wouter";
+import { Shield } from "lucide-react";
+import { Button } from "@workspace/ardi-ds/components/ui/button";
+import { Input } from "@workspace/ardi-ds/components/ui/input";
+import { Label } from "@workspace/ardi-ds/components/ui/label";
+import { useRegister } from "@workspace/api-client-react";
+import { auth } from "@/lib/auth";
+import { useToast } from "@workspace/ardi-ds/hooks/use-toast";
+import { backendError } from "@/lib/api-error";
+import { authContinuation, intelligenceReturn } from "@/lib/auth-return";
 
 export default function Register() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [orgName, setOrgName] = useState('');
-  const [password, setPassword] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [orgName, setOrgName] = useState("");
+  const [password, setPassword] = useState("");
   const registerMutation = useRegister();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -25,13 +26,22 @@ export default function Register() {
       {
         onSuccess: (response) => {
           auth.setToken(response.token);
-          toast({ title: 'Account created', description: `Welcome to Ardi, ${response.user.name}` });
-          setLocation('/onboarding');
+          toast({
+            title: "Account created",
+            description: `Welcome to Ardi, ${response.user.name}`,
+          });
+          setLocation(
+            intelligenceReturn(window.location.search) ?? "/onboarding",
+          );
         },
         onError: (err: unknown) => {
-          toast({ title: 'Registration failed', description: backendError(err, 'Please try again.'), variant: 'destructive' });
+          toast({
+            title: "Registration failed",
+            description: backendError(err, "Please try again."),
+            variant: "destructive",
+          });
         },
-      }
+      },
     );
   };
 
@@ -45,8 +55,12 @@ export default function Register() {
           <div className="flex items-center justify-center w-14 h-14 rounded-xl border border-primary/40 bg-primary/10 mb-4">
             <Shield className="w-7 h-7 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">Create your account</h1>
-          <p className="text-muted-foreground text-sm mt-2 font-mono">Start securing your infrastructure today</p>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Create your account
+          </h1>
+          <p className="text-muted-foreground text-sm mt-2 font-mono">
+            Start securing your infrastructure today
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -108,14 +122,19 @@ export default function Register() {
             disabled={registerMutation.isPending}
             data-testid="button-register"
           >
-            {registerMutation.isPending ? 'Creating account...' : 'Create Account'}
+            {registerMutation.isPending
+              ? "Creating account..."
+              : "Create Account"}
           </Button>
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-sm text-muted-foreground">
-            Already have an account?{' '}
-            <Link href="/login" className="text-primary hover:underline font-medium">
+            Already have an account?{" "}
+            <Link
+              href={`/login${authContinuation(window.location.search)}`}
+              className="text-primary hover:underline font-medium"
+            >
               Sign in
             </Link>
           </p>
