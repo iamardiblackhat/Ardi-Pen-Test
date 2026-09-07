@@ -66,6 +66,14 @@ export function IntelligenceSearchHeader({
           <Search className="h-5 w-5" aria-hidden="true" />
           Search records
         </button>
+        <button
+          type="button"
+          onClick={() => onSearch(search)}
+          className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/30 px-4 hover:bg-white/10"
+        >
+          <RefreshCw className="h-5 w-5" aria-hidden="true" />
+          Refresh records
+        </button>
         {search ? (
           <button
             type="button"

@@ -2,6 +2,7 @@ import type {
   IntelligenceRecord,
   IntelligenceRecordKind,
 } from "../intelligence-types";
+import { RecordDescription } from "./record-description";
 
 const labels: Record<IntelligenceRecordKind, string> = {
   campaign: "Campaign",
@@ -23,13 +24,13 @@ export function IntelligenceRecordList({
       <div className="mb-4 flex items-end justify-between gap-4">
         <div>
           <p className="font-mono text-sm font-semibold tracking-[.08em] text-violet-600">
-            VERIFIED SOURCE RECORDS
+            CONNECTED INTELLIGENCE RECORDS
           </p>
           <h2
             id="intelligence-results-title"
             className="mt-1 text-2xl font-semibold tracking-tight text-slate-950"
           >
-            Latest intelligence
+            Threat intelligence records
           </h2>
         </div>
         <p className="text-sm text-slate-500">{records.length} shown</p>
@@ -51,7 +52,7 @@ export function IntelligenceRecordList({
               ) : null}
               {record.confidence !== null ? (
                 <span className="ml-auto text-sm text-slate-500">
-                  Confidence {record.confidence}%
+                  Source confidence {record.confidence}/100
                 </span>
               ) : null}
             </div>
@@ -59,16 +60,22 @@ export function IntelligenceRecordList({
               {record.name}
             </h3>
             <p className="mt-2 line-clamp-4 text-sm leading-6 text-slate-600">
-              {record.description ||
-                record.pattern ||
-                "The source record does not include a description."}
+              <RecordDescription
+                text={
+                  record.description ||
+                  record.pattern ||
+                  "The source record does not include a description."
+                }
+              />
             </p>
             <details className="mt-4 text-sm leading-6">
               <summary className="cursor-pointer text-cyan-300">
                 Read source record
               </summary>
               <p className="mt-3 whitespace-pre-wrap break-words">
-                {record.description || "No description supplied."}
+                <RecordDescription
+                  text={record.description || "No description supplied."}
+                />
               </p>
               {record.pattern ? (
                 <pre className="mt-3 whitespace-pre-wrap break-all">
@@ -88,7 +95,7 @@ export function IntelligenceRecordList({
               </p>
             ) : null}
             <p className="mt-4 font-mono text-sm text-slate-400">
-              Updated {formatDate(record.updatedAt ?? record.createdAt)}
+              Record updated {formatDate(record.updatedAt ?? record.createdAt)}
             </p>
           </article>
         ))}
