@@ -30,6 +30,19 @@ interface OaiMessage {
   tool_call_id?: string;
 }
 
+interface SseDelta {
+  content?: string;
+  reasoning_content?: string;
+  tool_calls?: {
+    index?: number;
+    id?: string;
+    function?: {
+      name?: string;
+      arguments?: string;
+    };
+  }[];
+}
+
 /** Tools carry their JSON schema differently depending on how they were built. */
 function toOpenAiTools(vertical: VerticalConfig): ToolSpec[] {
   return vertical.tools.map((t) => {
@@ -50,6 +63,25 @@ function toOpenAiTools(vertical: VerticalConfig): ToolSpec[] {
       },
     };
   });
+}
+
+/**
+ * Parses a single SSE data line from an OpenAI-compatible stream and extracts
+ * its delta payload, returning null if the line is empty, non-data, or invalid.
+ */
+function parseSseDelta(line: string): SseDelta | null {
+  const trimmed = line.trim();
+  if (!trimmed.startsWith("data:")) return null;
+
+  const payload = trimmed.slice(5).trim();
+  if (payload === "[DONE]") return null;
+
+  try {
+    const chunk = JSON.parse(payload);
+    return chunk.choices?.[0]?.delta ?? null;
+  } catch {
+    return null;
+  }
 }
 
 async function runTool(
@@ -163,19 +195,7 @@ export async function* runOpenAiCompat(
         buffer = lines.pop() ?? "";
 
         for (const line of lines) {
-          const trimmed = line.trim();
-          if (!trimmed.startsWith("data:")) continue;
-          const payload = trimmed.slice(5).trim();
-          if (payload === "[DONE]") continue;
-
-          let chunk: any;
-          try {
-            chunk = JSON.parse(payload);
-          } catch {
-            continue;
-          }
-
-          const delta = chunk.choices?.[0]?.delta;
+          const delta = parseSseDelta(line);
           if (!delta) continue;
 
           // Reasoning models stream their chain of thought in a separate
