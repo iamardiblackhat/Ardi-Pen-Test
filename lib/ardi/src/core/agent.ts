@@ -153,14 +153,14 @@ export async function* runArdi(options: RunOptions): AsyncGenerator<ArdiEvent> {
         }
 
         if (event.type === "content_block_start") {
-          const block = event.content_block;
-          if (block.type === "tool_use") {
+          if (event.content_block.type === "tool_use") {
             yield {
               type: "tool_start",
-              name: block.name,
-              label: humanLabel(block.name),
+              name: event.content_block.name,
+              label: humanLabel(event.content_block.name),
             };
           }
+          continue;
         }
 
         if (
@@ -172,6 +172,7 @@ export async function* runArdi(options: RunOptions): AsyncGenerator<ArdiEvent> {
             yield { type: "mood", mood: "idle" };
           }
           yield { type: "text", text: event.delta.text };
+          continue;
         }
       }
 
@@ -179,17 +180,18 @@ export async function* runArdi(options: RunOptions): AsyncGenerator<ArdiEvent> {
       let confirmationRequired = false;
 
       for (const block of message.content) {
-        if (block.type === "tool_use") {
-          yield { type: "tool_end", name: block.name, ok: true };
-          if (vertical.confirmBeforeRunning.includes(block.name)) {
-            confirmationRequired = true;
-            yield {
-              type: "confirm_required",
-              name: block.name,
-              input: block.input,
-              label: confirmationLabel(block.name),
-            };
-          }
+        if (block.type !== "tool_use") continue;
+
+        yield { type: "tool_end", name: block.name, ok: true };
+
+        if (vertical.confirmBeforeRunning.includes(block.name)) {
+          confirmationRequired = true;
+          yield {
+            type: "confirm_required",
+            name: block.name,
+            input: block.input,
+            label: confirmationLabel(block.name),
+          };
         }
       }
 
