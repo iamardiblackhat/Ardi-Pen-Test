@@ -97,16 +97,32 @@ router.get("/findings/mitre-coverage", async (req, res): Promise<void> => {
 router.get("/findings/stats", async (req, res): Promise<void> => {
   const findings = await db.select().from(findingsTable).where(eq(findingsTable.userId, req.user!.sub));
   const total = findings.length;
-  const open = findings.filter(f => f.status === "open" || f.status === "in_progress").length;
-  const resolved = findings.filter(f => f.status === "resolved").length;
+  let open = 0;
+  let resolved = 0;
 
-  // Group by month
+  // Group by month in a single pass over findings
   const monthMap = new Map<string, { discovered: number; resolved: number }>();
   for (const f of findings) {
-    const month = f.createdAt.toISOString().slice(0, 7);
-    if (!monthMap.has(month)) monthMap.set(month, { discovered: 0, resolved: 0 });
-    monthMap.get(month)!.discovered++;
-    if (f.status === "resolved") monthMap.get(month)!.resolved++;
+    const status = f.status;
+    if (status === "open" || status === "in_progress") {
+      open++;
+    } else if (status === "resolved") {
+      resolved++;
+    }
+
+    const year = f.createdAt.getUTCFullYear();
+    const monthNum = f.createdAt.getUTCMonth() + 1;
+    const month = `${year}-${monthNum < 10 ? "0" : ""}${monthNum}`;
+
+    let entry = monthMap.get(month);
+    if (!entry) {
+      entry = { discovered: 0, resolved: 0 };
+      monthMap.set(month, entry);
+    }
+    entry.discovered++;
+    if (status === "resolved") {
+      entry.resolved++;
+    }
   }
 
   const byMonth = Array.from(monthMap.entries())
