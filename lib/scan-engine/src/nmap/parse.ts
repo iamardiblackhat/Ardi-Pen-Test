@@ -297,6 +297,185 @@ interface MutablePort {
   service: MutableService | null;
 }
 
+class NmapXmlParser {
+  private readonly hosts: NmapHost[] = [];
+  private readonly warnings: string[] = [];
+  private host: MutableHost | null = null;
+  private port: MutablePort | null = null;
+  private truncated = false;
+
+  parse(xml: string): NmapScanResult {
+    for (const tag of tokenize(xml)) {
+      this.handleTag(tag);
+    }
+
+    if (this.host !== null) {
+      this.warnings.push("nmap XML ended with an unclosed <host>; output may be truncated.");
+      this.finishHost();
+    }
+
+    return { hosts: this.hosts, warnings: this.warnings };
+  }
+
+  private handleTag(tag: XmlTag): void {
+    switch (tag.name) {
+      case "host":
+        this.handleHost(tag);
+        break;
+      case "status":
+        this.handleStatus(tag);
+        break;
+      case "address":
+        this.handleAddress(tag);
+        break;
+      case "hostname":
+        this.handleHostname(tag);
+        break;
+      case "port":
+        this.handlePort(tag);
+        break;
+      case "state":
+        this.handleState(tag);
+        break;
+      case "service":
+        this.handleService(tag);
+        break;
+      case "cpe":
+        this.handleCpe(tag);
+        break;
+      default:
+        break;
+    }
+  }
+
+  private finishPort(): void {
+    if (this.host !== null && this.port !== null) {
+      if (this.host.ports.length < MAX_PORTS_PER_HOST) this.host.ports.push(this.port);
+    }
+    this.port = null;
+  }
+
+  private finishHost(): void {
+    if (this.host !== null) {
+      this.finishPort();
+      if (this.hosts.length < MAX_HOSTS) {
+        this.hosts.push({
+          addresses: this.host.addresses,
+          hostnames: this.host.hostnames,
+          status: this.host.status,
+          ports: this.host.ports,
+          primaryAddress: pickPrimaryAddress(this.host),
+        });
+      } else if (!this.truncated) {
+        this.truncated = true;
+        this.warnings.push(
+          `Host limit of ${MAX_HOSTS} reached; remaining hosts were discarded.`,
+        );
+      }
+    }
+    this.host = null;
+  }
+
+  private handleHost(tag: XmlTag): void {
+    if (tag.kind === "open") {
+      if (this.host !== null) {
+        // Unclosed <host>: emit what we have rather than nesting.
+        this.warnings.push("Encountered a nested <host> element; closing the previous one.");
+        this.finishHost();
+      }
+      this.host = { addresses: [], hostnames: [], status: null, ports: [] };
+    } else if (tag.kind === "close") {
+      this.finishHost();
+    }
+  }
+
+  private handleStatus(tag: XmlTag): void {
+    if (this.host !== null && tag.kind !== "close") {
+      this.host.status = cleanAttr(tag.attrs["state"]);
+    }
+  }
+
+  private handleAddress(tag: XmlTag): void {
+    if (this.host === null || tag.kind === "close") return;
+    const addr = cleanAttr(tag.attrs["addr"]);
+    if (addr === null) {
+      this.warnings.push("Skipped an <address> element with no addr attribute.");
+      return;
+    }
+    this.host.addresses.push({
+      addr,
+      addrtype: cleanAttr(tag.attrs["addrtype"]) ?? "unknown",
+      vendor: cleanAttr(tag.attrs["vendor"]),
+    });
+  }
+
+  private handleHostname(tag: XmlTag): void {
+    if (this.host === null || tag.kind === "close") return;
+    const name = cleanAttr(tag.attrs["name"]);
+    if (name !== null) {
+      this.host.hostnames.push({
+        name: name.toLowerCase(),
+        type: cleanAttr(tag.attrs["type"]) ?? "unknown",
+      });
+    }
+  }
+
+  private handlePort(tag: XmlTag): void {
+    if (this.host === null) return;
+    if (tag.kind === "close") {
+      this.finishPort();
+      return;
+    }
+    this.finishPort();
+    const portidText = cleanAttr(tag.attrs["portid"]);
+    const portid = portidText === null ? Number.NaN : Number(portidText);
+    if (!Number.isInteger(portid) || portid < 0 || portid > 65535) {
+      this.warnings.push(`Skipped a <port> with an invalid portid: "${portidText ?? ""}".`);
+      return;
+    }
+    this.port = {
+      protocol: cleanAttr(tag.attrs["protocol"]) ?? "unknown",
+      portid,
+      // Default to "unknown" rather than "open": a missing <state> must
+      // never be reported to a client as a confirmed open port.
+      state: "unknown",
+      reason: null,
+      service: null,
+    };
+    if (tag.kind === "self") this.finishPort();
+  }
+
+  private handleState(tag: XmlTag): void {
+    if (this.port === null || tag.kind === "close") return;
+    this.port.state = cleanAttr(tag.attrs["state"]) ?? "unknown";
+    this.port.reason = cleanAttr(tag.attrs["reason"]);
+  }
+
+  private handleService(tag: XmlTag): void {
+    if (this.port === null || tag.kind === "close") return;
+    const cpeRaw = cleanAttr(tag.attrs["cpe"]);
+    this.port.service = {
+      name: cleanAttr(tag.attrs["name"]),
+      product: cleanAttr(tag.attrs["product"]),
+      version: cleanAttr(tag.attrs["version"]),
+      extrainfo: cleanAttr(tag.attrs["extrainfo"]),
+      tunnel: cleanAttr(tag.attrs["tunnel"]),
+      cpe: cpeRaw === null ? [] : [cpeRaw],
+    };
+  }
+
+  private handleCpe(tag: XmlTag): void {
+    // nmap emits CPEs as a <service cpe="..."> attribute in some versions
+    // and as <cpe> child elements in others, sometimes several per
+    // service. Accept both and de-duplicate.
+    if (this.port?.service == null || tag.kind === "close") return;
+    const cpe = cleanAttr(tag.text);
+    if (cpe !== null && !this.port.service.cpe.includes(cpe)) {
+      this.port.service.cpe.push(cpe);
+    }
+  }
+}
+
 /**
  * Parse nmap XML (`-oX`) into hosts, ports and services.
  *
@@ -325,161 +504,7 @@ export function parseNmapXml(xml: string): NmapScanResult {
     );
   }
 
-  const hosts: NmapHost[] = [];
-  const warnings: string[] = [];
-  let host: MutableHost | null = null;
-  let port: MutablePort | null = null;
-  /** Depth of `<hostscript>`/`<script>` nesting we are ignoring. */
-  let truncated = false;
-
-  const finishPort = (): void => {
-    if (host !== null && port !== null) {
-      if (host.ports.length < MAX_PORTS_PER_HOST) host.ports.push(port);
-    }
-    port = null;
-  };
-
-  const finishHost = (): void => {
-    if (host !== null) {
-      finishPort();
-      if (hosts.length < MAX_HOSTS) {
-        hosts.push({
-          addresses: host.addresses,
-          hostnames: host.hostnames,
-          status: host.status,
-          ports: host.ports,
-          primaryAddress: pickPrimaryAddress(host),
-        });
-      } else if (!truncated) {
-        truncated = true;
-        warnings.push(
-          `Host limit of ${MAX_HOSTS} reached; remaining hosts were discarded.`,
-        );
-      }
-    }
-    host = null;
-  };
-
-  for (const tag of tokenize(xml)) {
-    switch (tag.name) {
-      case "host": {
-        if (tag.kind === "open") {
-          if (host !== null) {
-            // Unclosed <host>: emit what we have rather than nesting.
-            warnings.push("Encountered a nested <host> element; closing the previous one.");
-            finishHost();
-          }
-          host = { addresses: [], hostnames: [], status: null, ports: [] };
-        } else if (tag.kind === "close") {
-          finishHost();
-        }
-        break;
-      }
-
-      case "status": {
-        if (host !== null && tag.kind !== "close") {
-          host.status = cleanAttr(tag.attrs["state"]);
-        }
-        break;
-      }
-
-      case "address": {
-        if (host === null || tag.kind === "close") break;
-        const addr = cleanAttr(tag.attrs["addr"]);
-        if (addr === null) {
-          warnings.push("Skipped an <address> element with no addr attribute.");
-          break;
-        }
-        host.addresses.push({
-          addr,
-          addrtype: cleanAttr(tag.attrs["addrtype"]) ?? "unknown",
-          vendor: cleanAttr(tag.attrs["vendor"]),
-        });
-        break;
-      }
-
-      case "hostname": {
-        if (host === null || tag.kind === "close") break;
-        const name = cleanAttr(tag.attrs["name"]);
-        if (name !== null) {
-          host.hostnames.push({
-            name: name.toLowerCase(),
-            type: cleanAttr(tag.attrs["type"]) ?? "unknown",
-          });
-        }
-        break;
-      }
-
-      case "port": {
-        if (host === null) break;
-        if (tag.kind === "close") {
-          finishPort();
-          break;
-        }
-        finishPort();
-        const portidText = cleanAttr(tag.attrs["portid"]);
-        const portid = portidText === null ? Number.NaN : Number(portidText);
-        if (!Number.isInteger(portid) || portid < 0 || portid > 65535) {
-          warnings.push(`Skipped a <port> with an invalid portid: "${portidText ?? ""}".`);
-          break;
-        }
-        port = {
-          protocol: cleanAttr(tag.attrs["protocol"]) ?? "unknown",
-          portid,
-          // Default to "unknown" rather than "open": a missing <state> must
-          // never be reported to a client as a confirmed open port.
-          state: "unknown",
-          reason: null,
-          service: null,
-        };
-        if (tag.kind === "self") finishPort();
-        break;
-      }
-
-      case "state": {
-        if (port === null || tag.kind === "close") break;
-        port.state = cleanAttr(tag.attrs["state"]) ?? "unknown";
-        port.reason = cleanAttr(tag.attrs["reason"]);
-        break;
-      }
-
-      case "service": {
-        if (port === null || tag.kind === "close") break;
-        const cpeRaw = cleanAttr(tag.attrs["cpe"]);
-        port.service = {
-          name: cleanAttr(tag.attrs["name"]),
-          product: cleanAttr(tag.attrs["product"]),
-          version: cleanAttr(tag.attrs["version"]),
-          extrainfo: cleanAttr(tag.attrs["extrainfo"]),
-          tunnel: cleanAttr(tag.attrs["tunnel"]),
-          cpe: cpeRaw === null ? [] : [cpeRaw],
-        };
-        break;
-      }
-
-      case "cpe": {
-        // nmap emits CPEs as a <service cpe="..."> attribute in some versions
-        // and as <cpe> child elements in others, sometimes several per
-        // service. Accept both and de-duplicate.
-        if (port?.service == null || tag.kind === "close") break;
-        const cpe = cleanAttr(tag.text);
-        if (cpe !== null && !port.service.cpe.includes(cpe)) {
-          port.service.cpe.push(cpe);
-        }
-        break;
-      }
-
-      default:
-        break;
-    }
-  }
-
-  if (host !== null) {
-    warnings.push("nmap XML ended with an unclosed <host>; output may be truncated.");
-    finishHost();
-  }
-
-  return { hosts, warnings };
+  return new NmapXmlParser().parse(xml);
 }
 
 function pickPrimaryAddress(host: MutableHost): string {
