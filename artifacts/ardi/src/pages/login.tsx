@@ -23,7 +23,7 @@ export default function Login() {
       { data: { email, password } },
       {
         onSuccess: (response) => {
-          auth.setToken(response.token);
+          auth.setSession(true);
           toast({
             title: "Login successful",
             description: `Welcome back, ${response.user.name}`,

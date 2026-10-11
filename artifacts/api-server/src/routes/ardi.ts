@@ -9,6 +9,8 @@ import {
 } from "@workspace/ardi-agent";
 import type { ChatMessage } from "@workspace/ardi-agent";
 import { verifyToken } from "../lib/auth";
+import { extractToken } from "../middlewares/require-auth";
+import type { Request } from "express";
 import { logger } from "../lib/logger";
 import { rateLimit } from "../middlewares/rate-limit";
 import {
@@ -31,12 +33,10 @@ const chatLimiter = rateLimit(20, 60_000);
  * missing/invalid token means "anonymous visitor", not "reject the request".
  * Only a token that verifies is ever trusted for anything user-scoped.
  */
-function optionalUserId(req: {
-  headers: { authorization?: string };
-}): number | null {
-  const header = req.headers.authorization;
-  if (!header?.startsWith("Bearer ")) return null;
-  const payload = verifyToken(header.slice(7));
+function optionalUserId(req: Request): number | null {
+  const token = extractToken(req);
+  if (!token) return null;
+  const payload = verifyToken(token);
   return payload?.sub ?? null;
 }
 

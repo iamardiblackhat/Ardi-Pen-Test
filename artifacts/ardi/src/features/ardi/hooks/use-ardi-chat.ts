@@ -44,9 +44,7 @@ export function useArdiChat({
     const controller = new AbortController();
     fetch("/api/ardi/status", {
       signal: controller.signal,
-      headers: auth.getToken()
-        ? { authorization: `Bearer ${auth.getToken()}` }
-        : {},
+      credentials: "include",
     })
       .then(async (response) =>
         response.ok
