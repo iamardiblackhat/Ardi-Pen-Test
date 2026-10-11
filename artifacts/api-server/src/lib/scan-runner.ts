@@ -5,7 +5,7 @@ import {
   findingsTable,
   activityTable,
 } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import {
   runNmap,
   runNuclei,
@@ -409,16 +409,18 @@ export async function reconcileOrphanedScans(): Promise<number> {
     .where(eq(scansTable.status, "running"));
   if (orphaned.length === 0) return 0;
 
-  for (const scan of orphaned) {
-    await db
-      .update(scansTable)
-      .set({ status: "failed", completedAt: new Date() })
-      .where(eq(scansTable.id, scan.id));
-    await db
-      .update(assetsTable)
-      .set({ status: "active" })
-      .where(eq(assetsTable.id, scan.assetId));
-  }
+  const scanIds = orphaned.map((scan) => scan.id);
+  const assetIds = Array.from(new Set(orphaned.map((scan) => scan.assetId)));
+
+  await db
+    .update(scansTable)
+    .set({ status: "failed", completedAt: new Date() })
+    .where(inArray(scansTable.id, scanIds));
+
+  await db
+    .update(assetsTable)
+    .set({ status: "active" })
+    .where(inArray(assetsTable.id, assetIds));
 
   logger.warn(
     { count: orphaned.length },
