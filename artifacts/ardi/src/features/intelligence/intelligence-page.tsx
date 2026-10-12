@@ -13,7 +13,15 @@ import { ArdiLauncher, ArdiPanel } from "@/components/ardi-panel";
 import { auth } from "@/lib/auth";
 import { routes } from "@/shared/config/routes";
 
+export function WorkspaceThreatFeed() {
+  return <IntelligenceBody embedded />;
+}
+
 export default function IntelligencePage() {
+  return <IntelligenceBody embedded={false} />;
+}
+
+function IntelligenceBody({ embedded }: { embedded: boolean }) {
   const initialSearch =
     new URLSearchParams(window.location.search).get("search") ?? "";
   const [query, setQuery] = useState(initialSearch);
@@ -54,19 +62,33 @@ export default function IntelligencePage() {
     setReloadKey((revision) => revision + 1);
   }
 
+  const notConfigured = /not configured/i.test(error);
+
   return (
-    <main className="intel-dashboard min-h-screen px-4 py-6 sm:px-6 sm:py-8 lg:px-10">
+    <main className={embedded ? "intel-dashboard px-4 py-6 sm:px-8" : "intel-dashboard min-h-screen px-4 py-6 sm:px-6 sm:py-8 lg:px-10"}>
       <div className="mx-auto max-w-7xl space-y-7">
-        <nav
-          aria-label="Dashboard navigation"
-          className="flex flex-wrap gap-6 text-base"
-        >
-          <Link href={routes.home}>ARDI SEC</Link>
-          <Link href={routes.capabilities}>All tools</Link>
-          <Link href={signedIn ? routes.dashboard : routes.login}>
-            {signedIn ? "Your workspace" : "Sign in"}
-          </Link>
-        </nav>
+        {embedded ? (
+          <div>
+            <p className="font-mono text-xs uppercase tracking-[0.16em] text-cyan-200">
+              Step 1 · Research
+            </p>
+            <h1 className="mt-2 text-3xl font-bold">Known attackers</h1>
+            <p className="mt-2 max-w-2xl text-base text-slate-300">
+              Search the connected threat feed. If it is not set up, this page says so. No attacker records are invented.
+            </p>
+          </div>
+        ) : (
+          <nav
+            aria-label="Dashboard navigation"
+            className="flex flex-wrap gap-6 text-base"
+          >
+            <Link href={routes.home}>ARDI SEC</Link>
+            <Link href={routes.capabilities}>All tools</Link>
+            <Link href={signedIn ? routes.dashboard : routes.login}>
+              {signedIn ? "Your workspace" : "Sign in"}
+            </Link>
+          </nav>
+        )}
         <IntelligenceSearchHeader
           query={query}
           search={search}
@@ -80,15 +102,19 @@ export default function IntelligencePage() {
         ) : null}
         {error ? (
           <PageError
-            title="Live intelligence is unavailable"
-            description={error}
+            title={notConfigured ? "Threat feed is not set up" : "Live intelligence is unavailable"}
+            description={
+              notConfigured
+                ? "This server has no threat-intelligence connection. Website lookup and security checks still work."
+                : error
+            }
             onRetry={() => setReloadKey((value) => value + 1)}
           />
         ) : null}
         {!loading && !error && feed ? (
           <IntelligenceSummary feed={feed} />
         ) : null}
-        <LiveResearch />
+        {embedded ? null : <LiveResearch />}
         {feed && !loading && !error ? (
           <IntelligenceBreakdown feed={feed} />
         ) : null}
@@ -102,13 +128,17 @@ export default function IntelligencePage() {
           />
         ) : null}
       </div>
-      <ArdiLauncher onClick={() => setArdiOpen(true)} />
-      <ArdiPanel
-        open={ardiOpen}
-        onClose={() => setArdiOpen(false)}
-        authenticated={signedIn}
-        context="The user is on the threat intelligence dashboard. Use the connected intelligence search tool before describing threat records."
-      />
+      {embedded ? null : (
+        <>
+          <ArdiLauncher onClick={() => setArdiOpen(true)} />
+          <ArdiPanel
+            open={ardiOpen}
+            onClose={() => setArdiOpen(false)}
+            authenticated={signedIn}
+            context="The user is on the threat intelligence dashboard. Use the connected intelligence search tool before describing threat records."
+          />
+        </>
+      )}
     </main>
   );
 }

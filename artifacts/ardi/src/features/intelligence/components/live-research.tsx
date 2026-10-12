@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { auth } from "@/lib/auth";
+import "../intelligence-dashboard.css";
 
 type ResearchResult = {
   subject: string;

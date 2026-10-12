@@ -59,7 +59,7 @@ export function CreateAssetDialog({
       await queryClient.invalidateQueries({ queryKey: getGetAssetsQueryKey() });
       toast({
         title: "Target authorised",
-        description: `${name.trim()} is now available for Pen Testing.`,
+        description: `${name.trim()} can now be tested.`,
       });
       setName("");
       setTarget("");
@@ -80,12 +80,12 @@ export function CreateAssetDialog({
       <DialogTrigger asChild>
         <Button className="glow-primary">
           <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
-          Add authorised target
+          Add a target
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add an authorised target</DialogTitle>
+          <DialogTitle>Add a target you can test</DialogTitle>
         </DialogHeader>
         <form className="mt-4 space-y-4" onSubmit={submit}>
           <div className="space-y-2">
@@ -159,7 +159,7 @@ export function CreateAssetDialog({
             }
             className="min-h-12 w-full glow-primary"
           >
-            {createAsset.isPending ? "Adding target…" : "Add authorised target"}
+            {createAsset.isPending ? "Adding target…" : "Add target"}
           </Button>
         </form>
       </DialogContent>

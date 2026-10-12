@@ -23,8 +23,14 @@ const Findings = lazy(() => import("@/pages/findings"));
 const Reports = lazy(() => import("@/pages/reports"));
 const Mitre = lazy(() => import("@/pages/mitre"));
 const Osint = lazy(() => import("@/pages/osint"));
+const ResearchSubject = lazy(() => import("@/pages/research-subject"));
 const Intelligence = lazy(
   () => import("@/features/intelligence/intelligence-page"),
+);
+const ResearchThreats = lazy(() =>
+  import("@/features/intelligence/intelligence-page").then((module) => ({
+    default: module.WorkspaceThreatFeed,
+  })),
 );
 const Settings = lazy(() => import("@/pages/settings"));
 const NotFound = lazy(() => import("@/pages/not-found"));
@@ -57,14 +63,28 @@ const publicRoutes: Array<{ path: string; component: PageComponent }> = [
 const workspaceRoutes: Array<{ path: string; component: PageComponent }> = [
   { path: routes.dashboard, component: Dashboard },
   { path: "/assets/:id", component: AssetDetail },
-  { path: routes.assets, component: Assets },
+  { path: "/test/targets/:id", component: AssetDetail },
   { path: "/scans/:id", component: ScanDetail },
-  { path: routes.scans, component: Scans },
+  { path: "/test/runs/:id", component: ScanDetail },
   { path: "/findings/:id", component: Findings },
-  { path: routes.findings, component: Findings },
-  { path: routes.reports, component: Reports },
-  { path: routes.mitre, component: Mitre },
+  { path: "/fix/problems/:id", component: Findings },
+  { path: routes.researchSubject, component: ResearchSubject },
+  { path: routes.researchThreats, component: ResearchThreats },
+  { path: "/research/website", component: Osint },
+  { path: routes.research, component: Osint },
   { path: routes.osint, component: Osint },
+  { path: routes.testRuns, component: Scans },
+  { path: routes.scans, component: Scans },
+  { path: "/test/targets", component: Assets },
+  { path: routes.test, component: Assets },
+  { path: routes.assets, component: Assets },
+  { path: routes.fixMeaning, component: Mitre },
+  { path: routes.mitre, component: Mitre },
+  { path: "/fix/problems", component: Findings },
+  { path: routes.fix, component: Findings },
+  { path: routes.findings, component: Findings },
+  { path: routes.report, component: Reports },
+  { path: routes.reports, component: Reports },
   { path: routes.settings, component: Settings },
 ];
 

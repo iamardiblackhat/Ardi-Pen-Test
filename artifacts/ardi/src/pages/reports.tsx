@@ -33,7 +33,7 @@ export default function Reports() {
 
   return (
     <main className="space-y-6 p-4 sm:p-8">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><div><h1 className="text-3xl font-bold">Reports</h1><p className="mt-2 text-muted-foreground">Generate downloadable reports from current targets, Pen Tests, and findings.</p></div><CreateReportDialog open={dialogOpen} onOpenChange={setDialogOpen} /></header>
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><div><h1 className="text-3xl font-bold">Reports</h1><p className="mt-2 text-muted-foreground">Create a file from the targets, checks, and problems already stored, then download it.</p></div><CreateReportDialog open={dialogOpen} onOpenChange={setDialogOpen} /></header>
       {reports.length ? <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3" aria-label="Generated reports">{reports.map((report) => <ReportCard key={report.id} report={report} onDownload={download} />)}</section> : <PageEmpty title="No reports yet" description="Generate a report from real workspace evidence." actionLabel="New report" onAction={() => setDialogOpen(true)} />}
     </main>
   );

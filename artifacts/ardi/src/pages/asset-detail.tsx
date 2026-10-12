@@ -70,9 +70,9 @@ export default function AssetDetail() {
     <div className="p-8 space-y-6">
       {/* Header */}
       <div>
-        <Link href="/assets" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
+        <Link href="/test" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
           <ArrowLeft className="w-4 h-4" />
-          Back to Assets
+          Back to targets
         </Link>
         <div className="flex items-start justify-between">
           <div>

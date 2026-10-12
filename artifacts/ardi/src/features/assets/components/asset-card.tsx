@@ -19,7 +19,7 @@ export function AssetCard({ asset, onDelete }: { asset: Asset; onDelete: (asset:
           <span className="mb-2 flex flex-wrap items-center gap-2"><span className="text-base font-bold sm:text-lg">{asset.name}</span><StatusBadge status={asset.status} /><span className={`text-xs font-mono font-semibold uppercase ${riskColors[asset.riskLevel]}`}>{asset.riskLevel}</span></span>
           <span className="block break-all text-sm font-mono text-muted-foreground">{asset.target}</span>
           {asset.description ? <span className="mt-2 block text-sm text-muted-foreground">{asset.description}</span> : null}
-          <span className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground"><span>Last tested: {asset.lastScannedAt ? formatDistanceToNow(new Date(asset.lastScannedAt), { addSuffix: true }) : 'Never'}</span><span>{asset.openFindings || 0} open findings</span></span>
+          <span className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground"><span>Last tested: {asset.lastScannedAt ? formatDistanceToNow(new Date(asset.lastScannedAt), { addSuffix: true }) : 'Never'}</span><span>{asset.openFindings || 0} open problems</span></span>
         </span>
       </Link>
       <Button type="button" variant="ghost" size="icon" aria-label={`Delete ${asset.name}`} onClick={() => onDelete(asset)}><Trash2 className="h-4 w-4" aria-hidden="true" /></Button>

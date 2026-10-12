@@ -33,12 +33,12 @@ export default function Findings() {
     { label: 'High', value: findings.filter((finding) => finding.severity === 'high').length, style: 'text-orange-400' },
   ];
 
-  if (findingsQuery.isLoading) return <PageLoading label="Loading findings" />;
+  if (findingsQuery.isLoading) return <PageLoading label="Loading problems" />;
   if (findingsQuery.isError) return <div className="p-4 sm:p-8"><PageError title="Findings could not be loaded" description="The security API did not return test evidence." onRetry={() => findingsQuery.refetch()} /></div>;
 
   return (
     <main className="space-y-6 p-4 sm:p-8">
-      <header><h1 className="text-3xl font-bold">Findings</h1><p className="mt-2 text-muted-foreground">Review vulnerabilities and evidence returned by authorised Pen Tests.</p></header>
+      <header><h1 className="text-3xl font-bold">Problems</h1><p className="mt-2 text-muted-foreground">These are the weaknesses a check actually found. Open one to see the evidence and a suggested fix.</p></header>
       <section className="grid grid-cols-2 gap-3 md:grid-cols-4" aria-label="Finding summary">{summaries.map((summary) => <article key={summary.label} className="rounded-xl border bg-card p-4 sm:p-5"><h2 className="text-xs font-mono uppercase tracking-wide text-muted-foreground">{summary.label}</h2><p className={`mt-2 text-3xl font-bold font-mono ${summary.style}`}>{summary.value}</p></article>)}</section>
       <section className="flex flex-col gap-3 sm:flex-row" aria-label="Filter findings">
         <label className="relative flex-1 sm:max-w-sm"><span className="sr-only">Search findings</span><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" /><Input placeholder="Search title, target, CVE, or MITRE ID…" value={search} onChange={(event) => setSearch(event.target.value)} className="pl-9" /></label>
