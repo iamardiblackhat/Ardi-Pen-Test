@@ -64,8 +64,9 @@ export default function Settings() {
     );
   };
 
-  const handleLogout = () => {
-    auth.clearToken();
+  const handleLogout = async () => {
+    await auth.logout();
+    queryClient.clear();
     setLocation('/login');
   };
 

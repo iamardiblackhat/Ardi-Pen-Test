@@ -25,7 +25,7 @@ export default function Register() {
       { data: { name, email, orgName, password } },
       {
         onSuccess: (response) => {
-          auth.setToken(response.token);
+          auth.setSession(true);
           toast({
             title: "Account created",
             description: `Welcome to Ardi, ${response.user.name}`,

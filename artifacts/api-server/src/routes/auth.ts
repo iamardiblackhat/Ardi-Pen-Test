@@ -1,3 +1,13 @@
+/**
+ * Authentication Route Handlers & Bearer-Token Diagnosis
+ *
+ * Existing Auth Architecture (Bearer Token Flow):
+ * - POST /api/auth/register and POST /api/auth/login sign a stateless JWT via signToken(user).
+ * - The token is returned in the JSON response payload.
+ * - The SPA frontend receives the token and stores it in client-side localStorage ('ardi_auth_token').
+ * - Subsequent requests attach 'Authorization: Bearer <token>' via customFetch / setAuthTokenGetter.
+ * - Protected routes extract and verify the bearer token using verifyToken(header.slice(7)).
+ */
 import { Router } from "express";
 import { db, usersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
@@ -12,12 +22,27 @@ import {
 } from "@workspace/api-zod";
 import { hashPassword, verifyPassword, signToken, verifyToken } from "../lib/auth";
 import { rateLimit } from "../middlewares/rate-limit";
+import { extractToken } from "../middlewares/require-auth";
 
 const router = Router();
 
 // 10 attempts per 5 minutes per IP. Generous enough for a real user who
 // mistypes a password a few times, tight enough to blunt brute-forcing.
 const authLimiter = rateLimit(10, 5 * 60 * 1000);
+
+const COOKIE_NAME = "ardi_auth";
+
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax" as const,
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+};
+
+function setAuthCookie(res: any, token: string): void {
+  res.cookie(COOKIE_NAME, token, COOKIE_OPTIONS);
+}
+
 
 function serializeUser(user: typeof usersTable.$inferSelect) {
   return {
@@ -65,6 +90,7 @@ router.post("/auth/register", authLimiter, async (req, res): Promise<void> => {
     .returning();
 
   const token = signToken(user);
+  setAuthCookie(res, token);
   res.status(201).json(RegisterResponse.parse({ user: serializeUser(user), token }));
 });
 
@@ -92,17 +118,29 @@ router.post("/auth/login", authLimiter, async (req, res): Promise<void> => {
   }
 
   const token = signToken(user);
+  setAuthCookie(res, token);
   res.json(LoginResponse.parse({ user: serializeUser(user), token }));
+});
+
+
+// DELETE /api/auth/logout
+router.delete("/auth/logout", (req, res): void => {
+  res.clearCookie(COOKIE_NAME, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+  });
+  res.json({ message: "Logged out." });
 });
 
 // GET /api/auth/me
 router.get("/auth/me", async (req, res): Promise<void> => {
-  const header = req.headers.authorization;
-  if (!header?.startsWith("Bearer ")) {
+  const token = extractToken(req);
+  if (!token) {
     res.status(401).json({ error: "Authentication required." });
     return;
   }
-  const payload = verifyToken(header.slice(7));
+  const payload = verifyToken(token);
   if (!payload) {
     res.status(401).json({ error: "Invalid or expired session." });
     return;
@@ -118,12 +156,12 @@ router.get("/auth/me", async (req, res): Promise<void> => {
 
 // PATCH /api/auth/me
 router.patch("/auth/me", async (req, res): Promise<void> => {
-  const header = req.headers.authorization;
-  if (!header?.startsWith("Bearer ")) {
+  const token = extractToken(req);
+  if (!token) {
     res.status(401).json({ error: "Authentication required." });
     return;
   }
-  const payload = verifyToken(header.slice(7));
+  const payload = verifyToken(token);
   if (!payload) {
     res.status(401).json({ error: "Invalid or expired session." });
     return;

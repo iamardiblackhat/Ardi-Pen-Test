@@ -1,19 +1,44 @@
-const TOKEN_KEY = 'ardi_auth_token';
+const SESSION_KEY = 'ardi_logged_in';
+
+// Session state is managed via HttpOnly cookies on the server.
+// The client tracks session status in sessionStorage without holding sensitive tokens.
 
 export const auth = {
-  getToken(): string | null {
-    return localStorage.getItem(TOKEN_KEY);
+  async logout(): Promise<void> {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+    } catch {
+      // Ignore network errors on logout
+    } finally {
+      sessionStorage.removeItem(SESSION_KEY);
+      localStorage.removeItem('ardi_auth_token');
+    }
   },
 
-  setToken(token: string): void {
-    localStorage.setItem(TOKEN_KEY, token);
+  setSession(active = true): void {
+    if (active) {
+      sessionStorage.setItem(SESSION_KEY, 'true');
+    } else {
+      sessionStorage.removeItem(SESSION_KEY);
+    }
+  },
+
+  getToken(): string | null {
+    return null;
+  },
+
+  setToken(_token: string): void {
+    this.setSession(true);
   },
 
   clearToken(): void {
-    localStorage.removeItem(TOKEN_KEY);
+    this.logout();
   },
 
   isAuthenticated(): boolean {
-    return !!this.getToken();
+    return sessionStorage.getItem(SESSION_KEY) === 'true';
   },
 };

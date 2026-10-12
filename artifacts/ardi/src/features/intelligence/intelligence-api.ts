@@ -45,9 +45,8 @@ export async function fetchIntelligenceFeed(
 ): Promise<IntelligenceFeed> {
   const params = new URLSearchParams({ limit: "10" });
   if (search.trim()) params.set("search", search.trim());
-  const token = auth.getToken();
   const response = await fetch(`/api/intelligence/feed?${params}`, {
-    headers: token ? { authorization: `Bearer ${token}` } : {},
+    credentials: "include",
     signal,
     cache: "no-store",
   });

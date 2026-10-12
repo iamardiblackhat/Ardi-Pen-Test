@@ -68,9 +68,7 @@ export default function Osint() {
       const response = await fetch(
         `/api/osint/domain/${encodeURIComponent(value)}`,
         {
-          headers: auth.getToken()
-            ? { authorization: `Bearer ${auth.getToken()}` }
-            : {},
+          credentials: "include",
         },
       );
       const body = (await response.json()) as DomainIntel & { error?: string };

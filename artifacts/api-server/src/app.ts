@@ -1,3 +1,4 @@
+import cookieParser from "cookie-parser";
 import express, { type Express, type ErrorRequestHandler } from "express";
 import cors from "cors";
 import { pinoHttp, type Options as PinoHttpOptions } from "pino-http";
@@ -48,6 +49,7 @@ app.use(
 app.use(tripwire);
 
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);

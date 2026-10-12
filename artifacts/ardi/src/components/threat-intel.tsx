@@ -31,9 +31,7 @@ export function ThreatIntel({ findingId }: { findingId: number }) {
     let alive = true;
     setLoading(true);
     fetch(`/api/findings/${findingId}/threat-intel`, {
-      headers: auth.getToken()
-        ? { authorization: `Bearer ${auth.getToken()}` }
-        : {},
+      credentials: "include",
     })
       .then((r) => r.json())
       .then((d) => {
