@@ -5,6 +5,7 @@ import {
   MobileBottomNav,
 } from "@/components/app-sidebar";
 import { ArdiLauncher, ArdiPanel } from "@/components/ardi-panel";
+import { WorkflowChrome } from "@/features/workflow/workflow-chrome";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export function WorkspaceLayout({ children }: { children: React.ReactNode }) {
@@ -27,6 +28,7 @@ export function WorkspaceLayout({ children }: { children: React.ReactNode }) {
       <div className="flex min-w-0 flex-1 flex-col">
         <MobileAppHeader />
         <main className="min-w-0 flex-1 overflow-y-auto pb-20 md:pb-0">
+          <WorkflowChrome />
           {children}
         </main>
       </div>

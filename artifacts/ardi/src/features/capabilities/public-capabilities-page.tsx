@@ -121,17 +121,17 @@ export default function PublicCapabilitiesPage() {
                   <div className="ardi-cap-card-actions">
                     <Link
                       href={
-                        capability.id === "threat-context"
-                          ? routes.intelligence
-                          : hasWorkspace
-                            ? capability.workspaceHref
+                        hasWorkspace
+                          ? capability.workspaceHref
+                          : capability.id === "threat-context"
+                            ? routes.intelligence
                             : routes.register
                       }
                     >
-                      {capability.id === "threat-context"
-                        ? "Open threat dashboard"
-                        : hasWorkspace
-                          ? "Open this tool"
+                      {hasWorkspace
+                        ? "Open this step"
+                        : capability.id === "threat-context"
+                          ? "Open threat dashboard"
                           : "Create an account to use this tool"}{" "}
                       <ArrowRight />
                     </Link>

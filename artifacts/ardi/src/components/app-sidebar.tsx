@@ -1,41 +1,31 @@
 import { Link, useLocation } from 'wouter';
-import {
-  Shield,
-  LayoutDashboard,
-  Server,
-  Scan,
-  AlertTriangle,
-  Grid3x3,
-  FileText,
-  Settings,
-  Globe2,
-  Radar,
-} from 'lucide-react';
+import { Shield, LayoutDashboard, Settings } from 'lucide-react';
 import { routes } from '@/shared/config/routes';
+import { stageForPath, workflowStages } from '@/shared/config/workflow';
 import { cn } from '@workspace/ardi-ds/lib/utils';
 import { Avatar, AvatarFallback } from '@workspace/ardi-ds/components/ui/avatar';
 import { useGetMe, getGetMeQueryKey } from '@workspace/api-client-react';
 import { useGetScans, getGetScansQueryKey } from '@workspace/api-client-react';
 
 const navItems = [
-  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/assets', label: 'Assets', icon: Server },
-  { path: '/scans', label: 'Pen Testing', icon: Scan },
-  { path: '/findings', label: 'Findings', icon: AlertTriangle },
-  { path: '/osint', label: 'OSINT research', icon: Globe2 },
-  { path: routes.intelligence, label: 'Threat intelligence', icon: Radar },
-  { path: '/mitre', label: 'MITRE ATT&CK', icon: Grid3x3 },
-  { path: '/reports', label: 'Reports', icon: FileText },
-  { path: '/settings', label: 'Settings', icon: Settings },
+  { path: routes.dashboard, label: 'Start here', shortLabel: 'Home', icon: LayoutDashboard, step: null as number | null },
+  ...workflowStages.map((stage) => ({
+    path: stage.href,
+    label: stage.label,
+    shortLabel: stage.label,
+    icon: stage.icon,
+    step: stage.step,
+  })),
+  { path: routes.settings, label: 'Settings', shortLabel: 'Settings', icon: Settings, step: null as number | null },
 ];
 
-const mobileNavItems = [
-  navItems.find((item) => item.path === '/dashboard')!,
-  navItems.find((item) => item.path === '/scans')!,
-  navItems.find((item) => item.path === '/findings')!,
-  navItems.find((item) => item.path === '/osint')!,
-  navItems.find((item) => item.path === routes.intelligence)!,
-];
+const mobileNavItems = navItems.filter((item) => item.path !== routes.settings);
+
+function navIsActive(location: string, path: string) {
+  if (path === routes.dashboard) return location === routes.dashboard;
+  if (path === routes.settings) return location === routes.settings;
+  return stageForPath(location)?.href === path;
+}
 
 export function AppSidebar() {
   const [location] = useLocation();
@@ -64,7 +54,7 @@ export function AppSidebar() {
       <nav className="flex-1 space-y-1 overflow-y-auto p-4">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = location === item.path || location.startsWith(item.path + '/');
+          const isActive = navIsActive(location, item.path);
           return (
             <Link
               key={item.path}
@@ -77,7 +67,11 @@ export function AppSidebar() {
               )}
               data-testid={`nav-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
             >
-              <Icon className="h-4 w-4" />
+              {item.step ? (
+                <span className="flex h-4 w-4 items-center justify-center font-mono text-xs">{item.step}</span>
+              ) : (
+                <Icon className="h-4 w-4" />
+              )}
               {item.label}
             </Link>
           );
@@ -105,9 +99,7 @@ export function AppSidebar() {
 
 export function MobileAppHeader() {
   const [location] = useLocation();
-  const title = navItems.find(
-    (item) => location === item.path || location.startsWith(item.path + '/'),
-  )?.label ?? 'Ardi';
+  const title = navItems.find((item) => navIsActive(location, item.path))?.label ?? 'Ardi';
 
   return (
     <header className="sticky top-0 z-30 flex min-h-14 items-center justify-between border-b border-border bg-background/90 px-4 backdrop-blur md:hidden">
@@ -141,7 +133,7 @@ export function MobileBottomNav() {
     >
       {mobileNavItems.map((item) => {
         const Icon = item.icon;
-        const isActive = location === item.path || location.startsWith(item.path + '/');
+        const isActive = navIsActive(location, item.path);
         return (
           <Link
             key={item.path}
@@ -152,8 +144,12 @@ export function MobileBottomNav() {
             )}
             aria-current={isActive ? 'page' : undefined}
           >
-            <Icon className="h-5 w-5" />
-            <span className="max-w-full truncate">{item.label === 'Dashboard' ? 'Home' : item.path === routes.intelligence ? 'Intel' : item.label === 'OSINT research' ? 'OSINT' : item.label}</span>
+            {item.step ? (
+              <span className="flex h-5 w-5 items-center justify-center font-mono text-sm">{item.step}</span>
+            ) : (
+              <Icon className="h-5 w-5" />
+            )}
+            <span className="max-w-full truncate">{item.shortLabel}</span>
           </Link>
         );
       })}

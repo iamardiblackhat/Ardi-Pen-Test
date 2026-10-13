@@ -1,8 +1,8 @@
 import {
-  Crosshair,
-  FileCheck2,
+  Compass,
   FileText,
-  ScanSearch,
+  FlaskConical,
+  Wrench,
   type LucideIcon,
 } from "lucide-react";
 
@@ -21,27 +21,27 @@ export type SecurityCapability = {
 
 export const securityCapabilities: SecurityCapability[] = [
   {
-    name: "Penetration testing",
+    name: "1. Research",
     detail:
-      "Test an approved website, API, host, or application and follow the assessment as it runs.",
-    icon: Crosshair,
+      "Look up a website, a person or company, or known attackers from public sources.",
+    icon: Compass,
   },
   {
-    name: "OSINT investigations",
+    name: "2. Test",
     detail:
-      "Research live public domain, DNS, registration, and certificate signals from one investigation surface.",
-    icon: ScanSearch,
+      "Add a system you are allowed to test, then run a check and follow it.",
+    icon: FlaskConical,
   },
   {
-    name: "Findings and evidence",
+    name: "3. Fix",
     detail:
-      "Ask ARDI to review real findings, explain evidence, and identify the highest-priority remediation.",
-    icon: FileCheck2,
+      "Read the problems the check found and see what each one means.",
+    icon: Wrench,
   },
   {
-    name: "Security reporting",
+    name: "4. Report",
     detail:
-      "Generate assessment output from stored scans, verified findings, and approved target records.",
+      "Turn those results into a file your team can download.",
     icon: FileText,
   },
 ];

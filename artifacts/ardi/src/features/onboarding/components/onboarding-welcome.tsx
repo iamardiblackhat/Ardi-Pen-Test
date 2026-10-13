@@ -19,16 +19,15 @@ export function OnboardingWelcome({
         id="onboarding-welcome-title"
         className="mt-3 text-2xl font-bold sm:text-3xl"
       >
-        Choose the work. ARDI handles the route.
+        Four steps. Do them in order.
       </h2>
       <p className="mt-4 max-w-3xl text-base leading-7 text-indigo-100/75">
-        Start from the security outcome you need. The underlying services stay
-        inside ARDI; the workspace remains focused on your target, evidence, and
-        next action.
+        Research what is public, test only systems you are allowed to test, fix
+        the problems that come back, then write a report. First, add a target.
       </p>
       <SecurityCapabilityGrid />
       <Button className={`mt-7 ${primaryButtonClass}`} onClick={onContinue}>
-        Set authorised scope
+        Add a target
       </Button>
     </section>
   );

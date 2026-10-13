@@ -41,11 +41,11 @@ export function CreatePenTestDialog({ open, onOpenChange }: { open: boolean; onO
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild><Button className="glow-primary"><Plus className="mr-2 h-4 w-4" aria-hidden="true" />Start Pen Test</Button></DialogTrigger>
+      <DialogTrigger asChild><Button className="glow-primary"><Plus className="mr-2 h-4 w-4" aria-hidden="true" />Start a test</Button></DialogTrigger>
       <DialogContent>
-        <DialogHeader><DialogTitle>Start an authorised Pen Test</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>Start a security check</DialogTitle></DialogHeader>
         {assetsQuery.isError ? <p role="alert" className="rounded-lg bg-destructive/10 p-4 text-sm text-destructive">Authorised targets could not be loaded.</p> : null}
-        {!assetsQuery.isLoading && !assetsQuery.data?.length ? <div className="space-y-4 py-4 text-center"><ShieldCheck className="mx-auto h-9 w-9 text-primary" /><p className="text-sm text-muted-foreground">Add a target to authorised scope before starting a Pen Test.</p><Button type="button" onClick={() => navigate(routes.assets)}>Open authorised scope</Button></div> : null}
+        {!assetsQuery.isLoading && !assetsQuery.data?.length ? <div className="space-y-4 py-4 text-center"><ShieldCheck className="mx-auto h-9 w-9 text-primary" /><p className="text-sm text-muted-foreground">Add a target you are allowed to test before starting a check.</p><Button type="button" onClick={() => navigate(routes.test)}>Open targets</Button></div> : null}
         {assetsQuery.data?.length ? <form className="mt-4 space-y-4" onSubmit={submit}>
           <div className="space-y-2"><Label htmlFor="pen-test-name">Assessment name</Label><Input id="pen-test-name" required value={name} onChange={(event) => setName(event.target.value)} /></div>
           <div className="space-y-2"><Label htmlFor="pen-test-target">Authorised target</Label><Select value={assetId} onValueChange={setAssetId}><SelectTrigger id="pen-test-target"><SelectValue placeholder="Select a target" /></SelectTrigger><SelectContent>{assetsQuery.data.map((asset) => <SelectItem key={asset.id} value={String(asset.id)}>{asset.name} — {asset.target}</SelectItem>)}</SelectContent></Select></div>

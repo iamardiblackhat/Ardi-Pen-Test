@@ -42,12 +42,13 @@ router.post(
       res.json(await researchOpenSources(parsed.data));
     } catch (error) {
       logger.error({ err: error }, "Public-source research failed");
-      res
-        .status(503)
-        .json({
-          error:
-            "Live research could not complete. No result has been generated. Please try again later.",
-        });
+      const notConfigured =
+        error instanceof Error && /not configured/i.test(error.message);
+      res.status(503).json({
+        error: notConfigured
+          ? "Name and company research is not set up on this server. Website lookup still works. No result was invented."
+          : "Live research could not complete. No result has been generated. Please try again later.",
+      });
     }
   },
 );

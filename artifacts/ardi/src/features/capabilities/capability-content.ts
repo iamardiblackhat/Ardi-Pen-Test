@@ -37,7 +37,7 @@ export const publicCapabilities: PublicCapability[] = [
       "Focus on the UK, Europe, or worldwide",
     ],
     coverage: "Available through ARDI chat",
-    workspaceHref: routes.dashboard,
+    workspaceHref: routes.researchSubject,
     icon: Binoculars,
   },
   {
@@ -54,7 +54,7 @@ export const publicCapabilities: PublicCapability[] = [
       "Look up security certificates",
     ],
     coverage: "Available through ARDI chat",
-    workspaceHref: routes.osint,
+    workspaceHref: routes.research,
     icon: Globe2,
   },
   {
@@ -71,7 +71,7 @@ export const publicCapabilities: PublicCapability[] = [
       "Keep a record of the test",
     ],
     coverage: "Only test systems you have permission to check",
-    workspaceHref: routes.scans,
+    workspaceHref: routes.testRuns,
     icon: Crosshair,
   },
   {
@@ -88,7 +88,7 @@ export const publicCapabilities: PublicCapability[] = [
       "Review the test results",
     ],
     coverage: "Only test systems you have permission to check",
-    workspaceHref: routes.findings,
+    workspaceHref: routes.fix,
     icon: FileSearch2,
   },
   {
@@ -105,7 +105,7 @@ export const publicCapabilities: PublicCapability[] = [
       "Search the available records",
     ],
     coverage: "Connected threat records",
-    workspaceHref: routes.intelligence,
+    workspaceHref: routes.researchThreats,
     icon: Radar,
   },
   {
@@ -122,7 +122,7 @@ export const publicCapabilities: PublicCapability[] = [
       "Understand where protection is needed",
     ],
     coverage: "Based on your test results",
-    workspaceHref: routes.mitre,
+    workspaceHref: routes.fixMeaning,
     icon: Network,
   },
   {
@@ -139,7 +139,7 @@ export const publicCapabilities: PublicCapability[] = [
       "Ask ARDI to prepare a report",
     ],
     coverage: "Based on your completed tests",
-    workspaceHref: routes.reports,
+    workspaceHref: routes.report,
     icon: FileCheck2,
   },
 ];
