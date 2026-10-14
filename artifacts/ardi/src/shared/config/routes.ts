@@ -7,6 +7,7 @@ export const routes = {
   privacy: '/privacy',
   cookies: '/cookies',
   faq: '/faq',
+  security: '/security',
   onboarding: '/onboarding',
   dashboard: '/dashboard',
   research: '/research',

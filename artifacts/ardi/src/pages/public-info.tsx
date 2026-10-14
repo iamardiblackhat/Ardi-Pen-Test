@@ -60,6 +60,7 @@ function PublicInfoPage({
         <Link href="/privacy">Privacy</Link>
         <Link href="/cookies">Cookies</Link>
         <Link href="/faq">FAQs</Link>
+        <Link href="/security">Security</Link>
       </footer>
     </div>
   );

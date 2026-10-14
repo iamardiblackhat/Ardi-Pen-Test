@@ -3,6 +3,7 @@ import { routes } from "@/shared/config/routes";
 export const primaryNavigation = [
   { id: "operations", label: "Operations", href: "/#operations" },
   { id: "capabilities", label: "Capabilities", href: routes.capabilities },
+  { id: "security", label: "Security", href: routes.security },
   { id: "intelligence", label: "Threat dashboard", href: routes.intelligence },
   { id: "assistant", label: "ARDI", href: "/#assistant" },
 ] as const;
