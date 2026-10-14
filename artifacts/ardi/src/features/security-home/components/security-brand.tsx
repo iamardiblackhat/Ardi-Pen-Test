@@ -7,7 +7,7 @@ export function SecurityMark() {
 
 export function SecurityBrand({ onClick }: { onClick?: () => void }) {
   return (
-    <Link href={routes.home} className="ardi-v2-brand" onClick={onClick} aria-label="ARDI SEC home">
+    <Link href={routes.home} className="ardi-v2-brand" onClick={onClick}>
       <SecurityMark />
       <span><b>ARDI SEC</b><small>AUTHORISED SECURITY PLATFORM</small></span>
     </Link>
