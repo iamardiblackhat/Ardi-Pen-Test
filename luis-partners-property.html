@@ -1,0 +1,1239 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Personal property guidance from Dee Zeqiri at Luis & Partners Property."
+    />
+    <meta name="theme-color" content="#123c46" />
+    <title>Dee Zeqiri | Luis & Partners Property</title>
+    <style>
+      :root {
+        --ink: #132d35;
+        --ink-soft: #476068;
+        --paper: #f7f7f2;
+        --surface: #ffffff;
+        --mist: #e8f2f0;
+        --teal: #0f7173;
+        --teal-dark: #0a5557;
+        --navy: #123c46;
+        --line: #c8d8d5;
+        --shadow: 0 18px 50px rgba(17, 58, 68, 0.12);
+        --radius: 1.25rem;
+        --content: 74rem;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+        scroll-padding-top: 6rem;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--paper);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        font-size: 1rem;
+        line-height: 1.6;
+      }
+
+      body:has(dialog[open]) {
+        overflow: hidden;
+      }
+
+      img {
+        display: block;
+        max-width: 100%;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      button,
+      a {
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      button {
+        font: inherit;
+      }
+
+      :focus-visible {
+        outline: 3px solid #f3bd4f;
+        outline-offset: 3px;
+      }
+
+      .skip-link {
+        position: fixed;
+        z-index: 100;
+        top: 0.75rem;
+        left: 0.75rem;
+        padding: 0.75rem 1rem;
+        color: white;
+        background: var(--navy);
+        border-radius: 0.5rem;
+        transform: translateY(-160%);
+      }
+
+      .skip-link:focus {
+        transform: translateY(0);
+      }
+
+      .site-header {
+        position: sticky;
+        z-index: 20;
+        top: 0;
+        color: white;
+        background: rgba(18, 60, 70, 0.97);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+        backdrop-filter: blur(14px);
+      }
+
+      .header-inner {
+        width: min(100% - 2rem, var(--content));
+        margin-inline: auto;
+        padding-block: 0.75rem;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        color: white;
+        text-decoration: none;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 2.7rem;
+        height: 2.7rem;
+        flex: 0 0 auto;
+        place-items: center;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--navy);
+        background: #bde4dd;
+        border-radius: 50% 50% 50% 0;
+      }
+
+      .brand-copy {
+        display: grid;
+        line-height: 1.15;
+      }
+
+      .brand-copy strong {
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 1.05rem;
+        letter-spacing: 0.01em;
+      }
+
+      .brand-copy small {
+        margin-top: 0.15rem;
+        color: #c7dcd9;
+        font-size: 0.66rem;
+        font-weight: 700;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+      }
+
+      .site-nav {
+        display: flex;
+        gap: 0.3rem;
+        margin-top: 0.7rem;
+        padding-bottom: 0.05rem;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+
+      .site-nav::-webkit-scrollbar {
+        display: none;
+      }
+
+      .site-nav a {
+        display: inline-flex;
+        min-height: 2.75rem;
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: center;
+        padding: 0.65rem 0.9rem;
+        color: #e7f2f0;
+        border: 1px solid transparent;
+        border-radius: 999px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .site-nav a:hover,
+      .site-nav a[aria-current="page"] {
+        color: var(--navy);
+        background: #bde4dd;
+      }
+
+      main {
+        overflow: hidden;
+      }
+
+      .section-shell {
+        width: min(100% - 2rem, var(--content));
+        margin-inline: auto;
+      }
+
+      .founder {
+        padding-block: 1rem 3.5rem;
+        background:
+          radial-gradient(circle at 105% 15%, rgba(189, 228, 221, 0.72), transparent 34rem),
+          var(--mist);
+      }
+
+      .founder-portrait {
+        position: relative;
+        overflow: hidden;
+        aspect-ratio: 4 / 4.7;
+        border-radius: 0 0 6rem 0;
+        box-shadow: var(--shadow);
+      }
+
+      .founder-portrait img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center 24%;
+      }
+
+      .portrait-note {
+        position: absolute;
+        right: 0.75rem;
+        bottom: 0.75rem;
+        max-width: 11rem;
+        padding: 0.7rem 0.85rem;
+        color: white;
+        background: rgba(18, 60, 70, 0.92);
+        border-radius: 0.75rem 0 1.8rem 0.75rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        line-height: 1.3;
+      }
+
+      .founder-copy {
+        padding-top: 2rem;
+      }
+
+      .eyebrow,
+      .team-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        color: var(--teal-dark);
+        font-size: 0.75rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .team-badge {
+        min-height: 2rem;
+        padding: 0.3rem 0.7rem;
+        background: rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(15, 113, 115, 0.25);
+        border-radius: 999px;
+      }
+
+      .team-badge svg {
+        width: 1rem;
+        height: 1rem;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+
+      h1,
+      h2,
+      h3 {
+        font-family: Georgia, "Times New Roman", serif;
+        line-height: 1.08;
+      }
+
+      h1 {
+        max-width: 13ch;
+        margin-block: 1rem;
+        font-size: clamp(2.55rem, 12vw, 5.6rem);
+        font-weight: 500;
+        letter-spacing: -0.05em;
+      }
+
+      h1 em {
+        color: var(--teal);
+        font-weight: inherit;
+      }
+
+      .founder-copy > p {
+        max-width: 39rem;
+        color: #294a53;
+        font-size: 1.05rem;
+      }
+
+      .founder-signature {
+        margin-bottom: 0.25rem;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 1.35rem;
+        font-style: italic;
+      }
+
+      .founder-role {
+        color: var(--ink-soft);
+        font-size: 0.84rem;
+        font-weight: 750;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .hero-actions,
+      .contact-actions,
+      .card-actions {
+        display: grid;
+        gap: 0.75rem;
+      }
+
+      .hero-actions {
+        margin-top: 1.6rem;
+      }
+
+      .button {
+        display: inline-flex;
+        min-height: 3rem;
+        align-items: center;
+        justify-content: center;
+        gap: 0.55rem;
+        padding: 0.75rem 1.1rem;
+        border: 1px solid transparent;
+        border-radius: 999px;
+        font-size: 0.94rem;
+        font-weight: 800;
+        text-align: center;
+        text-decoration: none;
+        cursor: pointer;
+        transition:
+          transform 180ms ease,
+          color 180ms ease,
+          background 180ms ease,
+          border-color 180ms ease;
+      }
+
+      .button:hover {
+        transform: translateY(-2px);
+      }
+
+      .button-primary {
+        color: white;
+        background: var(--teal);
+        box-shadow: 0 10px 24px rgba(15, 113, 115, 0.2);
+      }
+
+      .button-primary:hover {
+        background: var(--teal-dark);
+      }
+
+      .button-secondary {
+        color: var(--navy);
+        background: transparent;
+        border-color: rgba(18, 60, 70, 0.35);
+      }
+
+      .button-secondary:hover {
+        background: white;
+        border-color: var(--teal);
+      }
+
+      .scroll-cue {
+        display: inline-flex;
+        min-height: 2.75rem;
+        align-items: center;
+        gap: 0.6rem;
+        margin-top: 1.6rem;
+        padding: 0.55rem 0;
+        color: var(--teal-dark);
+        font-size: 0.88rem;
+        font-weight: 800;
+        text-decoration: none;
+      }
+
+      .scroll-cue span {
+        display: grid;
+        width: 2.4rem;
+        height: 2.4rem;
+        place-items: center;
+        color: white;
+        background: var(--navy);
+        border-radius: 50%;
+      }
+
+      .contact-band {
+        position: relative;
+        z-index: 2;
+        width: min(100% - 2rem, var(--content));
+        margin: -1.5rem auto 0;
+        padding: 1.35rem;
+        color: white;
+        background: var(--navy);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+      }
+
+      .contact-band .eyebrow {
+        color: #bde4dd;
+      }
+
+      .contact-band h2 {
+        margin-block: 0.4rem 0.5rem;
+        font-size: clamp(1.65rem, 7vw, 2.4rem);
+        font-weight: 500;
+      }
+
+      .contact-band p {
+        color: #d5e6e3;
+        font-size: 0.94rem;
+      }
+
+      .contact-band .button-primary {
+        color: var(--navy);
+        background: #bde4dd;
+      }
+
+      .contact-band .button-secondary {
+        color: white;
+        border-color: rgba(255, 255, 255, 0.42);
+      }
+
+      .properties {
+        padding-block: 4.5rem;
+      }
+
+      .section-heading {
+        display: grid;
+        gap: 0.8rem;
+        margin-bottom: 1.8rem;
+      }
+
+      .section-heading h2 {
+        margin-bottom: 0;
+        font-size: clamp(2.2rem, 9vw, 4rem);
+        font-weight: 500;
+        letter-spacing: -0.035em;
+      }
+
+      .section-heading p {
+        max-width: 34rem;
+        margin-bottom: 0;
+        color: var(--ink-soft);
+      }
+
+      .property-grid {
+        display: grid;
+        gap: 1.25rem;
+      }
+
+      .property-card {
+        overflow: hidden;
+        background: var(--surface);
+        border: 1px solid rgba(18, 60, 70, 0.12);
+        border-radius: var(--radius);
+        box-shadow: 0 8px 30px rgba(17, 58, 68, 0.08);
+      }
+
+      .property-image {
+        position: relative;
+        overflow: hidden;
+        aspect-ratio: 4 / 3;
+        background: var(--mist);
+      }
+
+      .property-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 500ms ease;
+      }
+
+      .property-card:hover .property-image img {
+        transform: scale(1.025);
+      }
+
+      .property-status {
+        position: absolute;
+        top: 0.8rem;
+        left: 0.8rem;
+        padding: 0.35rem 0.65rem;
+        color: var(--navy);
+        background: rgba(255, 255, 255, 0.93);
+        border-radius: 999px;
+        font-size: 0.7rem;
+        font-weight: 850;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .property-content {
+        padding: 1.15rem;
+      }
+
+      .property-price {
+        margin-bottom: 0.35rem;
+        color: var(--teal-dark);
+        font-size: 1rem;
+        font-weight: 850;
+      }
+
+      .property-content h3 {
+        margin-bottom: 0.85rem;
+        font-size: 1.55rem;
+        font-weight: 500;
+      }
+
+      .property-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem 0.85rem;
+        margin: 0 0 1.15rem;
+        padding: 0 0 1rem;
+        border-bottom: 1px solid var(--line);
+        list-style: none;
+      }
+
+      .property-meta li {
+        color: var(--ink-soft);
+        font-size: 0.82rem;
+        font-weight: 750;
+      }
+
+      .card-actions .button-secondary {
+        border-color: var(--line);
+      }
+
+      .story {
+        padding-block: 4rem;
+        color: white;
+        background: var(--navy);
+      }
+
+      .story-grid {
+        display: grid;
+        gap: 2rem;
+      }
+
+      .story h2 {
+        margin-block: 0.6rem 1rem;
+        font-size: clamp(2.2rem, 9vw, 4.3rem);
+        font-weight: 500;
+        letter-spacing: -0.04em;
+      }
+
+      .story .eyebrow {
+        color: #bde4dd;
+      }
+
+      .story p {
+        color: #d4e4e2;
+      }
+
+      .story-points {
+        display: grid;
+        gap: 0.8rem;
+      }
+
+      .story-point {
+        display: grid;
+        grid-template-columns: 2.4rem 1fr;
+        gap: 0.85rem;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.13);
+        border-radius: 1rem;
+      }
+
+      .story-point strong {
+        display: grid;
+        width: 2.4rem;
+        height: 2.4rem;
+        place-items: center;
+        color: var(--navy);
+        background: #bde4dd;
+        border-radius: 50%;
+        font-family: Georgia, "Times New Roman", serif;
+      }
+
+      .story-point h3 {
+        margin-bottom: 0.3rem;
+        font-size: 1.15rem;
+      }
+
+      .story-point p {
+        margin-bottom: 0;
+        font-size: 0.9rem;
+      }
+
+      .back-to-top {
+        display: inline-flex;
+        min-height: 2.75rem;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+        color: #bde4dd;
+        font-weight: 800;
+        text-decoration: none;
+      }
+
+      .site-footer {
+        padding-block: 2.5rem 6rem;
+        text-align: center;
+      }
+
+      .site-footer p {
+        margin-bottom: 0.3rem;
+        color: var(--ink-soft);
+        font-size: 0.85rem;
+      }
+
+      .mobile-book {
+        position: fixed;
+        z-index: 15;
+        right: 0.75rem;
+        bottom: 0.75rem;
+        left: 0.75rem;
+      }
+
+      dialog {
+        width: min(calc(100% - 1.5rem), 42rem);
+        max-height: calc(100dvh - 2rem);
+        padding: 0;
+        overflow: auto;
+        color: var(--ink);
+        background: var(--surface);
+        border: 0;
+        border-radius: var(--radius);
+        box-shadow: 0 30px 90px rgba(8, 36, 43, 0.38);
+      }
+
+      dialog::backdrop {
+        background: rgba(8, 36, 43, 0.76);
+        backdrop-filter: blur(5px);
+      }
+
+      .modal-inner {
+        position: relative;
+        padding: 1.4rem;
+      }
+
+      .modal-close {
+        position: sticky;
+        z-index: 1;
+        top: 0.75rem;
+        display: grid;
+        width: 2.75rem;
+        height: 2.75rem;
+        margin-left: auto;
+        place-items: center;
+        color: white;
+        background: var(--navy);
+        border: 0;
+        border-radius: 50%;
+        cursor: pointer;
+      }
+
+      .modal-kicker {
+        margin-top: -1.5rem;
+        color: var(--teal-dark);
+        font-size: 0.75rem;
+        font-weight: 850;
+        letter-spacing: 0.11em;
+        text-transform: uppercase;
+      }
+
+      .modal-inner h2 {
+        margin-bottom: 0.6rem;
+        font-size: clamp(2rem, 9vw, 3.25rem);
+        font-weight: 500;
+      }
+
+      .modal-price {
+        margin-bottom: 1.2rem;
+        color: var(--teal-dark);
+        font-size: 1.2rem;
+        font-weight: 850;
+      }
+
+      .modal-features {
+        display: grid;
+        gap: 0.5rem;
+        margin-block: 1.25rem;
+        padding: 0;
+        list-style: none;
+      }
+
+      .modal-features li {
+        padding: 0.7rem 0.8rem;
+        background: var(--mist);
+        border-radius: 0.65rem;
+      }
+
+      @media (min-width: 42rem) {
+        .header-inner {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 1rem;
+        }
+
+        .site-nav {
+          margin-top: 0;
+        }
+
+        .founder {
+          padding-block: 2rem 5rem;
+        }
+
+        .founder .section-shell {
+          display: grid;
+          grid-template-columns: minmax(17rem, 0.8fr) minmax(22rem, 1.2fr);
+          align-items: center;
+          gap: clamp(2rem, 7vw, 6rem);
+        }
+
+        .founder-copy {
+          padding-top: 0;
+        }
+
+        .hero-actions,
+        .contact-actions,
+        .card-actions {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .contact-band {
+          display: grid;
+          grid-template-columns: 1.3fr 1fr;
+          align-items: center;
+          gap: 2rem;
+          padding: 1.8rem 2rem;
+        }
+
+        .contact-band p {
+          margin-bottom: 0;
+        }
+
+        .section-heading {
+          grid-template-columns: 1.15fr 0.85fr;
+          align-items: end;
+        }
+
+        .property-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .property-card:first-child {
+          grid-column: 1 / -1;
+          display: grid;
+          grid-template-columns: 1.1fr 0.9fr;
+        }
+
+        .property-card:first-child .property-image {
+          aspect-ratio: auto;
+          min-height: 25rem;
+        }
+
+        .property-card:first-child .property-content {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          padding: clamp(1.5rem, 4vw, 3rem);
+        }
+
+        .story-grid {
+          grid-template-columns: 0.9fr 1.1fr;
+          align-items: start;
+          gap: clamp(2rem, 8vw, 7rem);
+        }
+
+        .site-footer {
+          padding-bottom: 2.5rem;
+        }
+
+        .mobile-book {
+          display: none;
+        }
+
+        .modal-features {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (min-width: 68rem) {
+        .property-grid {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .property-card:first-child {
+          grid-column: auto;
+          display: block;
+        }
+
+        .property-card:first-child .property-image {
+          min-height: 0;
+          aspect-ratio: 4 / 3;
+        }
+
+        .property-card:first-child .property-content {
+          display: block;
+          padding: 1.15rem;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          transition-duration: 0.01ms !important;
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+        }
+      }
+    </style>
+  </head>
+  <body id="top">
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="#top" aria-label="Luis and Partners Property home">
+          <span class="brand-mark" aria-hidden="true">L&amp;P</span>
+          <span class="brand-copy">
+            <strong>Luis &amp; Partners</strong>
+            <small>Property, personally</small>
+          </span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="#about" aria-current="page">Meet Dee</a>
+          <a href="#properties">Properties</a>
+          <a href="#story">My approach</a>
+          <a href="#contact">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <section class="founder" id="about" aria-labelledby="founder-title">
+        <div class="section-shell">
+          <div class="founder-portrait">
+            <picture>
+              <source
+                media="(min-width: 720px)"
+                srcset="assets/luis-partners/dee-zeqiri-960.webp"
+              />
+              <img
+                src="assets/luis-partners/dee-zeqiri-480.webp"
+                srcset="
+                  assets/luis-partners/dee-zeqiri-480.webp 480w,
+                  assets/luis-partners/dee-zeqiri-960.webp 960w
+                "
+                sizes="(min-width: 720px) 38vw, calc(100vw - 2rem)"
+                width="960"
+                height="1438"
+                alt="Dee Zeqiri, founder of Luis &amp; Partners Property"
+                fetchpriority="high"
+                decoding="async"
+              />
+            </picture>
+            <span class="portrait-note">Local insight. Straight answers. Always personal.</span>
+          </div>
+
+          <div class="founder-copy">
+            <span class="team-badge">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                />
+              </svg>
+              Meet the team
+            </span>
+            <h1 id="founder-title">Property feels different when it’s <em>personal.</em></h1>
+            <p>
+              I’m Dee, founder of Luis &amp; Partners. I pair honest advice with detailed
+              knowledge of London’s neighbourhoods, so every move feels considered—not
+              hurried.
+            </p>
+            <p>
+              Whether you’re finding a first home, making your next investment, or preparing
+              to sell, you’ll deal directly with me from our first conversation to the keys.
+            </p>
+            <p class="founder-signature">Dee Zeqiri</p>
+            <p class="founder-role">Founder &amp; property partner</p>
+            <div class="hero-actions">
+              <a
+                class="button button-primary"
+                href="mailto:hello@luisandpartners.co.uk?subject=Start%20my%20property%20tour"
+              >
+                Start your property tour
+              </a>
+              <a class="button button-secondary" href="tel:+442045387782">Call Dee</a>
+            </div>
+            <a class="scroll-cue" href="#properties">
+              <span aria-hidden="true">↓</span>
+              Scroll to properties
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <aside class="contact-band" id="contact" aria-labelledby="contact-title">
+        <div>
+          <span class="eyebrow">Ready when you are</span>
+          <h2 id="contact-title">See something you like?</h2>
+          <p>Speak directly with Dee and arrange a viewing around your schedule.</p>
+        </div>
+        <div class="contact-actions">
+          <a class="button button-primary" href="tel:+442045387782">Call 020 4538 7782</a>
+          <a class="button button-secondary" href="mailto:hello@luisandpartners.co.uk">
+            Email Dee
+          </a>
+        </div>
+      </aside>
+
+      <section class="properties" id="properties" aria-labelledby="properties-title">
+        <div class="section-shell">
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow">Hand-picked homes</span>
+              <h2 id="properties-title">Current properties</h2>
+            </div>
+            <p>
+              A focused collection of homes with character, strong locations, and room for
+              your next chapter.
+            </p>
+          </div>
+
+          <div class="property-grid">
+            <article class="property-card">
+              <div class="property-image">
+                <img
+                  src="assets/luis-partners/kingsbury-960.webp"
+                  width="960"
+                  height="640"
+                  alt="Contemporary detached home with a landscaped garden in Kingsbury"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span class="property-status">For sale</span>
+              </div>
+              <div class="property-content">
+                <p class="property-price">Offers over £900,000</p>
+                <h3>Kingsbury Road, NW9</h3>
+                <ul class="property-meta" aria-label="Property summary">
+                  <li>6 bedrooms</li>
+                  <li>4 bathrooms</li>
+                  <li>2,276 sq ft</li>
+                </ul>
+                <div class="card-actions">
+                  <a
+                    class="button button-primary"
+                    href="mailto:hello@luisandpartners.co.uk?subject=Book%20a%20tour%20%E2%80%94%20Kingsbury%20Road"
+                  >
+                    Book a tour
+                  </a>
+                  <button
+                    class="button button-secondary learn-more"
+                    type="button"
+                    data-property="kingsbury"
+                    aria-haspopup="dialog"
+                  >
+                    Learn more
+                  </button>
+                </div>
+              </div>
+            </article>
+
+            <article class="property-card">
+              <div class="property-image">
+                <img
+                  src="assets/luis-partners/rainville-960.webp"
+                  width="960"
+                  height="640"
+                  alt="Light-filled warehouse-style apartment interior in Hammersmith"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span class="property-status">To let</span>
+              </div>
+              <div class="property-content">
+                <p class="property-price">£3,425 pcm</p>
+                <h3>Rainville Road, W6</h3>
+                <ul class="property-meta" aria-label="Property summary">
+                  <li>1 bedroom</li>
+                  <li>1 bathroom</li>
+                  <li>623 sq ft</li>
+                </ul>
+                <div class="card-actions">
+                  <a
+                    class="button button-primary"
+                    href="mailto:hello@luisandpartners.co.uk?subject=Book%20a%20tour%20%E2%80%94%20Rainville%20Road"
+                  >
+                    Book a tour
+                  </a>
+                  <button
+                    class="button button-secondary learn-more"
+                    type="button"
+                    data-property="rainville"
+                    aria-haspopup="dialog"
+                  >
+                    Learn more
+                  </button>
+                </div>
+              </div>
+            </article>
+
+            <article class="property-card">
+              <div class="property-image">
+                <img
+                  src="assets/luis-partners/belsize-960.webp"
+                  width="960"
+                  height="653"
+                  alt="Elegant apartment living room with floor-to-ceiling windows in Belsize Park"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span class="property-status">Off market</span>
+              </div>
+              <div class="property-content">
+                <p class="property-price">Guide price £1,250,000</p>
+                <h3>Belsize Park Gardens, NW3</h3>
+                <ul class="property-meta" aria-label="Property summary">
+                  <li>3 bedrooms</li>
+                  <li>2 bathrooms</li>
+                  <li>1,410 sq ft</li>
+                </ul>
+                <div class="card-actions">
+                  <a
+                    class="button button-primary"
+                    href="mailto:hello@luisandpartners.co.uk?subject=Book%20a%20tour%20%E2%80%94%20Belsize%20Park%20Gardens"
+                  >
+                    Book a tour
+                  </a>
+                  <button
+                    class="button button-secondary learn-more"
+                    type="button"
+                    data-property="belsize"
+                    aria-haspopup="dialog"
+                  >
+                    Learn more
+                  </button>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="story" id="story" aria-labelledby="story-title">
+        <div class="section-shell story-grid">
+          <div>
+            <span class="eyebrow">The Luis &amp; Partners way</span>
+            <h2 id="story-title">Advice built around your life.</h2>
+            <p>
+              Property decisions carry real weight. My role is to make the process clearer,
+              calmer, and genuinely useful at every step.
+            </p>
+          </div>
+          <div>
+            <div class="story-points">
+              <article class="story-point">
+                <strong aria-hidden="true">1</strong>
+                <div>
+                  <h3>One point of contact</h3>
+                  <p>You speak with me directly, so context never gets lost between teams.</p>
+                </div>
+              </article>
+              <article class="story-point">
+                <strong aria-hidden="true">2</strong>
+                <div>
+                  <h3>Honest local perspective</h3>
+                  <p>Clear guidance on value, streets, schools, and the details listings miss.</p>
+                </div>
+              </article>
+              <article class="story-point">
+                <strong aria-hidden="true">3</strong>
+                <div>
+                  <h3>A considered pace</h3>
+                  <p>Fast when it matters, never rushed when the decision deserves more time.</p>
+                </div>
+              </article>
+            </div>
+            <a class="back-to-top" href="#top">↑ Back to top</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="section-shell">
+        <p><strong>Luis &amp; Partners Property</strong></p>
+        <p>Personal property guidance across London.</p>
+        <p>&copy; <span id="year"></span> Luis &amp; Partners Property.</p>
+      </div>
+    </footer>
+
+    <a
+      class="button button-primary mobile-book"
+      href="mailto:hello@luisandpartners.co.uk?subject=Start%20my%20property%20tour"
+    >
+      Start your property tour
+    </a>
+
+    <dialog id="property-dialog" aria-labelledby="modal-title">
+      <div class="modal-inner">
+        <button class="modal-close" type="button" aria-label="Close property details">×</button>
+        <p class="modal-kicker" id="modal-kicker"></p>
+        <h2 id="modal-title"></h2>
+        <p class="modal-price" id="modal-price"></p>
+        <p id="modal-description"></p>
+        <ul class="modal-features" id="modal-features"></ul>
+        <a class="button button-primary" id="modal-book" href="#">Book a tour</a>
+      </div>
+    </dialog>
+
+    <script>
+      const properties = {
+        kingsbury: {
+          status: "For sale",
+          title: "Kingsbury Road, NW9",
+          price: "Offers over £900,000",
+          description:
+            "A generous detached family home combining flexible living space with a wraparound garden and a private driveway. Well connected while still feeling tucked away.",
+          features: [
+            "Six bedrooms",
+            "Four bathrooms",
+            "Three reception spaces",
+            "Private driveway",
+            "Wraparound garden",
+            "2,276 sq ft",
+          ],
+        },
+        rainville: {
+          status: "To let",
+          title: "Rainville Road, W6",
+          price: "£3,425 pcm",
+          description:
+            "An interior-designed warehouse apartment set within a gated riverside development. High ceilings, crafted finishes, and calm courtyard views give it a distinctive sense of space.",
+          features: [
+            "One bedroom",
+            "One bathroom",
+            "Riverside setting",
+            "Gated development",
+            "Courtyard aspect",
+            "623 sq ft",
+          ],
+        },
+        belsize: {
+          status: "Discreetly available",
+          title: "Belsize Park Gardens, NW3",
+          price: "Guide price £1,250,000",
+          description:
+            "A bright, beautifully proportioned apartment on one of Belsize Park’s most sought-after streets, with leafy outlooks and generous entertaining space.",
+          features: [
+            "Three bedrooms",
+            "Two bathrooms",
+            "Share of freehold",
+            "Period details",
+            "Communal garden",
+            "1,410 sq ft",
+          ],
+        },
+      };
+
+      const dialog = document.querySelector("#property-dialog");
+      const modalKicker = document.querySelector("#modal-kicker");
+      const modalTitle = document.querySelector("#modal-title");
+      const modalPrice = document.querySelector("#modal-price");
+      const modalDescription = document.querySelector("#modal-description");
+      const modalFeatures = document.querySelector("#modal-features");
+      const modalBook = document.querySelector("#modal-book");
+      const closeButton = dialog.querySelector(".modal-close");
+
+      document.querySelectorAll(".learn-more").forEach((button) => {
+        button.addEventListener("click", () => {
+          const property = properties[button.dataset.property];
+          modalKicker.textContent = property.status;
+          modalTitle.textContent = property.title;
+          modalPrice.textContent = property.price;
+          modalDescription.textContent = property.description;
+          modalFeatures.replaceChildren(
+            ...property.features.map((feature) => {
+              const item = document.createElement("li");
+              item.textContent = feature;
+              return item;
+            }),
+          );
+          modalBook.href = `mailto:hello@luisandpartners.co.uk?subject=${encodeURIComponent(
+            `Book a tour — ${property.title}`,
+          )}`;
+          dialog.showModal();
+        });
+      });
+
+      closeButton.addEventListener("click", () => dialog.close());
+      dialog.addEventListener("click", (event) => {
+        if (event.target === dialog) dialog.close();
+      });
+
+      const navLinks = [...document.querySelectorAll(".site-nav a")];
+      const observedSections = navLinks
+        .map((link) => document.querySelector(link.hash))
+        .filter(Boolean);
+      const sectionObserver = new IntersectionObserver(
+        (entries) => {
+          const visibleSection = entries
+            .filter((entry) => entry.isIntersecting)
+            .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+          if (!visibleSection) return;
+
+          navLinks.forEach((link) => {
+            if (link.hash === `#${visibleSection.target.id}`) {
+              link.setAttribute("aria-current", "page");
+            } else {
+              link.removeAttribute("aria-current");
+            }
+          });
+        },
+        { rootMargin: "-25% 0px -55% 0px", threshold: [0, 0.25, 0.6] },
+      );
+
+      observedSections.forEach((section) => sectionObserver.observe(section));
+      document.querySelector("#year").textContent = new Date().getFullYear();
+    </script>
+  </body>
+</html>
