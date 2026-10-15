@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Luis &amp; Partners Property — Dee Zeqiri’s sales portfolio</title>
+    <meta
+      name="description"
+      content="Luis & Partners Property, founded by Dee Zeqiri. A London sales portfolio: homes for sale, advice for owners, and a direct line to enquire."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Josefin+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --harbor: #134e4a;
+        --tide: #0f766e;
+        --sky: #0369a1;
+        --foam: #f0fdfa;
+        --mist: #e7f5f3;
+        --paper: #ffffff;
+        --ink: #134e4a;
+        --muted: #245c57;
+        --line: #b7ddd6;
+        --focus: #0369a1;
+        --display: "Cinzel", "Palatino Linotype", Palatino, serif;
+        --body: "Josefin Sans", "Avenir Next", "Segoe UI", sans-serif;
+        --thumb: 4.75rem;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background: var(--foam);
+        color: var(--ink);
+        font-family: var(--body);
+        font-size: 1.0625rem;
+        font-weight: 400;
+        line-height: 1.55;
+        padding-bottom: calc(var(--thumb) + env(safe-area-inset-bottom));
+      }
+
+      img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      a {
+        color: var(--sky);
+      }
+
+      :focus-visible {
+        outline: 3px solid var(--focus);
+        outline-offset: 3px;
+      }
+
+      .skip {
+        position: absolute;
+        left: 1rem;
+        top: 0;
+        transform: translateY(-120%);
+        background: var(--paper);
+        color: var(--harbor);
+        padding: 0.75rem 1rem;
+        z-index: 20;
+      }
+
+      .skip:focus {
+        transform: none;
+      }
+
+      .wrap {
+        width: min(72rem, calc(100% - 2rem));
+        margin-inline: auto;
+      }
+
+      .brandbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: rgb(240 253 250 / 0.94);
+        border-bottom: 1px solid var(--line);
+        backdrop-filter: blur(8px);
+      }
+
+      .brandbar .wrap {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        min-height: 4rem;
+      }
+
+      .brand {
+        color: var(--harbor);
+        text-decoration: none;
+        font-family: var(--display);
+        font-size: 0.95rem;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .desk-nav {
+        display: none;
+        gap: 0.35rem;
+      }
+
+      .desk-nav a,
+      .text-btn,
+      .book,
+      .learn,
+      .thumb a,
+      .close {
+        font-family: var(--body);
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .desk-nav a {
+        color: var(--harbor);
+        min-height: 2.75rem;
+        display: inline-flex;
+        align-items: center;
+        padding: 0.7rem 1rem;
+        border-radius: 999px;
+        font-size: 1.05rem;
+      }
+
+      .desk-nav a:hover,
+      .desk-nav a[aria-current="true"] {
+        background: #ccfbf1;
+        color: var(--tide);
+      }
+
+      .founder {
+        background: var(--harbor);
+        color: #f7fffe;
+        padding: 1.15rem 0 1rem;
+      }
+
+      .seal {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        min-height: 2.75rem;
+        margin: 0 0 1rem;
+        padding: 0.35rem 0.85rem 0.35rem 0.4rem;
+        border: 1px solid rgb(255 255 255 / 0.35);
+        border-radius: 999px;
+        color: #f7fffe;
+        font-size: 0.95rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+      }
+
+      .seal svg {
+        width: 2rem;
+        height: 2rem;
+        flex: none;
+      }
+
+      .founder h1 {
+        margin: 0 0 0.35rem;
+        font-family: var(--display);
+        font-size: clamp(2.4rem, 8vw, 4.2rem);
+        font-weight: 600;
+        line-height: 1.05;
+        letter-spacing: 0.02em;
+      }
+
+      .role {
+        margin: 0 0 1rem;
+        color: #d5f5f0;
+        font-size: 1.05rem;
+        font-weight: 500;
+      }
+
+      .founder p {
+        margin: 0 0 1.25rem;
+        max-width: 38rem;
+        color: #f3fffd;
+        font-size: 1.125rem;
+      }
+
+      .primary,
+      .book,
+      .band a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 3rem;
+        padding: 0.8rem 1.1rem;
+        border-radius: 0.75rem;
+        background: var(--sky);
+        color: #ffffff;
+        font-weight: 700;
+        text-decoration: none;
+        text-align: center;
+      }
+
+      .primary:hover,
+      .book:hover,
+      .band a:hover {
+        background: #075985;
+      }
+
+      .founder-actions {
+        display: grid;
+        gap: 0.75rem;
+      }
+
+      .primary.ghost {
+        background: transparent;
+        color: #f7fffe;
+        border: 2px solid #f7fffe;
+      }
+
+      .primary.ghost:hover {
+        background: rgb(255 255 255 / 0.12);
+      }
+
+      .status {
+        display: inline-flex;
+        align-items: center;
+        min-height: 2rem;
+        margin: 0;
+        padding: 0.2rem 0.7rem;
+        border-radius: 999px;
+        background: var(--tide);
+        color: #ffffff;
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        justify-self: start;
+      }
+
+      .status.let {
+        background: var(--sky);
+      }
+
+      .lanes {
+        display: grid;
+        gap: 0.75rem;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .lane {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 1rem;
+        padding: 1rem;
+      }
+
+      .lane h3 {
+        margin: 0 0 0.35rem;
+        font-size: 1.2rem;
+      }
+
+      .lane p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .story {
+        padding: 2rem 0 0.5rem;
+      }
+
+      .story h2,
+      .homes h2 {
+        margin: 0 0 0.6rem;
+        font-size: 1.7rem;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+      }
+
+      .story p,
+      .homes > .wrap > p {
+        margin: 0 0 1rem;
+        max-width: 40rem;
+        color: var(--muted);
+      }
+
+      .frame {
+        margin: 0.5rem 0 1.25rem;
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 1rem;
+        overflow: hidden;
+      }
+
+      .frame img {
+        width: 100%;
+        aspect-ratio: 3 / 2;
+        object-fit: cover;
+      }
+
+      .frame figcaption {
+        padding: 0.75rem 1rem 0.9rem;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .jumps {
+        display: grid;
+        gap: 0.75rem;
+        margin: 0 0 1.5rem;
+      }
+
+      .text-btn {
+        min-height: 3rem;
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--tide);
+        border-radius: 0.75rem;
+        background: var(--paper);
+        color: var(--tide);
+        font-size: 1.05rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+
+      .text-btn:hover {
+        background: #ccfbf1;
+      }
+
+      .band {
+        background: var(--mist);
+        border-block: 1px solid var(--line);
+        padding: 1.25rem 0;
+      }
+
+      .band h2 {
+        margin: 0 0 0.35rem;
+        font-size: 1.35rem;
+      }
+
+      .band p {
+        margin: 0 0 0.9rem;
+        color: var(--muted);
+      }
+
+      .band-actions {
+        display: grid;
+        gap: 0.75rem;
+      }
+
+      .band a.email {
+        background: var(--paper);
+        color: var(--sky);
+        border: 2px solid var(--sky);
+      }
+
+      .band a.email:hover {
+        background: #e0f2fe;
+      }
+
+      .homes {
+        padding: 1.5rem 0 2.5rem;
+      }
+
+      .list {
+        display: grid;
+        gap: 1rem;
+        margin: 1rem 0 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .card {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-left: 6px solid var(--tide);
+        border-radius: 1rem;
+        padding: 1rem 1rem 1rem 0.9rem;
+        display: grid;
+        gap: 0.75rem;
+      }
+
+      .price {
+        margin: 0;
+        color: var(--sky);
+        font-family: var(--display);
+        font-size: 1.05rem;
+        letter-spacing: 0.03em;
+      }
+
+      .card h3 {
+        margin: 0;
+        font-size: 1.45rem;
+        line-height: 1.2;
+        font-weight: 600;
+      }
+
+      .facts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .facts li {
+        background: var(--mist);
+        color: var(--harbor);
+        border-radius: 999px;
+        padding: 0.35rem 0.7rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+      }
+
+      .card p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .card-actions {
+        display: grid;
+        gap: 0.6rem;
+      }
+
+      .learn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 3rem;
+        border: 2px solid var(--tide);
+        border-radius: 0.75rem;
+        background: var(--paper);
+        color: var(--tide);
+        font-size: 1.05rem;
+        text-align: center;
+        text-decoration: none;
+      }
+
+      .learn:hover {
+        background: #ccfbf1;
+      }
+
+      .site-footer {
+        padding: 0 0 1.5rem;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .site-footer p {
+        margin: 0 0 0.4rem;
+      }
+
+      .thumb {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 15;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.25rem;
+        padding: 0.35rem 0.4rem calc(0.35rem + env(safe-area-inset-bottom));
+        background: var(--paper);
+        border-top: 1px solid var(--line);
+      }
+
+      .thumb a {
+        min-height: 3rem;
+        min-width: 2.75rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.1rem;
+        border-radius: 0.7rem;
+        color: var(--harbor);
+        font-size: 0.68rem;
+        line-height: 1.1;
+        text-align: center;
+        white-space: nowrap;
+      }
+
+      .thumb svg {
+        width: 1.35rem;
+        height: 1.35rem;
+      }
+
+      .thumb a:hover,
+      .thumb a[aria-current="true"] {
+        background: #ccfbf1;
+        color: var(--tide);
+      }
+
+      .thumb a.call {
+        background: var(--tide);
+        color: #ffffff;
+      }
+
+      .thumb a.call:hover,
+      .thumb a.call[aria-current="true"] {
+        background: #115e59;
+        color: #ffffff;
+      }
+
+      body:has(dialog[open]) .thumb {
+        display: none;
+      }
+
+      dialog {
+        width: min(32rem, calc(100% - 1.5rem));
+        border: 0;
+        border-radius: 1rem;
+        padding: 0;
+        color: var(--ink);
+      }
+
+      dialog::backdrop {
+        background: rgb(19 78 74 / 0.62);
+      }
+
+      .sheet {
+        padding: 1.1rem 1.1rem 1.2rem;
+      }
+
+      .sheet h2 {
+        margin: 0 2.5rem 0.4rem 0;
+        font-size: 1.5rem;
+        line-height: 1.2;
+      }
+
+      .sheet .price {
+        margin-bottom: 0.8rem;
+      }
+
+      .sheet p {
+        margin: 0 0 0.8rem;
+        color: var(--muted);
+      }
+
+      .close {
+        position: absolute;
+        top: 0.6rem;
+        right: 0.6rem;
+        width: 2.75rem;
+        height: 2.75rem;
+        border: 0;
+        border-radius: 999px;
+        background: var(--mist);
+        color: var(--harbor);
+        font-size: 1.4rem;
+        line-height: 1;
+      }
+
+      .close:hover {
+        background: #ccfbf1;
+      }
+
+      @media (min-width: 40rem) {
+        .jumps,
+        .band-actions,
+        .card-actions,
+        .lanes {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      @media (min-width: 64rem) {
+        body {
+          padding-bottom: 0;
+        }
+
+        .desk-nav {
+          display: flex;
+        }
+
+        .thumb {
+          display: none;
+        }
+
+        .founder .wrap {
+          display: grid;
+          grid-template-columns: 1fr auto;
+          column-gap: 2rem;
+          align-items: end;
+        }
+
+        .founder-actions {
+          min-width: 16rem;
+          margin-bottom: 1.25rem;
+        }
+
+        .list {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .lanes {
+          grid-template-columns: 1fr 1fr 1fr;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+
+        *,
+        *::before,
+        *::after {
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#about">Skip to About Dee</a>
+
+    <header class="brandbar">
+      <div class="wrap">
+        <a class="brand" href="#about">Luis &amp; Partners</a>
+        <nav class="desk-nav" aria-label="Primary">
+          <a href="#about">About Dee</a>
+          <a href="#portfolio">Portfolio</a>
+          <a href="#selling">Selling</a>
+          <a href="#contact">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="founder" id="about" aria-labelledby="about-title">
+        <div class="wrap">
+          <div>
+            <p class="seal">
+              <svg viewBox="0 0 32 32" aria-hidden="true">
+                <circle cx="16" cy="16" r="15" fill="#0f766e" />
+                <circle cx="16" cy="13" r="4" fill="#f7fffe" />
+                <path d="M8 24c1.6-3.4 4.4-5 8-5s6.4 1.6 8 5" fill="none" stroke="#f7fffe" stroke-width="2" stroke-linecap="round" />
+              </svg>
+              Meet the team
+            </p>
+            <h1 id="about-title">Dee Zeqiri</h1>
+            <p class="role">Founder, Luis &amp; Partners Property</p>
+            <p>
+              Dee sells homes across prime London, with the deepest knowledge in Hampstead and Belsize Park.
+              She studied interior design, and she still judges a house by how it lives.
+            </p>
+          </div>
+          <div class="founder-actions">
+            <a class="primary" href="#portfolio">View the portfolio</a>
+            <a class="primary ghost" href="#selling">Sell a property</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="homes" id="portfolio" aria-labelledby="portfolio-title">
+        <div class="wrap">
+          <h2 id="portfolio-title">Portfolio</h2>
+          <p>Live instructions. The sale is first. The let is included so the book is complete.</p>
+          <ul class="list">
+            <li>
+              <article class="card">
+                <p class="status">For sale</p>
+                <p class="price">£1,000,000</p>
+                <h3>Kingsbury Road, London NW9</h3>
+                <ul class="facts">
+                  <li>Detached house</li>
+                  <li>6 bedrooms</li>
+                  <li>4 bathrooms</li>
+                  <li>2,276 sq ft</li>
+                </ul>
+                <p>
+                  A family house in Kingsbury with reception space, a fitted kitchen, and a wrap-around garden.
+                  Near Hendon and Brent Cross, with links into central London.
+                </p>
+                <div class="card-actions">
+                  <a class="book" href="mailto:dee@theagency-group.com?subject=Enquiry%20%E2%80%94%20Kingsbury%20Road%20NW9">Enquire about this sale</a>
+                  <button class="learn" type="button" data-open="kingsbury">Full particulars</button>
+                </div>
+              </article>
+            </li>
+            <li>
+              <article class="card">
+                <p class="status let">To let</p>
+                <p class="price">£3,425 pcm</p>
+                <h3>Rainville Road, London W6</h3>
+                <ul class="facts">
+                  <li>1 bedroom</li>
+                  <li>1 bathroom</li>
+                  <li>623 sq ft</li>
+                  <li>£790 pw</li>
+                </ul>
+                <p>
+                  A ground-floor apartment in a gated riverside building at Palace Wharf, overlooking the courtyard.
+                  This is a let, not a sale. Confirm it is still available before you rely on the rent.
+                </p>
+                <div class="card-actions">
+                  <a class="book" href="mailto:dee@theagency-group.com?subject=Enquiry%20%E2%80%94%20Rainville%20Road%20W6">Enquire about this let</a>
+                  <button class="learn" type="button" data-open="rainville">Full particulars</button>
+                </div>
+              </article>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="story" id="selling" aria-labelledby="selling-title">
+        <div class="wrap">
+          <h2 id="selling-title">Selling with Dee</h2>
+          <p>
+            Owners instruct her to sell. She agrees a price against what is completing nearby,
+            prepares the particulars, negotiates the offers, and stays with the sale through to exchange.
+          </p>
+          <ul class="lanes">
+            <li class="lane">
+              <h3>Sellers</h3>
+              <p>A pricing conversation, then a sales instruction. Not a brochure for its own sake.</p>
+            </li>
+            <li class="lane">
+              <h3>Buyers</h3>
+              <p>Start from the portfolio. If a home fits, ask for the particulars. If it does not, ask what else is coming.</p>
+            </li>
+            <li class="lane">
+              <h3>Where she sells</h3>
+              <p>Hampstead, Belsize Park, Kingsbury and the rest of north-west London, plus prime London when the instruction is there.</p>
+            </li>
+          </ul>
+          <figure class="frame">
+            <img
+              src="images/neighbourhood-480.webp"
+              srcset="images/neighbourhood-480.webp 480w, images/neighbourhood.webp 960w"
+              sizes="(min-width: 72rem) 720px, calc(100vw - 2rem)"
+              width="960"
+              height="640"
+              alt="London across the Thames, with the Palace of Westminster and the London Eye"
+              loading="lazy"
+              decoding="async"
+            />
+            <figcaption>
+              London, the market Dee sells in. Listing photographs belong to each property’s particulars.
+              Photograph via Unsplash.
+            </figcaption>
+          </figure>
+          <div class="jumps">
+            <a class="text-btn" href="#portfolio">Back to the portfolio</a>
+            <a class="text-btn" href="#about">Back to top</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="band" id="contact" aria-labelledby="contact-title">
+        <div class="wrap">
+          <h2 id="contact-title">Talk to Dee</h2>
+          <p>Call or email about a home in the portfolio, or about selling yours.</p>
+          <div class="band-actions">
+            <a href="tel:+442045387782">Call 0204 538 7782</a>
+            <a class="email" href="mailto:dee@theagency-group.com?subject=Sales%20enquiry%20for%20Luis%20%26%20Partners">Email Dee</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>Luis &amp; Partners Property Limited. Company 17150695. Registered in England.</p>
+        <p>Sales with Dee Zeqiri · 0204 538 7782 · dee@theagency-group.com</p>
+        <p>Hampstead, Belsize Park, and prime London.</p>
+      </div>
+    </footer>
+
+    <nav class="thumb" aria-label="Mobile">
+      <a href="#about">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="2" />
+          <path d="M6 19c1.2-3 3.4-4.5 6-4.5S16.8 16 18 19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+        About
+      </a>
+      <a href="#portfolio">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 11.5 12 5l8 6.5V20H4Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+        </svg>
+        Portfolio
+      </a>
+      <a href="#selling">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 18V8l8-4 8 4v10" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+          <path d="M9 18v-5h6v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+        </svg>
+        Sell
+      </a>
+      <a class="call" href="tel:+442045387782">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M8 4h3l1.5 4-2 1.5a12 12 0 0 0 4 4L16 12l4 1.5V17a2 2 0 0 1-2 2A14 14 0 0 1 5 6a2 2 0 0 1 2-2Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+        </svg>
+        Call
+      </a>
+    </nav>
+
+    <dialog id="kingsbury" aria-labelledby="kingsbury-title">
+      <div class="sheet">
+        <button class="close" type="button" data-close aria-label="Close details">×</button>
+        <p class="price">£1,000,000 · for sale</p>
+        <h2 id="kingsbury-title">Kingsbury Road, London NW9</h2>
+        <p>Detached house. Six bedrooms, four bathrooms, 2,276 sq ft. Reception space, a fitted kitchen, driveway parking, and a wrap-around garden.</p>
+        <p>Her public profile has also shown offers in excess of £900,000, so confirm the live asking price before you offer. Photographs and the EPC sit with the particulars.</p>
+        <div class="card-actions">
+          <a class="book" href="mailto:dee@theagency-group.com?subject=Enquiry%20%E2%80%94%20Kingsbury%20Road%20NW9">Enquire about this sale</a>
+          <a class="learn" href="tel:+442045387782">Call about this home</a>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="rainville" aria-labelledby="rainville-title">
+      <div class="sheet">
+        <button class="close" type="button" data-close aria-label="Close details">×</button>
+        <p class="price">£3,425 pcm · to let</p>
+        <h2 id="rainville-title">Rainville Road, London W6</h2>
+        <p>One bedroom, one bathroom, 623 sq ft. Ground floor of a gated riverside building at Palace Wharf, overlooking the courtyard. Also listed at £790 per week.</p>
+        <p>This instruction is a let. It is in the portfolio so buyers and landlords can see the whole book. Confirm the rent and whether it is still available.</p>
+        <div class="card-actions">
+          <a class="book" href="mailto:dee@theagency-group.com?subject=Enquiry%20%E2%80%94%20Rainville%20Road%20W6">Enquire about this let</a>
+          <a class="learn" href="tel:+442045387782">Call about this home</a>
+        </div>
+      </div>
+    </dialog>
+
+    <script>
+      const navLinks = document.querySelectorAll(".desk-nav a, .thumb a[href^='#']");
+      const sections = ["about", "portfolio", "selling", "contact"]
+        .map((id) => document.getElementById(id))
+        .filter(Boolean);
+
+      function markCurrent(id) {
+        navLinks.forEach((link) => {
+          const on = link.getAttribute("href") === "#" + id;
+          if (on) link.setAttribute("aria-current", "true");
+          else link.removeAttribute("aria-current");
+        });
+      }
+
+      if ("IntersectionObserver" in window) {
+        const watcher = new IntersectionObserver(
+          (entries) => {
+            const visible = entries
+              .filter((entry) => entry.isIntersecting)
+              .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+            if (visible) markCurrent(visible.target.id);
+          },
+          { rootMargin: "-20% 0px -55% 0px", threshold: [0.2, 0.5] }
+        );
+        sections.forEach((section) => watcher.observe(section));
+      }
+
+      document.querySelectorAll("[data-open]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const dialog = document.getElementById(button.getAttribute("data-open"));
+          if (dialog && typeof dialog.showModal === "function") dialog.showModal();
+        });
+      });
+
+      document.querySelectorAll("[data-close]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const dialog = button.closest("dialog");
+          if (dialog) dialog.close();
+        });
+      });
+    </script>
+  </body>
+</html>
