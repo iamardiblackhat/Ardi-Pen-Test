@@ -108,6 +108,7 @@
 
       .brand {
         display: flex;
+        min-height: 2.75rem;
         align-items: center;
         gap: 0.7rem;
         color: white;
@@ -618,6 +619,12 @@
         left: 0.75rem;
       }
 
+      .mobile-book .button {
+        display: flex;
+        width: 100%;
+        box-shadow: 0 12px 30px rgba(8, 36, 43, 0.35);
+      }
+
       dialog {
         width: min(calc(100% - 1.5rem), 42rem);
         max-height: calc(100dvh - 2rem);
@@ -684,6 +691,11 @@
         margin-block: 1.25rem;
         padding: 0;
         list-style: none;
+      }
+
+      #modal-book {
+        display: flex;
+        width: 100%;
       }
 
       .modal-features li {
@@ -781,6 +793,11 @@
         .modal-features {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
+
+        #modal-book {
+          display: inline-flex;
+          width: auto;
+        }
       }
 
       @media (min-width: 68rem) {
@@ -825,7 +842,7 @@
 
     <header class="site-header">
       <div class="header-inner">
-        <a class="brand" href="#top" aria-label="Luis and Partners Property home">
+        <a class="brand" href="#top">
           <span class="brand-mark" aria-hidden="true">L&amp;P</span>
           <span class="brand-copy">
             <strong>Luis &amp; Partners</strong>
@@ -1106,12 +1123,14 @@
       </div>
     </footer>
 
-    <a
-      class="button button-primary mobile-book"
-      href="mailto:hello@luisandpartners.co.uk?subject=Start%20my%20property%20tour"
-    >
-      Start your property tour
-    </a>
+    <aside class="mobile-book" aria-label="Quick booking">
+      <a
+        class="button button-primary"
+        href="mailto:hello@luisandpartners.co.uk?subject=Start%20my%20property%20tour"
+      >
+        Start your property tour
+      </a>
+    </aside>
 
     <dialog id="property-dialog" aria-labelledby="modal-title">
       <div class="modal-inner">
@@ -1158,7 +1177,7 @@
           ],
         },
         belsize: {
-          status: "Discreetly available",
+          status: "Off market",
           title: "Belsize Park Gardens, NW3",
           price: "Guide price £1,250,000",
           description:
