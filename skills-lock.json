@@ -7,6 +7,12 @@
       "skillPath": "tools/agent-tools/SKILL.md",
       "computedHash": "a5d63baacc20eeda0790595fab748a914fd7bb30819ab93eb12482acf2b7747e"
     },
+    "answers": {
+      "source": "brave/brave-search-skills",
+      "sourceType": "github",
+      "skillPath": "skills/answers/SKILL.md",
+      "computedHash": "3c5488bfcb36e3867eba00800b2d76e55b013f86258b24d993977a2709e52da7"
+    },
     "audit-website": {
       "source": "squirrelscan/skills",
       "sourceType": "github",
@@ -31,6 +37,12 @@
       "skillPath": "skills/browser-use/SKILL.md",
       "computedHash": "d85101b4c40540c938a1fc98c716a1ec114cd77bf22dfcb384134824b0a0c0b3"
     },
+    "bx": {
+      "source": "brave/brave-search-skills",
+      "sourceType": "github",
+      "skillPath": "skills/bx/SKILL.md",
+      "computedHash": "4adc49bfccb4380dcd9d18ed7833c2189fd2e4f23a637fa8c8466b486b12be61"
+    },
     "copywriting": {
       "source": "coreyhaines31/marketingskills",
       "sourceType": "github",
@@ -48,6 +60,42 @@
       "sourceType": "github",
       "skillPath": "skills/frontend-design/SKILL.md",
       "computedHash": "4eabc66183767153e404b39d1b839b1c37f2d82d86f0a0d7e880a579d8d62336"
+    },
+    "images-search": {
+      "source": "brave/brave-search-skills",
+      "sourceType": "github",
+      "skillPath": "skills/images-search/SKILL.md",
+      "computedHash": "f5ba562a15f79494c96c968e5d3a0fb60b27d822dfac50487bda0927c8cc6d9e"
+    },
+    "llm-context": {
+      "source": "brave/brave-search-skills",
+      "sourceType": "github",
+      "skillPath": "skills/llm-context/SKILL.md",
+      "computedHash": "729c39285a9648bed69c61d81d06e5113bf57c99bfeb234353757cdc9d5cf6aa"
+    },
+    "local-descriptions": {
+      "source": "brave/brave-search-skills",
+      "sourceType": "github",
+      "skillPath": "skills/local-descriptions/SKILL.md",
+      "computedHash": "bac572de3ec5a3fac24d1325d28285580c6cba1f6da5901fcc6ddee6ed5c4bf8"
+    },
+    "local-place-search": {
+      "source": "brave/brave-search-skills",
+      "sourceType": "github",
+      "skillPath": "skills/local-place-search/SKILL.md",
+      "computedHash": "60435de90d162738d9b178250a58a4168d5a169df7859d7bb99064bd8427211e"
+    },
+    "local-pois": {
+      "source": "brave/brave-search-skills",
+      "sourceType": "github",
+      "skillPath": "skills/local-pois/SKILL.md",
+      "computedHash": "a02263e4d6b8da1b29468bb54ff390d38a142e5bd47dfc27514a1f13df37b4bd"
+    },
+    "news-search": {
+      "source": "brave/brave-search-skills",
+      "sourceType": "github",
+      "skillPath": "skills/news-search/SKILL.md",
+      "computedHash": "6cb80b66ac55fa0a3b5d6fee78f81c286c99e781d765d2ca5f76a1f9647b4073"
     },
     "pdf": {
       "source": "anthropics/skills",
@@ -79,6 +127,18 @@
       "skillPath": "skills/skill-creator/SKILL.md",
       "computedHash": "5ea13a6d9f0d4bb694405d79acd00cadec0d21bb138c4dd10fcf3c500cb835c2"
     },
+    "spellcheck": {
+      "source": "brave/brave-search-skills",
+      "sourceType": "github",
+      "skillPath": "skills/spellcheck/SKILL.md",
+      "computedHash": "7c408a494450ffdb44fb391f805a4f76269b67969b0a7e7692d787a4d7d90e21"
+    },
+    "suggest": {
+      "source": "brave/brave-search-skills",
+      "sourceType": "github",
+      "skillPath": "skills/suggest/SKILL.md",
+      "computedHash": "99cc31a7688b66e68273b6348c2d46cf271957ac21c24ec4619d476c52aa7c1d"
+    },
     "supabase-postgres-best-practices": {
       "source": "supabase/agent-skills",
       "sourceType": "github",
@@ -109,11 +169,23 @@
       "skillPath": "skills/react-native-skills/SKILL.md",
       "computedHash": "41d24eafa7c3d82e270439808f7cfbc4d51aeb2d14f2809a2267c16275784d06"
     },
+    "videos-search": {
+      "source": "brave/brave-search-skills",
+      "sourceType": "github",
+      "skillPath": "skills/videos-search/SKILL.md",
+      "computedHash": "91c5d7ec5c96e9c8c2512d65e3a7bcfb6ebdb61cd9784cac4f288ab337311bb3"
+    },
     "web-design-guidelines": {
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/web-design-guidelines/SKILL.md",
       "computedHash": "f3bc47f890f42a44db1007ab390709ec368e4b8c089baee6b0007182236ac474"
+    },
+    "web-search": {
+      "source": "brave/brave-search-skills",
+      "sourceType": "github",
+      "skillPath": "skills/web-search/SKILL.md",
+      "computedHash": "71b36b64b6ab05c3372dbbc8a7e42f11c099de6f381e9000cda95552f5232cbe"
     }
   }
 }
