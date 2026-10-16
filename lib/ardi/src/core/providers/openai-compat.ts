@@ -298,6 +298,8 @@ function humanLabel(toolName: string): string {
     get_security_summary: "Working out your overall posture",
     start_pen_test: "Preparing the Pen Test",
     research_domain: "Researching the public domain",
+    research_open_sources: "Investigating current public sources",
+    search_threat_intelligence: "Searching live threat intelligence",
     generate_report: "Preparing the security report",
   };
   return labels[toolName] ?? `Running ${toolName.replace(/_/g, " ")}`;
