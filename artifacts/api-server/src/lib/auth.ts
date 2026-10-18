@@ -110,16 +110,25 @@ function base64urlJson(obj: unknown): string {
 }
 
 function getSecret(): string {
-  const secret = process.env["JWT_SECRET"];
-  if (!secret || secret.length < 16) {
-    // Fail loud at call time rather than signing with a guessable secret.
-    // A production deploy that forgets JWT_SECRET must not silently issue
-    // forgeable tokens.
-    throw new Error(
-      "JWT_SECRET is missing or too short (need >= 16 chars). Generate one with: openssl rand -base64 48",
-    );
+  const configured = process.env["JWT_SECRET"];
+  if (configured && configured.length >= 16) return configured;
+
+  // A host that only has the Supabase session URL (the Vercel integration
+  // injects POSTGRES_URL_NON_POOLING) can still sign sessions. The password
+  // is already the key to the database, so it is the same trust boundary.
+  const connection =
+    process.env["DATABASE_URL"] || process.env["POSTGRES_URL_NON_POOLING"] || "";
+  let password = "";
+  try {
+    password = decodeURIComponent(new URL(connection).password);
+  } catch {
+    password = "";
   }
-  return secret;
+  if (password.length >= 16) return password;
+
+  throw new Error(
+    "JWT_SECRET is missing or too short (need >= 16 chars). Generate one with: openssl rand -base64 48",
+  );
 }
 
 export function signToken(user: { id: number; email: string; role: string }): string {

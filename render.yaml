@@ -1,0 +1,33 @@
+# Free API host. Sleeps after 15 minutes without traffic.
+# Database is Supabase (free, 500 MB, pauses after 7 days idle), not this service.
+# Set DATABASE_URL and JWT_SECRET in the Render dashboard. Do not commit them.
+# The live site serves /api on Vercel. This file is unused by that deploy.
+services:
+  - type: web
+    name: ardi-api
+    runtime: docker
+    dockerfilePath: ./deploy/api.Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /api/healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: TRUST_PROXY
+        value: "true"
+      - key: CORS_ORIGIN
+        value: https://ardi-pen-test-api-server-one.vercel.app
+      - key: DATABASE_POOL_MAX
+        value: "3"
+      - key: ARDI_RESEARCH_MODEL
+        value: openai/gpt-oss-120b
+      - key: ARDI_MODEL
+        value: openai/gpt-oss-120b
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: ARDI_BASE_URL
+        sync: false
+      - key: ARDI_API_KEY
+        sync: false

@@ -260,6 +260,8 @@ async function execute(
     // ── Fallback engine: built-in nmap + nuclei ────────────────────────────
     // Port and service discovery
     const nmap = await runNmap(asset.target, {
+      // Vercel functions stop at 300s. Finish or fail inside that window.
+      timeoutMs: process.env.VERCEL ? 240_000 : undefined,
       onProgress: (pct, message) => {
         logger.info({ scanId, pct, message }, "scan progress");
         void setProgress(scanId, pct * 0.7);
