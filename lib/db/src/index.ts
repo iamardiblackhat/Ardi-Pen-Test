@@ -5,7 +5,11 @@ import * as schema from "./schema";
 
 const { Pool } = pg;
 
-const connectionString = process.env.DATABASE_URL;
+// DATABASE_URL is the app's own setting. POSTGRES_URL_NON_POOLING is the
+// session-mode URL Supabase injects (port 5432). The transaction URL on
+// port 6543 is intentionally not a fallback: it breaks prepared statements.
+const connectionString =
+  process.env.DATABASE_URL || process.env.POSTGRES_URL_NON_POOLING;
 
 if (!connectionString) {
   throw new Error(

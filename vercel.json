@@ -2,8 +2,16 @@
   "buildCommand": "pnpm --filter @workspace/ardi run build",
   "outputDirectory": "artifacts/ardi/dist/public",
   "framework": null,
+  "env": {
+    "CORS_ORIGIN": "https://ardi-pen-test-api-server-one.vercel.app",
+    "TRUST_PROXY": "true",
+    "DATABASE_POOL_MAX": "3"
+  },
+  "functions": {
+    "api/index.ts": { "maxDuration": 60 },
+    "api/[...path].ts": { "maxDuration": 300 }
+  },
   "rewrites": [
-    { "source": "/api/:path*", "destination": "http://34.156.165.60/api/:path*" },
     { "source": "/:path*", "destination": "/index.html" }
   ]
 }

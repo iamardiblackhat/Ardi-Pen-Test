@@ -5,7 +5,7 @@ import {
   findingsTable,
   activityTable,
 } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import {
   runNmap,
   runNuclei,
@@ -260,6 +260,8 @@ async function execute(
     // ── Fallback engine: built-in nmap + nuclei ────────────────────────────
     // Port and service discovery
     const nmap = await runNmap(asset.target, {
+      // Vercel functions stop at 300s. Finish or fail inside that window.
+      timeoutMs: process.env.VERCEL ? 240_000 : undefined,
       onProgress: (pct, message) => {
         logger.info({ scanId, pct, message }, "scan progress");
         void setProgress(scanId, pct * 0.7);
@@ -404,21 +406,25 @@ async function execute(
  */
 export async function reconcileOrphanedScans(): Promise<number> {
   const orphaned = await db
-    .select()
+    .select({ id: scansTable.id, assetId: scansTable.assetId })
     .from(scansTable)
     .where(eq(scansTable.status, "running"));
   if (orphaned.length === 0) return 0;
 
-  for (const scan of orphaned) {
-    await db
-      .update(scansTable)
-      .set({ status: "failed", completedAt: new Date() })
-      .where(eq(scansTable.id, scan.id));
-    await db
-      .update(assetsTable)
-      .set({ status: "active" })
-      .where(eq(assetsTable.id, scan.assetId));
-  }
+  const scanIds = orphaned.map((scan) => scan.id);
+  const assetIds = Array.from(new Set(orphaned.map((scan) => scan.assetId)));
+
+  const now = new Date();
+
+  await db
+    .update(scansTable)
+    .set({ status: "failed", completedAt: now })
+    .where(inArray(scansTable.id, scanIds));
+
+  await db
+    .update(assetsTable)
+    .set({ status: "active" })
+    .where(inArray(assetsTable.id, assetIds));
 
   logger.warn(
     { count: orphaned.length },

@@ -1,7 +1,7 @@
 # Free API host. Sleeps after 15 minutes without traffic.
 # Database is Supabase (free, 500 MB, pauses after 7 days idle), not this service.
 # Set DATABASE_URL and JWT_SECRET in the Render dashboard. Do not commit them.
-# Then change the /api rewrite in vercel.json from the GCP address to this service.
+# The live site serves /api on Vercel. This file is unused by that deploy.
 services:
   - type: web
     name: ardi-api
