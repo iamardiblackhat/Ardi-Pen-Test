@@ -1,12 +1,14 @@
 import { execFileSync } from "node:child_process";
-import { cp, mkdir, rm, symlink, writeFile } from "node:fs/promises";
+import { cp, mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const outputRoot = path.join(repoRoot, ".vercel", "output");
-const functionDir = path.join(outputRoot, "functions", "api.func");
-const catchAllLink = path.join(outputRoot, "functions", "api", "[...path].func");
+const functionDirs = [
+  path.join(outputRoot, "functions", "api.func"),
+  path.join(outputRoot, "functions", "api", "[...path].func"),
+];
 
 function run(command, args) {
   execFileSync(command, args, { cwd: repoRoot, stdio: "inherit" });
@@ -21,15 +23,7 @@ await cp(path.join(repoRoot, "artifacts", "ardi", "dist", "public"), path.join(o
   recursive: true,
 });
 
-await mkdir(functionDir, { recursive: true });
-await cp(path.join(repoRoot, "artifacts", "api-server", "dist"), functionDir, {
-  recursive: true,
-  filter: (source) => path.basename(source) !== "index.mjs",
-});
-
-await writeFile(
-  path.join(functionDir, "index.mjs"),
-  `if (process.env.VERCEL === "1") {
+const handler = `if (process.env.VERCEL === "1") {
   if (!process.env.TRUST_PROXY) process.env.TRUST_PROXY = "true";
   if (!process.env.CORS_ORIGIN) {
     process.env.CORS_ORIGIN = "https://ardi-pen-test-api-server-one.vercel.app";
@@ -39,11 +33,9 @@ await writeFile(
 
 const { default: app } = await import("./serverless.mjs");
 export default app;
-`,
-);
+`;
 
-await writeFile(
-  path.join(functionDir, ".vc-config.json"),
+const functionConfig =
   JSON.stringify(
     {
       runtime: "nodejs22.x",
@@ -53,11 +45,17 @@ await writeFile(
     },
     null,
     2,
-  ) + "\n",
-);
+  ) + "\n";
 
-await mkdir(path.dirname(catchAllLink), { recursive: true });
-await symlink(path.relative(path.dirname(catchAllLink), functionDir), catchAllLink);
+for (const functionDir of functionDirs) {
+  await mkdir(functionDir, { recursive: true });
+  await cp(path.join(repoRoot, "artifacts", "api-server", "dist"), functionDir, {
+    recursive: true,
+    filter: (source) => path.basename(source) !== "index.mjs",
+  });
+  await writeFile(path.join(functionDir, "index.mjs"), handler);
+  await writeFile(path.join(functionDir, ".vc-config.json"), functionConfig);
+}
 
 await writeFile(
   path.join(outputRoot, "config.json"),
