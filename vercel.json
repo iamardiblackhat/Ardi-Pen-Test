@@ -1,8 +1,4 @@
 {
-  "buildCommand": "pnpm --filter @workspace/ardi run build",
-  "outputDirectory": "artifacts/ardi/dist/public",
-  "framework": null,
-  "rewrites": [
-    { "source": "/:path*", "destination": "/index.html" }
-  ]
+  "buildCommand": "node scripts/vercel-output.mjs",
+  "framework": null
 }
