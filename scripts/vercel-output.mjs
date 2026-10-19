@@ -5,10 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const outputRoot = path.join(repoRoot, ".vercel", "output");
-const functionDirs = [
-  path.join(outputRoot, "functions", "api.func"),
-  path.join(outputRoot, "functions", "api", "[...path].func"),
-];
+const functionDir = path.join(outputRoot, "functions", "api.func");
 
 function run(command, args) {
   execFileSync(command, args, { cwd: repoRoot, stdio: "inherit" });
@@ -32,7 +29,15 @@ const handler = `if (process.env.VERCEL === "1") {
 }
 
 const { default: app } = await import("./serverless.mjs");
-export default app;
+
+export default function handler(req, res) {
+  const original = req.headers["x-ardi-path"];
+  if (typeof original === "string" && original.startsWith("/api/")) {
+    const search = req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
+    req.url = original + search;
+  }
+  return app(req, res);
+}
 `;
 
 const functionConfig =
@@ -47,15 +52,13 @@ const functionConfig =
     2,
   ) + "\n";
 
-for (const functionDir of functionDirs) {
-  await mkdir(functionDir, { recursive: true });
-  await cp(path.join(repoRoot, "artifacts", "api-server", "dist"), functionDir, {
-    recursive: true,
-    filter: (source) => path.basename(source) !== "index.mjs",
-  });
-  await writeFile(path.join(functionDir, "index.mjs"), handler);
-  await writeFile(path.join(functionDir, ".vc-config.json"), functionConfig);
-}
+await mkdir(functionDir, { recursive: true });
+await cp(path.join(repoRoot, "artifacts", "api-server", "dist"), functionDir, {
+  recursive: true,
+  filter: (source) => path.basename(source) !== "index.mjs",
+});
+await writeFile(path.join(functionDir, "index.mjs"), handler);
+await writeFile(path.join(functionDir, ".vc-config.json"), functionConfig);
 
 await writeFile(
   path.join(outputRoot, "config.json"),
@@ -64,6 +67,11 @@ await writeFile(
       version: 3,
       routes: [
         { handle: "filesystem" },
+        {
+          src: "/api/(.+)",
+          dest: "/api",
+          headers: { "x-ardi-path": "/api/$1" },
+        },
         { src: "/(.*)", dest: "/index.html" },
       ],
     },
