@@ -60,7 +60,7 @@ export function LiveResearch() {
   }
 
   return (
-    <section className="intel-map" aria-labelledby="live-research-title">
+    <section className="ardi-glass-card intel-map" aria-labelledby="live-research-title">
       <h2 id="live-research-title" className="text-2xl font-semibold">
         Search public information now
       </h2>
@@ -77,7 +77,7 @@ export function LiveResearch() {
             minLength={2}
             maxLength={200}
             placeholder="Company, website, name, or threat"
-            className="min-h-12 rounded-lg border border-slate-500 bg-[#0c1125] px-3 text-base"
+            className="ardi-liquid-input min-h-12 rounded-lg border border-slate-500 bg-[#0c1125] px-3 text-base"
           />
         </label>
         <label className="grid gap-2">
@@ -85,7 +85,7 @@ export function LiveResearch() {
           <select
             name="region"
             defaultValue="uk"
-            className="min-h-12 rounded-lg border border-slate-500 bg-[#0c1125] px-3 text-base"
+            className="ardi-liquid-input min-h-12 rounded-lg border border-slate-500 bg-[#0c1125] px-3 text-base"
           >
             <option value="uk">United Kingdom</option>
             <option value="europe">UK and Europe</option>
@@ -97,7 +97,7 @@ export function LiveResearch() {
           <select
             name="objective"
             defaultValue="organisation"
-            className="min-h-12 rounded-lg border border-slate-500 bg-[#0c1125] px-3 text-base"
+            className="ardi-liquid-input min-h-12 rounded-lg border border-slate-500 bg-[#0c1125] px-3 text-base"
           >
             <option value="organisation">Company or organisation</option>
             <option value="domain">Website</option>
@@ -115,7 +115,7 @@ export function LiveResearch() {
             minLength={5}
             maxLength={2000}
             rows={3}
-            className="rounded-lg border border-slate-500 bg-[#0c1125] p-3 text-base"
+            className="ardi-liquid-input rounded-lg border border-slate-500 bg-[#0c1125] p-3 text-base"
           />
         </label>
         <button

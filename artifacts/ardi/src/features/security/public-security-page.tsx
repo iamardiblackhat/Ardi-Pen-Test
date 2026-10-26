@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { ArrowRight, Check } from "lucide-react";
 import { Link } from "wouter";
-import { ArdiPanel } from "@/components/ardi-panel";
+import { useArdiAssistant } from "@/features/ardi/ardi-assistant-provider";
 import { SecurityFooter } from "@/features/security-home/components/security-footer";
 import { SecurityHeader } from "@/features/security-home/components/security-header";
 import {
@@ -14,7 +14,7 @@ import "@/features/security-home/security-home.css";
 import "./public-security-page.css";
 
 export default function PublicSecurityPage() {
-  const [ardiOpen, setArdiOpen] = useState(false);
+  const { setOpen: setArdiOpen } = useArdiAssistant();
   const hasWorkspace = auth.isAuthenticated();
 
   useEffect(() => {
@@ -158,12 +158,6 @@ export default function PublicSecurityPage() {
           </div>
         </section>
       </main>
-      <ArdiPanel
-        open={ardiOpen}
-        onClose={() => setArdiOpen(false)}
-        authenticated={hasWorkspace}
-        context="The visitor is reading the ARDI SEC security page and wants to know how permission, accounts, and reports work."
-      />
       <SecurityFooter />
     </div>
   );

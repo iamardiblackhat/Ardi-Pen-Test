@@ -23,43 +23,43 @@ export function IntelligenceRecordList({
     <section aria-labelledby="intelligence-results-title">
       <div className="mb-4 flex items-end justify-between gap-4">
         <div>
-          <p className="font-mono text-sm font-semibold tracking-[.08em] text-violet-600">
+          <p className="font-mono text-sm font-semibold tracking-[.08em] text-cyan-200">
             CONNECTED INTELLIGENCE RECORDS
           </p>
           <h2
             id="intelligence-results-title"
-            className="mt-1 text-2xl font-semibold tracking-tight text-slate-950"
+            className="mt-1 text-2xl font-semibold tracking-tight text-slate-50"
           >
             Threat intelligence records
           </h2>
         </div>
-        <p className="text-sm text-slate-500">{records.length} shown</p>
+        <p className="text-sm text-slate-300">{records.length} shown</p>
       </div>
       <div className="grid gap-4 xl:grid-cols-2">
         {records.map((record) => (
           <article
             key={record.id}
-            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_18px_34px_-28px_rgba(30,41,59,.32)]"
+            className="ardi-glass-card rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_18px_34px_-28px_rgba(30,41,59,.32)]"
           >
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full bg-violet-100 px-2.5 py-1 text-sm font-semibold text-violet-700">
                 {labels[record.kind]}
               </span>
               {record.reference ? (
-                <span className="font-mono text-sm text-slate-500">
+                <span className="font-mono text-sm text-slate-300">
                   {record.reference}
                 </span>
               ) : null}
               {record.confidence !== null ? (
-                <span className="ml-auto text-sm text-slate-500">
+                <span className="ml-auto text-sm text-slate-300">
                   Source confidence {record.confidence}/100
                 </span>
               ) : null}
             </div>
-            <h3 className="mt-4 text-xl font-semibold tracking-tight text-slate-950">
+            <h3 className="mt-4 text-xl font-semibold tracking-tight text-slate-50">
               {record.name}
             </h3>
-            <p className="mt-2 line-clamp-4 text-sm leading-6 text-slate-600">
+            <p className="mt-2 line-clamp-4 text-sm leading-6 text-slate-300">
               <RecordDescription
                 text={
                   record.description ||
@@ -82,13 +82,13 @@ export function IntelligenceRecordList({
                   {record.pattern}
                 </pre>
               ) : null}
-              <p className="mt-3 break-all text-slate-500">
+              <p className="mt-3 break-all text-slate-300">
                 Source ID: {record.standardId}
               </p>
             </details>
             {record.aliases.length ? (
-              <p className="mt-4 text-sm text-slate-500">
-                <span className="font-semibold text-slate-700">
+              <p className="mt-4 text-sm text-slate-300">
+                <span className="font-semibold text-slate-200">
                   Also known as:
                 </span>{" "}
                 {record.aliases.join(", ")}

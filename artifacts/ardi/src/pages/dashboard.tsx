@@ -79,7 +79,7 @@ export default function Dashboard() {
 
       <Link
         href={next.href}
-        className="flex flex-col gap-3 rounded-xl border border-primary/40 bg-primary/10 p-6 transition hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:flex-row sm:items-center sm:justify-between"
+        className="ardi-glass-card flex flex-col gap-3 rounded-xl border border-primary/40 bg-primary/10 p-6 transition hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:flex-row sm:items-center sm:justify-between"
       >
         <div>
           <p className="font-mono text-xs uppercase tracking-[0.16em] text-primary">Do this next</p>
@@ -97,7 +97,7 @@ export default function Dashboard() {
           <li key={stage.id}>
             <Link
               href={stage.href}
-              className="flex h-full gap-4 rounded-xl border border-card-border bg-card p-5 transition hover:border-primary/40"
+              className="ardi-glass-card flex h-full gap-4 rounded-xl border border-card-border bg-card p-5 transition hover:border-primary/40"
             >
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/15 font-mono text-sm text-primary">
                 {stage.step}

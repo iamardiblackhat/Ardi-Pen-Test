@@ -1,5 +1,5 @@
 import { motion, useReducedMotion } from "framer-motion";
-import { ArdiAvatar, type ArdiMood } from "@/components/ardi-avatar";
+import { ArdiAvatar, ArdiFull, type ArdiMood } from "@/components/ardi-avatar";
 import {
   Sheet,
   SheetContent,
@@ -32,7 +32,7 @@ export function ArdiPanel({
     >
       <SheetContent
         side="right"
-        className="flex h-dvh w-full flex-col gap-0 border-violet-300/20 bg-[radial-gradient(circle_at_75%_0%,rgba(99,102,241,.32),transparent_30%),linear-gradient(180deg,#17113a,#0e0b24)] p-0 text-white sm:max-w-lg"
+        className="ardi-glass-chat flex h-dvh w-full flex-col gap-0 p-0 text-white sm:max-w-lg"
       >
         <SheetHeader className="border-b border-violet-200/15 px-4 pb-4 pt-5 text-left">
           <div className="flex items-center gap-3 pr-9">
@@ -84,7 +84,7 @@ export function ArdiLauncher({
         className,
       )}
     >
-      <ArdiAvatar mood={mood} size={36} />
+      <ArdiFull mood={mood} size={82} />
     </motion.button>
   );
 }

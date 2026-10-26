@@ -1,0 +1,91 @@
+/* Material enhancements preserve the original cinematic palette and composition. */
+.ardi-glass-root{isolation:isolate;background:#0e0b24}
+.ardi-glass-root .ardi-v2-header{background:linear-gradient(115deg,#17112fbd,#0d0b20c7);backdrop-filter:blur(24px) saturate(135%);box-shadow:inset 0 -1px #c1c9ff20}
+.ardi-glass-root .ardi-v2-mobile-nav{background:#15102dde;backdrop-filter:blur(24px)}
+.ardi-glass-root .ardi-v2-brand small{font-size:11px;letter-spacing:0;color:#c9c3e8}
+.ardi-glass-root :is(.ardi-v2-route,.ardi-glass-card){background:linear-gradient(135deg,#d7ddff12,#8c89cf05 52%,#18122e7d);border-color:#c6caff35;box-shadow:inset 0 1px #fff2,inset 0 -1px #8de8c71c,0 16px 40px #05020f26;backdrop-filter:blur(18px)}
+.ardi-glass-root .ardi-v2-hero h1{line-height:1.02;padding-block:.08em;letter-spacing:-.075em}
+.ardi-glass-root .ardi-v2-hero-rail{border-radius:20px;background:linear-gradient(135deg,#d3caff15,#0d0929b8);backdrop-filter:blur(22px);box-shadow:inset 1px 1px #fff2,inset -1px -1px #8de4ff20,0 20px 50px #0003}
+.ardi-glass-root .ardi-v2-hero-scenes button{border-radius:12px;background:linear-gradient(135deg,#aebaff18,#0e0b24a8);backdrop-filter:blur(16px)}
+.ardi-glass-root .ardi-v2-hero-scenes button span{display:none}
+.ardi-glass-root .ardi-v2-hero-scenes button{grid-template-columns:1fr}
+.ardi-glass-root .ardi-v2-button{border-radius:12px;min-height:46px;letter-spacing:0;text-transform:none;font-family:Manrope,sans-serif;font-size:14px}
+.ardi-glass-root .ardi-v2-button-primary{box-shadow:inset 0 1px #ffffff60,0 10px 28px #7568ff26}
+.ardi-glass-root .ardi-v2-button-chat{background:linear-gradient(130deg,#b4b8ff20,#8de4ff0b);backdrop-filter:blur(16px);box-shadow:inset 0 1px #fff2}
+.ardi-character-full{position:relative;display:inline-block;flex-shrink:0;vertical-align:middle;filter:drop-shadow(0 16px 24px #0006)}
+.ardi-character-full img,.ardi-character-avatar img{display:block;object-fit:contain;mix-blend-mode:normal}
+.ardi-liquid-assistant-layout{display:grid;grid-template-columns:.7fr 1.3fr;align-items:center;gap:clamp(20px,7vw,110px);padding-block:40px}
+.ardi-liquid-assistant-art{position:relative;display:flex;justify-content:center;min-width:0;isolation:isolate}
+.ardi-liquid-assistant-art:before{content:"";position:absolute;inset:15% 0;border:1px solid #b4c9ff38;border-radius:50%;transform:rotateX(60deg) rotate(-25deg);box-shadow:0 0 60px #9a81ff26,inset 0 0 30px #8de4ff18;z-index:-1}
+.ardi-liquid-assistant-layout h2{font-size:clamp(30px,4vw,54px);line-height:1.12;letter-spacing:-.04em;margin-bottom:20px}
+/* Independently implemented perspective deck, informed by the Framer stack reference. */
+.ardi-capability-tour{position:relative;outline-offset:8px}
+.ardi-capability-stack{position:relative;height:450px;perspective:1300px;touch-action:pan-y;isolation:isolate;margin:20px 0 28px}
+.ardi-capability-slide{position:absolute;left:50%;top:0;width:min(62%,530px);height:100%;border:1px solid #d4d8ff59;border-radius:28px;padding:30px;overflow:hidden;background:linear-gradient(130deg,#35305aeb,#110d2ef5 70%);box-shadow:inset 1px 1px 1px #fff3,inset -1px -1px 1px #8de4ff38,0 24px 65px #02010b70;backdrop-filter:blur(22px);transform-style:preserve-3d}
+.ardi-capability-slide:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(125deg,#ffffff10,transparent 26%,transparent 72%,#8de4ff12);border-radius:inherit}
+.ardi-capability-slide[data-active=false]{cursor:pointer}
+.ardi-capability-slide h3{font-family:'Space Grotesk',sans-serif;font-size:clamp(24px,2.6vw,34px);line-height:1.12;letter-spacing:-.035em;margin:12px 0;color:#fff}
+.ardi-capability-slide>p{font-size:15px;line-height:1.6;color:#d2cdea;margin:0 0 20px}
+.ardi-capability-art{height:140px;position:relative;display:grid;place-items:center;margin:-10px -10px 0;isolation:isolate}
+.ardi-capability-art>svg:first-child{position:absolute;width:100%;height:100%;color:var(--deck-accent,#8de4ff);opacity:.65;filter:drop-shadow(0 0 8px #8de4ff44)}
+.ardi-capability-art>svg:last-child{position:relative;color:#e5faff;width:48px;height:48px;padding:10px;box-sizing:content-box;border:1px solid #c7dcff59;border-radius:20px;background:linear-gradient(130deg,#d2ddff26,#100d2699);backdrop-filter:blur(12px);box-shadow:inset 1px 1px #fff3,0 10px 30px #0004}
+.ardi-capability-controls{display:flex;align-items:center;justify-content:center;gap:18px;margin:20px 0}
+.ardi-capability-controls button{display:grid;place-items:center;width:46px;height:46px;border-radius:50%;border:1px solid #cbd0ff59;background:linear-gradient(130deg,#d2ddff1f,#181230cc);color:#effaff;box-shadow:inset 0 1px #fff2;cursor:pointer}
+.ardi-capability-controls button:hover{border-color:#8de4ff;background:#434074}
+.ardi-capability-controls p{min-width:52px;text-align:center;font-size:14px;color:#d2cdea}
+.ardi-capability-options{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;max-width:900px;margin:auto}
+.ardi-capability-options button{padding:10px 15px;min-height:44px;border:1px solid #aaa5e338;border-radius:24px;background:#d1cfff08;color:#d2cdea;font:500 14px Manrope,sans-serif;cursor:pointer}
+.ardi-capability-options button[aria-pressed=true]{background:linear-gradient(120deg,#9a81ff33,#8de4ff1a);border-color:#b8caff99;color:#fff;box-shadow:inset 0 1px #fff2}
+.ardi-mascot-dock{position:fixed;right:22px;bottom:max(18px,env(safe-area-inset-bottom));z-index:45;display:flex;align-items:flex-end;gap:5px}
+.ardi-mascot-dock .ardi-mascot-launcher{position:relative;inset:auto;width:96px;height:126px;border:0;border-radius:22px;background:transparent;box-shadow:none;--tw-ring-shadow:0 0 #0000}
+.ardi-mascot-launcher .ardi-character-full{width:90px!important;filter:drop-shadow(0 8px 14px #0008)}
+.ardi-mascot-hide,.ardi-mascot-restore{display:flex;align-items:center;justify-content:center;gap:7px;min-width:36px;min-height:36px;padding:8px;border:1px solid #b4caff66;border-radius:14px;background:#17112dde;color:#effaff;backdrop-filter:blur(16px);cursor:pointer}
+.ardi-mascot-hide{align-self:flex-start}.ardi-mascot-restore{min-height:44px;padding:10px 15px}
+.ardi-glass-chat{border-color:#bdcaff66!important;background:radial-gradient(ellipse at top right,#9a81ff26,transparent 45%),linear-gradient(145deg,#211b3bf7,#100d22f7)!important;backdrop-filter:blur(28px);box-shadow:inset 1px 0 #fff2,-20px 0 90px #0007}
+.ardi-glass-chat :is(input,textarea){border-color:#c0cbea58!important;background:#d8e8ff08!important;color:#f4f3ff}
+@media(max-width:699px){.ardi-capability-stack{height:475px;margin:18px 0}.ardi-capability-slide{width:84%;padding:22px;border-radius:24px}.ardi-capability-art{height:130px}.ardi-capability-slide h3{font-size:25px}.ardi-capability-slide>p{font-size:15px}.ardi-capability-options{gap:6px}.ardi-capability-options button{font-size:13px;padding:9px 12px}.ardi-liquid-assistant-layout{grid-template-columns:.65fr 1.35fr;gap:16px;padding-block:28px}.ardi-liquid-assistant-layout h2{font-size:27px}.ardi-liquid-assistant-layout p{font-size:15px}.ardi-liquid-assistant-art .ardi-character-full{width:150px!important}.ardi-mascot-dock{right:10px;bottom:14px}.ardi-mascot-dock-workspace{bottom:calc(80px + env(safe-area-inset-bottom))}.ardi-mascot-dock .ardi-mascot-launcher{width:72px;height:94px}.ardi-mascot-launcher .ardi-character-full{width:68px!important}.ardi-mascot-hide{min-width:32px;min-height:32px;padding:6px}}
+@media(prefers-reduced-motion:reduce){.ardi-glass-root *{scroll-behavior:auto!important}}
+@media(prefers-reduced-transparency:reduce){.ardi-glass-chat{background:#19132f!important}.ardi-glass-root :is(.ardi-v2-header,.ardi-v2-mobile-nav,.ardi-glass-card){background:#19132f;backdrop-filter:none}}
+@media(max-width:359px){.ardi-capability-stack{height:540px}.ardi-capability-slide{padding:20px}.ardi-capability-art{height:115px}}
+
+/* Shared mascot material: graphite/violet interiors with green/cyan refracted rims. */
+.ardi-glass-root,.ardi-liquid-popup{--liquid-green:#a7ffaf;--liquid-cyan:#77eaff;--liquid-rim:linear-gradient(135deg,#f2fffaff 0%,#9dffb4e6 10%,#67ffcb40 24%,#ffffff0a 39%,#7aeeffc7 60%,#edfffffa 72%,#7aeeff59 79%,#baffcce6 94%,#f0fffaff);--liquid-shadow:inset 0 2px 2px #f1fffac4,inset 2px 0 4px #a7ffaf73,inset -2px 0 5px #77eaff80,inset 0 -3px 5px #77eaff66,inset 0 14px 18px -15px #ecfffbe6,0 16px 36px #03011066,0 0 20px #77eaff0a}
+.ardi-glass-root :is(.ardi-glass-card,.bg-card,.ardi-liquid-auth,.ardi-cap-card,.ardi-sec-gate,.ardi-sec-list article,.ardi-sec-faq details,.ardi-v2-capability,.ardi-v2-route){position:relative;border-radius:26px;background:radial-gradient(ellipse at 0% 0%,#b6ffd933,transparent 42%),radial-gradient(ellipse at 100% 100%,#77eaff26,transparent 44%),linear-gradient(135deg,#d8f5ff1c,#19163394 52%,#14263170);border-color:#c4ffe466;box-shadow:var(--liquid-shadow);backdrop-filter:blur(24px) saturate(150%)}
+.ardi-glass-root :is(.ardi-glass-card,.bg-card,.ardi-liquid-auth,.ardi-cap-card,.ardi-sec-gate,.ardi-sec-list article,.ardi-sec-faq details,.ardi-v2-capability,.ardi-v2-route,.ardi-capability-slide,.ardi-v2-hero-rail)::after,
+.ardi-liquid-popup::after{content:"";position:absolute;inset:0;padding:3px;border-radius:inherit;background:var(--liquid-rim);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;z-index:2}
+.ardi-glass-root :is(.ardi-glass-card,.ardi-cap-card,.ardi-v2-capability,.ardi-v2-route){transition:border-color .2s,box-shadow .2s}
+.ardi-glass-root :is(.ardi-glass-card,.ardi-cap-card,.ardi-v2-capability,.ardi-v2-route):hover{border-color:#a7ffaf80;box-shadow:var(--liquid-shadow),0 0 26px #77eaff0d}
+.ardi-glass-root .ardi-liquid-workspace{background:radial-gradient(ellipse at 90% 0,#77eaff0a,transparent 40%),radial-gradient(ellipse at 0 70%,#9a81ff12,transparent 60%),#0e0b24}
+.ardi-glass-root :is(.ardi-liquid-sidebar,.ardi-liquid-mobile-header,.ardi-liquid-mobile-nav){background:linear-gradient(145deg,#292043b8,#111124d9);backdrop-filter:blur(24px);border-color:#98f4d74d;box-shadow:inset 0 1px #bfffe51f}
+.ardi-glass-root .ardi-liquid-sidebar{box-shadow:inset -1px 0 #77eaff24}
+.ardi-glass-root :is(.ardi-v2-header,.ardi-v2-mobile-nav){border-bottom-color:#94f9cf66;box-shadow:inset 0 -1px #77eaff33,0 7px 30px #0002}
+.ardi-glass-root :is(.ardi-liquid-input,.ardi-liquid-tabs){border:1px solid #91f5d859;border-radius:12px;background:linear-gradient(130deg,#c8e8ff0b,#13112780);box-shadow:inset 0 1px 2px #e1fff510,inset 0 -1px #77eaff1a;color:#f5f3ff}
+.ardi-glass-root .ardi-liquid-input::placeholder{color:#bdb7d6;opacity:1}
+.ardi-glass-root .ardi-liquid-input:focus-visible{border-color:#a7ffaf;outline:2px solid #77eaff99;outline-offset:2px;box-shadow:0 0 18px #77eaff18}
+.ardi-glass-root .ardi-liquid-tabs [role=tab][data-state=active]{border-radius:9px;background:linear-gradient(120deg,#a7ffaf22,#77eaff22);color:#effff9;box-shadow:inset 0 1px #a7ffaf70,inset 0 -1px #77eaff70}
+.ardi-glass-root .ardi-liquid-button{border-radius:12px}
+.ardi-glass-root .ardi-liquid-button:not(.bg-destructive):not(.border-transparent){box-shadow:inset 0 1px #c6ffdf38,inset 0 -1px #77eaff33}
+.ardi-liquid-popup{color:#f5f3ff;border-color:#93f8d77a;background:linear-gradient(135deg,#28233cf5,#101424f5);backdrop-filter:blur(26px);box-shadow:var(--liquid-shadow),0 20px 70px #0007;border-radius:26px}
+.ardi-liquid-popup :is(input,textarea){color:#f5f3ff;background:#c3ddff0a;border-color:#91f5d859}
+.ardi-liquid-popup [data-highlighted]{background:#77eaff20;color:#effff9}
+.ardi-liquid-popup [data-disabled]{opacity:.5}
+.ardi-liquid-popup .text-muted-foreground{color:#c9c3e8}
+@media(prefers-reduced-transparency:reduce){.ardi-glass-root :is(.ardi-glass-card,.bg-card,.ardi-liquid-auth,.ardi-cap-card,.ardi-sec-gate,.ardi-sec-list article,.ardi-sec-faq details,.ardi-v2-capability,.ardi-v2-route,.ardi-liquid-sidebar,.ardi-liquid-mobile-header,.ardi-liquid-mobile-nav),.ardi-liquid-popup{background:#19142e;backdrop-filter:none}}
+@media(prefers-reduced-motion:reduce){.ardi-glass-root :is(.ardi-glass-card,.ardi-cap-card,.ardi-v2-capability,.ardi-v2-route){transition:none}}
+
+.ardi-glass-root .ardi-info-header{border-bottom-color:#91f5d859;background:#17112fbd;backdrop-filter:blur(22px)}
+.ardi-glass-root .ardi-info-sections{border-top:0;gap:14px}
+.ardi-glass-root .ardi-info-sections section{border:1px solid #91f5d840;border-radius:18px;padding:24px;background:linear-gradient(130deg,#c4d1ff0a,#11102366);box-shadow:inset 1px 1px #a7ffaf4d,inset -1px -1px #77eaff4d}
+.ardi-glass-root .ardi-info-actions a{border-radius:12px;border-color:#91f5d880;box-shadow:inset 0 1px #a7ffaf40,inset 0 -1px #77eaff40}
+.ardi-glass-root .ardi-cap-index,.ardi-glass-root .ardi-sec-index{border-color:#91f5d859;box-shadow:inset 0 1px #a7ffaf26,inset 0 -1px #77eaff26}
+/* Use the compact navigation before desktop labels can collide on tablets. */
+@media(max-width:1099px){.ardi-glass-root .ardi-v2-nav,.ardi-glass-root .ardi-v2-header-start,.ardi-glass-root .ardi-v2-header-chat{display:none}.ardi-glass-root .ardi-v2-menu{display:grid}.ardi-glass-root .ardi-v2-header-inner{min-width:0}}
+
+/* Thick clear lens edges: highlights follow the curvature rather than a neon outline. */
+.ardi-glass-root :is(.ardi-capability-slide,.ardi-v2-hero-rail){box-shadow:var(--liquid-shadow);border-color:#d8fff680;background:radial-gradient(ellipse at top left,#a7ffaf2b,transparent 50%),radial-gradient(ellipse at bottom right,#77eaff30,transparent 50%),linear-gradient(135deg,#c8d8ff20,#191531c9);backdrop-filter:blur(26px) saturate(150%)}
+.ardi-glass-root :is(.ardi-v2-hero-scenes button,.ardi-capability-options button,.ardi-capability-controls button,.ardi-v2-button-chat,.ardi-mascot-restore){border-color:#beffe48c;background:linear-gradient(135deg,#baffce29,#d3fff10a 45%,#77eaff26);box-shadow:inset 0 2px 2px #f2fffaa6,inset 1px 0 3px #a7ffaf66,inset -1px -2px 3px #77eaff80,0 5px 20px #0003;backdrop-filter:blur(20px) saturate(150%)}
+.ardi-glass-root .ardi-capability-options button[aria-pressed=true]{background:linear-gradient(130deg,#a7ffaf47,#77eaff38);color:#fff;border-color:#d3fff1}
+.ardi-glass-root :is(.ardi-liquid-input,.ardi-liquid-tabs){border-color:#c4ffe480;box-shadow:inset 0 2px 3px #a7ffaf59,inset 0 -2px 3px #77eaff59;background:linear-gradient(130deg,#a7ffaf14,#0f142b73 50%,#77eaff17)}
+.ardi-glass-root :is(.ardi-v2-header,.ardi-v2-mobile-nav,.ardi-liquid-mobile-header,.ardi-liquid-mobile-nav){background:linear-gradient(115deg,#baffce18,#14132bb3 42%,#77eaff17);box-shadow:inset 0 1px #f0fff799,inset 0 -2px 3px #77eaff73,0 8px 30px #0004;backdrop-filter:blur(26px) saturate(160%)}
+.ardi-glass-root .ardi-info-sections section{border-radius:24px;box-shadow:var(--liquid-shadow);background:radial-gradient(ellipse at top left,#a7ffaf1f,transparent 50%),linear-gradient(130deg,#c4d1ff12,#11102380)}
+@media(prefers-reduced-transparency:reduce){.ardi-glass-root :is(.ardi-capability-slide,.ardi-v2-hero-rail,.ardi-v2-header,.ardi-v2-mobile-nav,.ardi-liquid-mobile-header,.ardi-liquid-mobile-nav){background:#19142e;backdrop-filter:none}}

@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 @import '@workspace/ardi-ds/styles.css';
+@import './liquid-glass.css';
 
 @theme inline {
   --color-ardi-surface: hsl(var(--ardi-surface));
@@ -20,7 +21,7 @@
 :root {
   --ardi-surface: 245 56% 15%;
   --ardi-surface-foreground: 240 40% 96%;
-  --ardi-neon: 188 92% 68%;
+  --ardi-neon: 188 92% 72%;
   --ardi-cyan: 197 94% 70%;
   --severity-critical: 350 76% 42%;
   --severity-critical-foreground: 0 0% 100%;

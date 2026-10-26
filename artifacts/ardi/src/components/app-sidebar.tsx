@@ -35,7 +35,7 @@ export function AppSidebar() {
   const hasActiveScans = scans?.some((scan) => scan.status === 'running') || false;
 
   return (
-    <aside className="hidden h-dvh w-64 flex-col border-r border-sidebar-border bg-sidebar md:flex">
+    <aside className="ardi-liquid-sidebar hidden h-dvh w-64 flex-col border-r border-sidebar-border bg-sidebar md:flex">
       <div className="flex items-center gap-3 border-b border-sidebar-border p-6">
         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary glow-primary">
           <Shield className="h-6 w-6 text-primary-foreground" />
@@ -102,7 +102,7 @@ export function MobileAppHeader() {
   const title = navItems.find((item) => navIsActive(location, item.path))?.label ?? 'Ardi';
 
   return (
-    <header className="sticky top-0 z-30 flex min-h-14 items-center justify-between border-b border-border bg-background/90 px-4 backdrop-blur md:hidden">
+    <header className="ardi-liquid-mobile-header sticky top-0 z-30 flex min-h-14 items-center justify-between border-b border-border bg-background/90 px-4 backdrop-blur md:hidden">
       <div className="flex min-w-0 items-center gap-2.5">
         <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-primary/15 ring-1 ring-primary/40">
           <Shield className="h-4 w-4 text-primary" />
@@ -128,7 +128,7 @@ export function MobileBottomNav() {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-border bg-background/95 px-1 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 backdrop-blur md:hidden"
+      className="ardi-liquid-mobile-nav fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-border bg-background/95 px-1 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 backdrop-blur md:hidden"
       aria-label="Primary mobile navigation"
     >
       {mobileNavItems.map((item) => {

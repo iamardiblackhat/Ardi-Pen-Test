@@ -49,7 +49,7 @@ export default function Register() {
     <div className="dark min-h-screen flex items-center justify-center bg-background text-foreground relative overflow-hidden px-4 py-8">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,hsl(var(--primary)/0.16),transparent_65%)]" />
       <div className="absolute inset-0 grid-pattern opacity-30 [mask-image:radial-gradient(ellipse_50%_50%_at_50%_40%,black,transparent)]" />
-      <div className="relative w-full max-w-md p-8 bg-card/80 border border-border rounded-2xl backdrop-blur">
+      <div className="ardi-liquid-auth relative w-full max-w-md p-8 bg-card/80 border border-border rounded-2xl backdrop-blur">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent rounded-t-2xl" />
         <div className="flex flex-col items-center mb-8">
           <div className="flex items-center justify-center w-14 h-14 rounded-xl border border-primary/40 bg-primary/10 mb-4">

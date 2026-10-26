@@ -35,13 +35,13 @@ export function IntelligenceSummary({ feed }: { feed: IntelligenceFeed }) {
         {summaries.map(({ label, value, icon: Icon }) => (
           <div
             key={label}
-            className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_16px_30px_-26px_rgba(30,41,59,.38)]"
+            className="ardi-glass-card rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_16px_30px_-26px_rgba(30,41,59,.38)]"
           >
-            <dt className="flex items-center gap-2 text-base font-semibold text-slate-500">
-              <Icon aria-hidden="true" className="h-4 w-4 text-violet-600" />
+            <dt className="flex items-center gap-2 text-base font-semibold text-slate-300">
+              <Icon aria-hidden="true" className="h-4 w-4 text-cyan-200" />
               {label}
             </dt>
-            <dd className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+            <dd className="mt-2 text-2xl font-semibold tracking-tight text-slate-50">
               {value}
             </dd>
           </div>

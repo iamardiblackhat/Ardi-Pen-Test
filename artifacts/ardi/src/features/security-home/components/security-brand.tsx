@@ -9,7 +9,7 @@ export function SecurityBrand({ onClick }: { onClick?: () => void }) {
   return (
     <Link href={routes.home} className="ardi-v2-brand" onClick={onClick}>
       <SecurityMark />
-      <span><b>ARDI SEC</b><small>AUTHORISED SECURITY PLATFORM</small></span>
+      <span><b>ARDI SEC</b><small>by Omnelia SI</small></span>
     </Link>
   );
 }

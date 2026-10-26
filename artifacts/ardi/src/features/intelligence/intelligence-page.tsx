@@ -1,3 +1,4 @@
+import { BotazezConnection } from "./components/botazez-connection";
 import { useEffect, useState } from "react";
 import { IntelligenceSearchHeader } from "./components/intelligence-search-header";
 import { PageEmpty, PageError, PageLoading } from "@/shared/ui/page-state";
@@ -9,7 +10,7 @@ import { LiveResearch } from "./components/live-research";
 import { IntelligenceBreakdown } from "./components/intelligence-breakdown";
 import "./intelligence-dashboard.css";
 import { Link } from "wouter";
-import { ArdiLauncher, ArdiPanel } from "@/components/ardi-panel";
+
 import { auth } from "@/lib/auth";
 import { routes } from "@/shared/config/routes";
 
@@ -26,7 +27,6 @@ function IntelligenceBody({ embedded }: { embedded: boolean }) {
     new URLSearchParams(window.location.search).get("search") ?? "";
   const [query, setQuery] = useState(initialSearch);
   const [search, setSearch] = useState(initialSearch);
-  const [ardiOpen, setArdiOpen] = useState(false);
   const [feed, setFeed] = useState<IntelligenceFeed | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -89,6 +89,7 @@ function IntelligenceBody({ embedded }: { embedded: boolean }) {
             </Link>
           </nav>
         )}
+        <BotazezConnection />
         <IntelligenceSearchHeader
           query={query}
           search={search}
@@ -128,17 +129,7 @@ function IntelligenceBody({ embedded }: { embedded: boolean }) {
           />
         ) : null}
       </div>
-      {embedded ? null : (
-        <>
-          <ArdiLauncher onClick={() => setArdiOpen(true)} />
-          <ArdiPanel
-            open={ardiOpen}
-            onClose={() => setArdiOpen(false)}
-            authenticated={signedIn}
-            context="The user is on the threat intelligence dashboard. Use the connected intelligence search tool before describing threat records."
-          />
-        </>
-      )}
+
     </main>
   );
 }

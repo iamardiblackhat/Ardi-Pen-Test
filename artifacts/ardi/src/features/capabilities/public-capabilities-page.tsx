@@ -135,6 +135,12 @@ export default function PublicCapabilitiesPage() {
                           : "Create an account to use this tool"}{" "}
                       <ArrowRight />
                     </Link>
+                    {capability.id === "threat-context" && (
+                      <a href="https://botazez.com/" target="_blank" rel="noopener noreferrer">
+                        Open Botazez intelligence map <ArrowRight aria-hidden="true" />
+                        <span className="sr-only"> (opens in a new tab)</span>
+                      </a>
+                    )}
                     <button type="button" onClick={() => setArdiOpen(true)}>
                       Ask ARDI about it
                     </button>
