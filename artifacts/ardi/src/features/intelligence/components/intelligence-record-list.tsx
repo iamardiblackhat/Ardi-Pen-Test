@@ -91,7 +91,7 @@ export function IntelligenceRecordList({
             {record.aliases.length ? (
               <p className="mt-4 text-sm text-slate-300">
                 <span className="font-semibold text-slate-200">
-                  Also known as:
+                  {vulnerabilityFeed ? "Vendor / product:" : "Also known as:"}
                 </span>{" "}
                 {record.aliases.join(", ")}
               </p>
