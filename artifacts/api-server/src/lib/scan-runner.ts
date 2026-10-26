@@ -5,7 +5,7 @@ import {
   findingsTable,
   activityTable,
 } from "@workspace/db";
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import {
   runNmap,
   runNuclei,
@@ -183,6 +183,7 @@ async function execute(
     .where(eq(assetsTable.id, asset.id));
 
   const collected: RawFinding[] = [];
+  let savedCount = 0;
 
   try {
     // ── Preferred engine: CyberStrike (autonomous AI pentest) ──────────────
@@ -204,11 +205,12 @@ async function execute(
           void setProgress(scanId, pct);
         },
       });
+      if (controller.signal.aborted) throw new ScanEngineError("Scan cancelled.", { code: "cancelled" });
       collected.push(
         ...run.vulnerabilities.map((v) => cyberStrikeToRaw(v, asset.target)),
       );
 
-      const written = await persistFindings(
+      const written = savedCount = await persistFindings(
         scanId,
         asset.id,
         scan.userId,
@@ -219,7 +221,7 @@ async function execute(
       ).length;
       const high = collected.filter((f) => f.severity === "high").length;
       const duration = Math.round((Date.now() - startedAt) / 1000);
-      await db
+      const completed = await db
         .update(scansTable)
         .set({
           status: "completed",
@@ -230,7 +232,9 @@ async function execute(
           highCount: high,
           duration,
         })
-        .where(eq(scansTable.id, scanId));
+        .where(and(eq(scansTable.id, scanId), eq(scansTable.status, "running")))
+        .returning({ id: scansTable.id });
+      if (!completed.length || controller.signal.aborted) throw new ScanEngineError("Scan cancelled.", { code: "cancelled" });
       await db
         .update(assetsTable)
         .set({
@@ -260,6 +264,7 @@ async function execute(
     // ── Fallback engine: built-in nmap + nuclei ────────────────────────────
     // Port and service discovery
     const nmap = await runNmap(asset.target, {
+      signal: controller.signal,
       // Vercel functions stop at 300s. Finish or fail inside that window.
       timeoutMs: process.env.VERCEL ? 240_000 : undefined,
       onProgress: (pct, message) => {
@@ -287,6 +292,7 @@ async function execute(
         : `http://${asset.target}`;
       try {
         const nuclei = await runNuclei(url, {
+          signal: controller.signal,
           onProgress: (pct, message) => {
             logger.info({ scanId, pct, message }, "scan progress");
             void setProgress(scanId, 70 + pct * 0.25);
@@ -302,7 +308,7 @@ async function execute(
       } catch (error) {
         // A missing nuclei binary must not void a successful port scan.
         if (error instanceof ScanEngineError && error.code === "tool_missing") {
-          await persistFindings(scanId, asset.id, scan.userId, collected);
+          savedCount = await persistFindings(scanId, asset.id, scan.userId, collected);
           throw new Error(
             "The vulnerability checker is unavailable. Service-discovery findings were saved, but the security test is incomplete.",
           );
@@ -312,8 +318,10 @@ async function execute(
       }
     }
 
+    if (controller.signal.aborted) throw new ScanEngineError("Scan cancelled.", { code: "cancelled" });
+
     // ── Persist ────────────────────────────────────────────────────────────
-    const written = await persistFindings(
+    const written = savedCount = await persistFindings(
       scanId,
       asset.id,
       scan.userId,
@@ -323,7 +331,7 @@ async function execute(
     const high = collected.filter((f) => f.severity === "high").length;
     const duration = Math.round((Date.now() - startedAt) / 1000);
 
-    await db
+    const completed = await db
       .update(scansTable)
       .set({
         status: "completed",
@@ -334,7 +342,9 @@ async function execute(
         highCount: high,
         duration,
       })
-      .where(eq(scansTable.id, scanId));
+      .where(and(eq(scansTable.id, scanId), eq(scansTable.status, "running")))
+      .returning({ id: scansTable.id });
+    if (!completed.length || controller.signal.aborted) throw new ScanEngineError("Scan cancelled.", { code: "cancelled" });
 
     await db
       .update(assetsTable)
@@ -373,6 +383,7 @@ async function execute(
       .update(scansTable)
       .set({
         status: cancelled ? "stopped" : "failed",
+        findingsCount: savedCount,
         completedAt: new Date(),
         duration: Math.round((Date.now() - startedAt) / 1000),
       })

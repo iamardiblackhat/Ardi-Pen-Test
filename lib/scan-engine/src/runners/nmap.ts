@@ -1,4 +1,4 @@
-import { execFile } from "node:child_process";
+import { runScannerProcess } from "./process";
 import { ScanEngineError, type RawFinding, type ProgressCallback } from "../types";
 import { parseTarget } from "../targets";
 import { nmapToFindings, parseNmapXml } from "../nmap/parse";
@@ -27,6 +27,7 @@ export interface NmapRunOptions {
   /** Set true only when scanning your own private infrastructure. */
   allowPrivateRanges?: boolean;
   onProgress?: ProgressCallback;
+  signal?: AbortSignal;
 }
 
 const DEFAULT_TIMEOUT_MS = 10 * 60 * 1000;
@@ -62,35 +63,7 @@ export async function runNmap(
 
   options.onProgress?.(5, `Starting port scan of ${scanTarget}`);
 
-  const rawXml = await new Promise<string>((resolve, reject) => {
-    execFile(
-      binary,
-      args,
-      { timeout: timeoutMs, maxBuffer: MAX_OUTPUT_BYTES, killSignal: "SIGTERM" },
-      (error, stdout, stderr) => {
-        if (error) {
-          const code = (error as NodeJS.ErrnoException).code;
-          if (code === "ENOENT") {
-            return reject(
-              new ScanEngineError(
-                `nmap not found at "${binary}". Install it (brew install nmap) or set NMAP_PATH.`,
-                { code: "tool_missing" },
-              ),
-            );
-          }
-          // nmap exits non-zero on partial results; if we got XML, use it.
-          if (stdout && stdout.includes("<nmaprun")) return resolve(stdout);
-          return reject(
-            new ScanEngineError(`nmap failed: ${stderr || error.message}`, {
-              code: "tool_failed",
-              cause: error,
-            }),
-          );
-        }
-        resolve(stdout);
-      },
-    );
-  });
+  const rawXml = await runScannerProcess(binary, args, { tool: "nmap", timeoutMs, maxOutputBytes: MAX_OUTPUT_BYTES, signal: options.signal });
 
   options.onProgress?.(60, "Port scan complete, parsing results");
 

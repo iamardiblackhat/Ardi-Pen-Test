@@ -1,4 +1,4 @@
-import { execFile } from "node:child_process";
+import { runScannerProcess } from "./process";
 import { ScanEngineError, type RawFinding, type ProgressCallback } from "../types";
 import { parseTarget } from "../targets";
 import { parseNucleiJsonl } from "../nuclei/parse";
@@ -20,6 +20,7 @@ export interface NucleiRunOptions {
   rateLimit?: number;
   allowPrivateRanges?: boolean;
   onProgress?: ProgressCallback;
+  signal?: AbortSignal;
 }
 
 const DEFAULT_TIMEOUT_MS = 15 * 60 * 1000;
@@ -69,36 +70,7 @@ export async function runNuclei(
 
   options.onProgress?.(75, `Running vulnerability templates against ${target.value}`);
 
-  const rawJsonl = await new Promise<string>((resolve, reject) => {
-    execFile(
-      binary,
-      args,
-      { timeout: timeoutMs, maxBuffer: MAX_OUTPUT_BYTES, killSignal: "SIGTERM" },
-      (error, stdout, stderr) => {
-        if (error) {
-          const code = (error as NodeJS.ErrnoException).code;
-          if (code === "ENOENT") {
-            return reject(
-              new ScanEngineError(
-                `nuclei not found at "${binary}". Install it (brew install nuclei) or set NUCLEI_PATH.`,
-                { code: "tool_missing" },
-              ),
-            );
-          }
-          // nuclei exits non-zero when it finds nothing — that is a valid,
-          // successful scan with zero findings, not a failure.
-          if (typeof stdout === "string") return resolve(stdout);
-          return reject(
-            new ScanEngineError(`nuclei failed: ${stderr || error.message}`, {
-              code: "tool_failed",
-              cause: error,
-            }),
-          );
-        }
-        resolve(stdout);
-      },
-    );
-  });
+  const rawJsonl = await runScannerProcess(binary, args, { tool: "nuclei", timeoutMs, maxOutputBytes: MAX_OUTPUT_BYTES, signal: options.signal });
 
   const parsed = parseNucleiJsonl(rawJsonl);
   options.onProgress?.(95, `Found ${parsed.findings.length} vulnerabilities`);
