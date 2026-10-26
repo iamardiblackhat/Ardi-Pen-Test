@@ -44,9 +44,9 @@ export function PageLoading({ label = 'Loading workspace' }: { label?: string })
   );
 }
 
-export function PageError({ title, description, onRetry }: PageStateProps & { onRetry?: () => void }) {
+export function PageError({ title, description, onRetry, actionLabel = 'Try again' }: PageStateProps & { onRetry?: () => void }) {
   return (
-    <PageStateFrame title={title} description={description} actionLabel={onRetry ? 'Try again' : undefined} onAction={onRetry}>
+    <PageStateFrame title={title} description={description} actionLabel={onRetry ? actionLabel : undefined} onAction={onRetry}>
       <AlertTriangle className="h-8 w-8 text-destructive" aria-hidden="true" />
     </PageStateFrame>
   );
