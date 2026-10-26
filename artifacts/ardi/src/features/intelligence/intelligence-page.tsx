@@ -72,9 +72,9 @@ function IntelligenceBody({ embedded }: { embedded: boolean }) {
             <p className="font-mono text-xs uppercase tracking-[0.16em] text-cyan-200">
               Step 1 · Research
             </p>
-            <h1 className="mt-2 text-3xl font-bold">Known attackers</h1>
+            <h1 className="mt-2 text-3xl font-bold">Cyber-threat intelligence</h1>
             <p className="mt-2 max-w-2xl text-base text-slate-300">
-              Search the connected threat feed. If it is not set up, this page says so. No attacker records are invented.
+              Search available source records and review the evidence behind them.
             </p>
           </div>
         ) : (
@@ -94,10 +94,19 @@ function IntelligenceBody({ embedded }: { embedded: boolean }) {
           query={query}
           search={search}
           platformUrl={feed?.platformUrl}
+          vulnerabilityFeed={feed?.provider === "botazez"}
           onQueryChange={setQuery}
           onSearch={runSearch}
         />
 
+        {feed?.provider === "botazez" && !loading && !error ? (
+          <aside className="ardi-glass-card p-5 text-base leading-7 text-slate-200" aria-label="Connected intelligence source">
+            <p className="font-semibold text-emerald-100">{feed.sourceName}</p>
+            <p className="mt-2">{feed.coverage}</p>
+            <p className="mt-2">Catalogue inclusion confirms known exploitation; it does not assign a severity score.</p>
+            <a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog" target="_blank" rel="noopener noreferrer" className="mt-3 inline-block text-cyan-200 underline underline-offset-4">View the full CISA catalogue<span className="sr-only"> (opens in a new tab)</span></a>
+          </aside>
+        ) : null}
         {loading ? (
           <PageLoading label="Loading live threat intelligence" />
         ) : null}
@@ -106,7 +115,7 @@ function IntelligenceBody({ embedded }: { embedded: boolean }) {
             title={notConfigured ? "Threat feed is not set up" : "Live intelligence is unavailable"}
             description={
               notConfigured
-                ? "This server has no threat-intelligence connection. Website lookup and security checks still work."
+                ? "The intelligence connection is unavailable. Please try again shortly."
                 : error
             }
             onRetry={() => setReloadKey((value) => value + 1)}
@@ -120,7 +129,7 @@ function IntelligenceBody({ embedded }: { embedded: boolean }) {
           <IntelligenceBreakdown feed={feed} />
         ) : null}
         {!loading && !error && feed?.records.length ? (
-          <IntelligenceRecordList records={feed.records} />
+          <IntelligenceRecordList records={feed.records} vulnerabilityFeed={feed.provider === "botazez"} />
         ) : null}
         {!loading && !error && feed && !feed.records.length ? (
           <PageEmpty

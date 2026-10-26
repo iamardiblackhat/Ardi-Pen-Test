@@ -19,9 +19,15 @@ export type IntelligenceRecord = {
   updatedAt: string | null;
   reference: string | null;
   pattern: string | null;
+  sourceUrl?: string;
 };
 
 export type IntelligenceFeed = {
+  provider?: "botazez" | "opencti";
+  sourceName?: string;
+  sourceUrl?: string;
+  coverage?: string;
+  availableKinds?: IntelligenceRecordKind[];
   configured: boolean;
   connected: boolean;
   version: string;

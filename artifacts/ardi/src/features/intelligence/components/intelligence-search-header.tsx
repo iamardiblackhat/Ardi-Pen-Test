@@ -4,6 +4,7 @@ type IntelligenceSearchHeaderProps = {
   query: string;
   search: string;
   platformUrl?: string | null;
+  vulnerabilityFeed?: boolean;
   onQueryChange: (value: string) => void;
   onSearch: (value: string) => void;
 };
@@ -12,11 +13,12 @@ export function IntelligenceSearchHeader({
   query,
   search,
   platformUrl,
+  vulnerabilityFeed,
   onQueryChange,
   onSearch,
 }: IntelligenceSearchHeaderProps) {
   return (
-    <header className="rounded-3xl border border-violet-300/30 bg-[linear-gradient(125deg,#17123b,#312669)] text-white">
+    <header className="ardi-glass-card rounded-3xl border border-violet-300/30 bg-[linear-gradient(125deg,#17123b,#312669)] text-white">
       <p className="font-mono text-sm font-semibold tracking-wider text-cyan-200">
         ARDI THREAT INTELLIGENCE
       </p>
@@ -24,8 +26,9 @@ export function IntelligenceSearchHeader({
         Understand the threats. Find the evidence.
       </h1>
       <p className="mt-4 max-w-2xl text-base leading-7 text-indigo-100">
-        Search known cyberattacks, the groups behind them, and the software they
-        use. Read the source records and ask ARDI to explain what they mean.
+        {vulnerabilityFeed
+          ? "Search recent known exploited vulnerabilities by CVE, vendor or product. Read the source records to understand what is affected."
+          : "Search the records available from your connected cyber-intelligence source. Each result includes its source context."}
       </p>
       {platformUrl ? (
         <a
@@ -34,7 +37,7 @@ export function IntelligenceSearchHeader({
           rel="noreferrer"
           className="mt-4 inline-flex min-h-12 items-center gap-2 text-cyan-200 underline underline-offset-4"
         >
-          Advanced intelligence workspace{" "}
+          Open source dashboard{" "}
           <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
           <span className="sr-only">
             (opens in a new tab; separate sign-in required)
@@ -56,7 +59,7 @@ export function IntelligenceSearchHeader({
           type="search"
           value={query}
           onChange={(event) => onQueryChange(event.target.value)}
-          placeholder="Try SolarWinds, ransomware, or a country name"
+          placeholder={vulnerabilityFeed ? "Search CVE, vendor, product or vulnerability" : "Search connected threat records"}
           className="min-h-12 min-w-0 flex-1 rounded-xl border border-white/30 bg-white/10 px-4 text-base text-white placeholder:text-indigo-200"
         />
         <button

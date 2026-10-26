@@ -8,7 +8,8 @@
     "build": "node ./build.mjs",
     "vercel-build": "node ./build.mjs",
     "start": "node --enable-source-maps ./dist/index.mjs",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test:botazez": "node tests/run-botazez-tests.mjs"
   },
   "dependencies": {
     "@workspace/api-zod": "workspace:*",

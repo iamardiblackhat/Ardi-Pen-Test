@@ -12,6 +12,11 @@ const kinds = [
   "vulnerability",
 ] as const;
 const feedSchema = z.object({
+  provider: z.enum(["botazez", "opencti"]).optional(),
+  sourceName: z.string().optional(),
+  sourceUrl: z.string().url().optional(),
+  coverage: z.string().optional(),
+  availableKinds: z.array(z.enum(kinds)).optional(),
   configured: z.literal(true),
   connected: z.literal(true),
   version: z.string(),
@@ -35,6 +40,7 @@ const feedSchema = z.object({
       updatedAt: z.string().datetime().nullable(),
       reference: z.string().nullable(),
       pattern: z.string().nullable(),
+      sourceUrl: z.string().url().optional(),
     }),
   ),
 });

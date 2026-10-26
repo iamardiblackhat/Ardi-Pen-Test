@@ -16,8 +16,10 @@ const labels: Record<IntelligenceRecordKind, string> = {
 
 export function IntelligenceRecordList({
   records,
+  vulnerabilityFeed = false,
 }: {
   records: IntelligenceRecord[];
+  vulnerabilityFeed?: boolean;
 }) {
   return (
     <section aria-labelledby="intelligence-results-title">
@@ -30,7 +32,7 @@ export function IntelligenceRecordList({
             id="intelligence-results-title"
             className="mt-1 text-2xl font-semibold tracking-tight text-slate-50"
           >
-            Threat intelligence records
+            {vulnerabilityFeed ? "Known exploited vulnerabilities" : "Threat intelligence records"}
           </h2>
         </div>
         <p className="text-sm text-slate-300">{records.length} shown</p>
@@ -70,7 +72,7 @@ export function IntelligenceRecordList({
             </p>
             <details className="mt-4 text-sm leading-6">
               <summary className="cursor-pointer text-cyan-300">
-                Read source record
+                Read record details
               </summary>
               <p className="mt-3 whitespace-pre-wrap break-words">
                 <RecordDescription
@@ -94,8 +96,11 @@ export function IntelligenceRecordList({
                 {record.aliases.join(", ")}
               </p>
             ) : null}
+            {vulnerabilityFeed && /^CVE-\d{4}-\d{4,19}$/.test(record.standardId) ? (
+              <a className="mt-4 inline-flex min-h-11 items-center text-cyan-200 underline underline-offset-4" href={`https://www.cve.org/CVERecord?id=${record.standardId}`} target="_blank" rel="noopener noreferrer">Open CVE source record<span className="sr-only"> (opens in a new tab)</span></a>
+            ) : null}
             <p className="mt-4 font-mono text-sm text-slate-400">
-              Record updated {formatDate(record.updatedAt ?? record.createdAt)}
+              {vulnerabilityFeed ? "Added to catalogue" : "Record updated"} {formatDate(record.updatedAt ?? record.createdAt)}
             </p>
           </article>
         ))}

@@ -27,7 +27,7 @@ export function IntelligenceBreakdown({ feed }: { feed: IntelligenceFeed }) {
         </div>
       </div>
       <dl>
-        {categories.map(([kind, label]) => (
+        {categories.filter(([kind]) => !feed.availableKinds || feed.availableKinds.includes(kind)).map(([kind, label]) => (
           <div key={kind}>
             <dt>{label}</dt>
             <dd>{feed.totals[kind].toLocaleString("en-GB")}</dd>
@@ -40,8 +40,7 @@ export function IntelligenceBreakdown({ feed }: { feed: IntelligenceFeed }) {
         ))}
       </dl>
       <p>
-        Counts reflect the current search. Zero means no matching records are
-        available.
+        Counts reflect the current search within the connected collection, not all threats worldwide.
       </p>
     </section>
   );

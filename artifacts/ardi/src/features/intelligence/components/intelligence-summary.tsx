@@ -6,7 +6,12 @@ export function IntelligenceSummary({ feed }: { feed: IntelligenceFeed }) {
     (sum, count) => sum + count,
     0,
   );
-  const summaries = [
+  const summaries = feed.provider === "botazez" ? [
+    { label: "Matching vulnerabilities", value: total.toLocaleString("en-GB"), icon: Database },
+    { label: "Records shown", value: feed.records.length.toLocaleString("en-GB"), icon: Radar },
+    { label: "Source", value: "CISA KEV", icon: Activity },
+    { label: "Connection", value: feed.connected ? "Connected" : "Offline", icon: ShieldCheck },
+  ] : [
     {
       label: "Matching records",
       value: total.toLocaleString("en-GB"),
