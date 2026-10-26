@@ -6,6 +6,14 @@ import { logger } from "./lib/logger";
 import { tripwire } from "./middlewares/tripwire";
 
 const app: Express = express();
+app.disable("x-powered-by");
+app.use((_req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("Content-Security-Policy", "frame-ancestors 'none'; object-src 'none'; base-uri 'self'");
+  next();
+});
 
 const pinoHttpOptions: PinoHttpOptions = {
   logger,
@@ -47,8 +55,10 @@ app.use(
 // to /.env is caught and blocked without touching application logic.
 app.use(tripwire);
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Bound work before schemas, authentication or model calls. Compressed request
+// bodies are unnecessary for this API and never enter an inflater.
+app.use(express.json({ limit: "64kb", inflate: false }));
+app.use(express.urlencoded({ extended: false, limit: "64kb", parameterLimit: 100, inflate: false }));
 
 app.use("/api", router);
 
@@ -58,8 +68,12 @@ app.use("/api", router);
 // here is async, so this mainly catches rejected promises Express 5 now
 // forwards automatically, plus anything thrown synchronously before that.
 const jsonErrorHandler: ErrorRequestHandler = (err, req, res, _next) => {
-  logger.error({ err, url: req.url }, "unhandled route error");
   if (res.headersSent) return;
+  const type = (err as { type?: string }).type;
+  if (type === "entity.parse.failed") { res.status(400).json({ error: "Invalid JSON request." }); return; }
+  if (type === "entity.too.large" || type === "parameters.too.many") { res.status(413).json({ error: "Request is too large." }); return; }
+  if (type === "encoding.unsupported" || type === "charset.unsupported") { res.status(415).json({ error: "Unsupported request encoding." }); return; }
+  logger.error({ err, url: req.path }, "unhandled route error");
   res.status(500).json({ error: "Internal server error." });
 };
 app.use(jsonErrorHandler);

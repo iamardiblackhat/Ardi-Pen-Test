@@ -67,4 +67,3 @@ export async function gatherReportData(userId: number, report: Report): Promise<
     counts,
   };
 }
-

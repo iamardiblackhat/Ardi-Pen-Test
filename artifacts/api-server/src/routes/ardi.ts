@@ -83,7 +83,7 @@ router.post(
 
 // POST /api/ardi/chat — Server-Sent Events.
 router.post("/ardi/chat", chatLimiter, async (req, res): Promise<void> => {
-  const body = req.body as { messages?: unknown; context?: unknown };
+  const body = (req.body ?? {}) as { messages?: unknown; context?: unknown };
 
   if (!Array.isArray(body.messages) || body.messages.length === 0) {
     res.status(400).json({ error: "messages must be a non-empty array." });
@@ -98,6 +98,10 @@ router.post("/ardi/chat", chatLimiter, async (req, res): Promise<void> => {
 
   const messages: ChatMessage[] = [];
   for (const raw of body.messages) {
+    if (raw === null || typeof raw !== "object" || Array.isArray(raw)) {
+      res.status(400).json({ error: "Each message needs role 'user'|'assistant' and string content." });
+      return;
+    }
     const m = raw as { role?: unknown; content?: unknown };
     if (
       (m.role !== "user" && m.role !== "assistant") ||
@@ -166,10 +170,7 @@ router.post("/ardi/chat", chatLimiter, async (req, res): Promise<void> => {
       logger.error({ err: error }, "ARDI chat failed");
       send({
         type: "error",
-        message:
-          error instanceof Error
-            ? error.message
-            : "ARDI hit an unexpected error.",
+        message: "ARDI could not complete this request. Please try again.",
       });
     }
   } finally {

@@ -64,7 +64,9 @@ export function tripwire(req: Request, res: Response, next: NextFunction): void 
     return;
   }
 
-  const path = req.path.toLowerCase();
+  // Vercel routes root-level decoys to this reserved API path so the SPA
+  // fallback cannot swallow probes before Express sees them.
+  const path = req.path.toLowerCase().replace(/^\/api\/honeypot(?=\/)/, "");
   const tripped = TRIPWIRE_PATHS.some((p) => path === p || path.startsWith(p + "/"));
 
   if (tripped) {

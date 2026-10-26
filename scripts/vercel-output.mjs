@@ -66,6 +66,21 @@ await writeFile(
     {
       version: 3,
       routes: [
+        {
+          src: "/(.*)",
+          headers: {
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "DENY",
+            "Referrer-Policy": "strict-origin-when-cross-origin",
+            "Content-Security-Policy": "frame-ancestors 'none'; object-src 'none'; base-uri 'self'",
+          },
+          continue: true,
+        },
+        {
+          src: "/(\\.env(?:\\.local)?|\\.git/config|wp-login\\.php|wp-admin|admin\\.php|phpmyadmin|\\.aws/credentials|config\\.php|xmlrpc\\.php)(?:/.*)?",
+          dest: "/api",
+          headers: { "x-ardi-path": "/api/honeypot/$1" },
+        },
         { handle: "filesystem" },
         {
           src: "/api/(.+)",
