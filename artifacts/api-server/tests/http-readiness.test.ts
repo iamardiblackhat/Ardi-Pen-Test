@@ -75,3 +75,16 @@ test('deployment-forwarded honeypot probes reach the actual tripwire', async () 
   assert.equal(response.status,404);
   assert.deepEqual(await response.json(),{error:'Not found.'});
 });
+
+test('signed-in assistant tools build valid SDK JSON schemas and validate inputs', async () => {
+  const { buildCyberTools } = await import('../../../lib/ardi/src/verticals/cyber/tools');
+  const tools=buildCyberTools(123);
+  assert(tools.length >= 8);
+  for(const tool of tools) {
+    assert.equal(tool.input_schema.type,'object',tool.name);
+    assert.equal(typeof tool.parse,'function',tool.name);
+  }
+  const start=tools.find(tool=>tool.name==='start_pen_test')!;
+  assert.throws(()=>start.parse({assetId:'invalid'}));
+  assert.deepEqual(start.parse({assetId:12}),{assetId:12,name:'ARDI authorised Pen Test',type:'full_stack'});
+});

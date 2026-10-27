@@ -7,7 +7,7 @@
     "build": "pnpm run typecheck && pnpm -r --if-present run build",
     "typecheck:libs": "tsc --build",
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
-    "check:readiness": "pnpm run build && pnpm --filter @workspace/api-server run test:assessments && pnpm --filter @workspace/api-server run test:botazez && pnpm --filter @workspace/api-server run test:http && pnpm audit"
+    "check:readiness": "pnpm run build && pnpm --filter @workspace/api-server run test:assessments && pnpm --filter @workspace/api-server run test:botazez && pnpm --filter @workspace/api-server run test:http && pnpm --filter @workspace/api-server run test:customers && pnpm audit"
   },
   "private": true,
   "devDependencies": {

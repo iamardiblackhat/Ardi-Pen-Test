@@ -1,5 +1,7 @@
 # ARDI Sec readiness review — 26 October 2026
 
+Latest follow-up: [27 October validation migration and customer tests](READINESS-UPDATE-2026-10-27.md). The dependency and fixture-testing findings below are the historical 26 October snapshot.
+
 ## Verdict
 
 **Not yet ready for unrestricted customer security operations.** Public website and defensive request-handling checks pass the tests described below. Hosted assessments, live AI replies and full customer data journeys have separate unmet gates. This is a bounded engineering review, not a penetration-test certificate or proof of every possible interaction.

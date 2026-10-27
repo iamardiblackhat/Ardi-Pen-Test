@@ -205,6 +205,13 @@ router.get("/scans/:id/findings", async (req, res): Promise<void> => {
     res.status(400).json({ error: "Invalid id" });
     return;
   }
+  const [ownedScan] = await db.select({ id: scansTable.id }).from(scansTable).where(
+    and(eq(scansTable.id, parsed.data.id), eq(scansTable.userId, req.user!.sub)),
+  );
+  if (!ownedScan) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
   const findings = await db
     .select()
     .from(findingsTable)

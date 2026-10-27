@@ -11,23 +11,25 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test:botazez": "node tests/run-botazez-tests.mjs",
     "test:assessments": "node tests/run-assessment-tests.mjs",
-    "test:http": "node tests/run-http-tests.mjs"
+    "test:http": "node tests/run-http-tests.mjs",
+    "test:customers": "node tests/run-customer-tests.mjs"
   },
   "dependencies": {
     "@workspace/api-zod": "workspace:*",
+    "@workspace/ardi-agent": "workspace:*",
     "@workspace/db": "workspace:*",
+    "@workspace/scan-engine": "workspace:*",
+    "@workspace/threat-intel": "workspace:*",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "drizzle-orm": "catalog:",
     "express": "^5.2.1",
     "pino": "^9.14.0",
     "pino-http": "^10.5.0",
-    "zod": "catalog:",
-    "@workspace/scan-engine": "workspace:*",
-    "@workspace/threat-intel": "workspace:*",
-    "@workspace/ardi-agent": "workspace:*"
+    "zod": "catalog:"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.12",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
