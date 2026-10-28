@@ -1,0 +1,24 @@
+{
+  "name": "ARDI Sec",
+  "short_name": "ARDI Sec",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#09121b",
+  "theme_color": "#09121b",
+  "icons": [
+    {
+      "src": "/branding/ardi-sec-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/branding/ardi-sec-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

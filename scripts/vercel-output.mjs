@@ -81,6 +81,7 @@ await writeFile(
           dest: "/api",
           headers: { "x-ardi-path": "/api/honeypot/$1" },
         },
+        { src: "/(capabilities|security|intelligence|faq|terms|privacy|cookies|login|register)/?", dest: "/$1/index.html" },
         { handle: "filesystem" },
         {
           src: "/api/(.+)",
