@@ -20,6 +20,14 @@ async function getAssetMap(userId: number) {
   return new Map(assets.map(a => [a.id, a.name]));
 }
 
+async function getAssetName(assetId: number, userId: number): Promise<string> {
+  const [asset] = await db
+    .select({ name: assetsTable.name })
+    .from(assetsTable)
+    .where(and(eq(assetsTable.id, assetId), eq(assetsTable.userId, userId)));
+  return asset?.name ?? "Unknown";
+}
+
 function serializeFinding(f: typeof findingsTable.$inferSelect, assetName: string) {
   return {
     id: f.id,
@@ -129,10 +137,16 @@ router.get("/findings/:id", async (req, res): Promise<void> => {
   const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const parsed = GetFindingParams.safeParse({ id: parseInt(rawId, 10) });
   if (!parsed.success) { res.status(400).json({ error: "Invalid id" }); return; }
-  const [f] = await db.select().from(findingsTable).where(and(eq(findingsTable.id, parsed.data.id), eq(findingsTable.userId, req.user!.sub)));
-  if (!f) { res.status(404).json({ error: "Not found" }); return; }
-  const assetMap = await getAssetMap(req.user!.sub);
-  res.json(GetFindingResponse.parse(serializeFinding(f, assetMap.get(f.assetId) ?? "Unknown")));
+  const [row] = await db
+    .select({
+      finding: findingsTable,
+      assetName: assetsTable.name,
+    })
+    .from(findingsTable)
+    .leftJoin(assetsTable, eq(findingsTable.assetId, assetsTable.id))
+    .where(and(eq(findingsTable.id, parsed.data.id), eq(findingsTable.userId, req.user!.sub)));
+  if (!row) { res.status(404).json({ error: "Not found" }); return; }
+  res.json(GetFindingResponse.parse(serializeFinding(row.finding, row.assetName ?? "Unknown")));
 });
 
 // GET /api/findings/:id/threat-intel — live OpenCTI enrichment for one finding.
@@ -181,8 +195,8 @@ router.patch("/findings/:id", async (req, res): Promise<void> => {
     .where(and(eq(findingsTable.id, paramParsed.data.id), eq(findingsTable.userId, req.user!.sub)))
     .returning();
   if (!f) { res.status(404).json({ error: "Not found" }); return; }
-  const assetMap = await getAssetMap(req.user!.sub);
-  res.json(UpdateFindingResponse.parse(serializeFinding(f, assetMap.get(f.assetId) ?? "Unknown")));
+  const assetName = await getAssetName(f.assetId, req.user!.sub);
+  res.json(UpdateFindingResponse.parse(serializeFinding(f, assetName)));
 });
 
 export default router;
