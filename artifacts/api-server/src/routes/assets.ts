@@ -207,7 +207,14 @@ router.delete("/assets/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  await db.delete(assetsTable).where(eq(assetsTable.id, parsed.data.id));
+  await db
+    .delete(assetsTable)
+    .where(
+      and(
+        eq(assetsTable.id, parsed.data.id),
+        eq(assetsTable.userId, req.user!.sub),
+      ),
+    );
   res.status(204).send();
 });
 
