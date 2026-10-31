@@ -256,8 +256,17 @@ export async function* runOpenAiCompat(
           name: call.name,
           label: humanLabel(call.name),
         };
-        const result = await runTool(vertical, call.name, call.args);
-        const ok = !result.includes('"error"');
+      }
+
+      const results = await Promise.all(
+        calls.map(async (call) => {
+          const result = await runTool(vertical, call.name, call.args);
+          const ok = !result.includes('"error"');
+          return { call, result, ok };
+        }),
+      );
+
+      for (const { call, result, ok } of results) {
         yield { type: "tool_end", name: call.name, ok };
         convo.push({ role: "tool", tool_call_id: call.id, content: result });
         if (ok && vertical.confirmBeforeRunning.includes(call.name)) {
