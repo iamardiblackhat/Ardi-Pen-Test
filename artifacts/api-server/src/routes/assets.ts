@@ -198,7 +198,12 @@ router.delete("/assets/:id", async (req, res): Promise<void> => {
   const [existingScan] = await db
     .select({ id: scansTable.id })
     .from(scansTable)
-    .where(eq(scansTable.assetId, parsed.data.id))
+    .where(
+      and(
+        eq(scansTable.assetId, parsed.data.id),
+        eq(scansTable.userId, req.user!.sub),
+      ),
+    )
     .limit(1);
   if (existingScan) {
     res
