@@ -1,3 +1,29 @@
+interface ChoiceDelta {
+  content?: string;
+  reasoning_content?: string;
+  tool_calls?: Array<{
+    index?: number;
+    id?: string;
+    function?: { name?: string; arguments?: string };
+  }>;
+}
+
+/** Parses an SSE data line and returns the choice delta if present, or null. */
+function parseSseDelta(line: string): ChoiceDelta | null {
+  const trimmed = line.trim();
+  if (!trimmed.startsWith("data:")) return null;
+
+  const payload = trimmed.slice(5).trim();
+  if (payload === "[DONE]") return null;
+
+  try {
+    const chunk = JSON.parse(payload);
+    return chunk.choices?.[0]?.delta ?? null;
+  } catch {
+    return null;
+  }
+}
+
 import type { ArdiEvent, ChatMessage, VerticalConfig } from "../types";
 
 /**
@@ -163,19 +189,7 @@ export async function* runOpenAiCompat(
         buffer = lines.pop() ?? "";
 
         for (const line of lines) {
-          const trimmed = line.trim();
-          if (!trimmed.startsWith("data:")) continue;
-          const payload = trimmed.slice(5).trim();
-          if (payload === "[DONE]") continue;
-
-          let chunk: any;
-          try {
-            chunk = JSON.parse(payload);
-          } catch {
-            continue;
-          }
-
-          const delta = chunk.choices?.[0]?.delta;
+          const delta = parseSseDelta(line);
           if (!delta) continue;
 
           // Reasoning models stream their chain of thought in a separate
