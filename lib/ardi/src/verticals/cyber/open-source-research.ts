@@ -23,29 +23,66 @@ type ResearchResponse = {
 };
 
 function configuredEndpoint(): { endpoint: string; apiKey: string } {
-  const baseUrl = process.env["ARDI_BASE_URL"]?.replace(/\/+$/, "");
-  const apiKey = process.env["ARDI_API_KEY"];
+  const apiKey = process.env["ARDI_API_KEY"] || process.env["GROQ_API_KEY"];
+  const baseUrl = (
+    process.env["ARDI_BASE_URL"] ||
+    (apiKey ? "https://api.groq.com/openai/v1" : "")
+  ).replace(/\/+$/, "");
   if (!baseUrl || !apiKey || !baseUrl.includes("api.groq.com")) {
     throw new Error("Live open-source research is not configured.");
   }
   return { endpoint: `${baseUrl}/chat/completions`, apiKey };
 }
 
-function sourceUrls(executedTools: unknown[]): string[] {
+function extractHttpUrls(text: string, urls: Set<string>): void {
+  const matches = text.match(/https?:\/\/[^\s"'<>)\]\u3011]+/gi) ?? [];
+  for (const raw of matches) {
+    const cleaned = raw.replace(/[.,;:!?)]+$/, "");
+    try {
+      const url = new URL(cleaned);
+      if (
+        (url.protocol === "https:" || url.protocol === "http:") &&
+        url.hostname !== "exa.ai"
+      ) {
+        urls.add(url.href);
+      }
+    } catch {}
+  }
+}
+
+function sourceUrls(executedTools: unknown[], answerText?: string): string[] {
   const urls = new Set<string>();
   for (const tool of executedTools) {
     if (!tool || typeof tool !== "object") continue;
-    const results = (tool as { search_results?: { results?: unknown } })
-      .search_results?.results;
-    if (!Array.isArray(results)) continue;
-    for (const result of results) {
-      if (!result || typeof result.url !== "string") continue;
-      try {
-        const url = new URL(result.url);
-        if (url.protocol === "https:" || url.protocol === "http:")
-          urls.add(url.href);
-      } catch {}
+    const t = tool as {
+      search_results?: { results?: unknown };
+      output?: unknown;
+    };
+    const results = t.search_results?.results;
+    if (Array.isArray(results)) {
+      for (const result of results) {
+        if (!result || typeof result.url !== "string") continue;
+        try {
+          const url = new URL(result.url);
+          if (url.protocol === "https:" || url.protocol === "http:")
+            urls.add(url.href);
+        } catch {}
+      }
     }
+    if (typeof t.output === "string") {
+      extractHttpUrls(t.output, urls);
+      // Also extract bare domains cited in Groq browser.search output markers: †Title†domain.tld】
+      const domainMatches = t.output.matchAll(/†([^†\n\u3011]+)】/g);
+      for (const m of domainMatches) {
+        const candidate = m[1]?.trim();
+        if (candidate && /^[a-z0-9.-]+\.[a-z]{2,}$/i.test(candidate)) {
+          urls.add(`https://${candidate}`);
+        }
+      }
+    }
+  }
+  if (answerText) {
+    extractHttpUrls(answerText, urls);
   }
   return [...urls].slice(0, 20);
 }
@@ -113,7 +150,7 @@ export async function researchOpenSources(input: {
     throw new Error("Open-source research returned no usable result.");
 
   const executedTools = message?.executed_tools ?? [];
-  const sources = sourceUrls(executedTools);
+  const sources = sourceUrls(executedTools, answer);
   if (!sources.length)
     throw new Error("Live research returned no verifiable search sources.");
   return {

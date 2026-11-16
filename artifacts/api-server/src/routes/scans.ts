@@ -138,13 +138,18 @@ router.post("/scans/:id/start", async (req, res): Promise<void> => {
     return;
   }
 
-  // Actually launch the scanner. This spawns nmap/nuclei against the asset's
-  // target and writes real findings; it returns immediately and the scan
-  // continues in the background, reporting progress into the scans table.
+  // Actually launch the scanner. This spawns nmap/nuclei (or native serverless
+  // checks on Vercel) against the asset's target and writes real findings.
   const result = startScan(parsed.data.id);
   if (!result.started) {
     res.status(409).json({ error: result.reason ?? "Could not start scan." });
     return;
+  }
+
+  // On Vercel serverless functions, the container freezes once the HTTP response
+  // is sent. Await completion so the scan finishes and persists findings.
+  if (process.env.VERCEL === "1" && result.completion) {
+    await result.completion;
   }
 
   const [scan] = await db

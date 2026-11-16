@@ -38,16 +38,37 @@ const MAX_TOKENS = 64_000;
  */
 export type ArdiProvider = "anthropic" | "openai-compat";
 
+const GROQ_DEFAULT_BASE_URL = "https://api.groq.com/openai/v1";
+const GROQ_DEFAULT_MODEL = "llama-3.3-70b-versatile";
+
+function resolvedOpenAiKey(): string | undefined {
+  return process.env["ARDI_API_KEY"] || process.env["GROQ_API_KEY"];
+}
+
+function resolvedOpenAiBaseUrl(): string | undefined {
+  if (process.env["ARDI_BASE_URL"]) return process.env["ARDI_BASE_URL"];
+  if (resolvedOpenAiKey()) return GROQ_DEFAULT_BASE_URL;
+  return undefined;
+}
+
+function resolvedOpenAiModel(): string {
+  return (
+    process.env["ARDI_MODEL"] ||
+    process.env["GROQ_MODEL"] ||
+    (resolvedOpenAiKey() ? GROQ_DEFAULT_MODEL : "local-model")
+  );
+}
+
 export function getProvider(): ArdiProvider {
   const explicit = process.env["ARDI_PROVIDER"];
   if (explicit === "openai-compat" || explicit === "anthropic") return explicit;
-  // Infer: a base URL means a local/self-hosted server is intended.
-  return process.env["ARDI_BASE_URL"] ? "openai-compat" : "anthropic";
+  // Infer: a base URL or Groq/OpenAI-compat key means openai-compat is intended.
+  return resolvedOpenAiBaseUrl() ? "openai-compat" : "anthropic";
 }
 
 export function isConfigured(): boolean {
   return getProvider() === "openai-compat"
-    ? Boolean(process.env["ARDI_BASE_URL"])
+    ? Boolean(resolvedOpenAiBaseUrl())
     : Boolean(process.env["ANTHROPIC_API_KEY"]);
 }
 
@@ -59,8 +80,8 @@ export function describeProvider(): {
   if (getProvider() === "openai-compat") {
     return {
       provider: "openai-compat",
-      model: process.env["ARDI_MODEL"] ?? "(unset)",
-      endpoint: process.env["ARDI_BASE_URL"] ?? null,
+      model: resolvedOpenAiModel(),
+      endpoint: resolvedOpenAiBaseUrl() ?? null,
     };
   }
   return { provider: "anthropic", model: MODEL, endpoint: null };
@@ -88,9 +109,9 @@ export async function* runArdi(options: RunOptions): AsyncGenerator<ArdiEvent> {
 
   if (getProvider() === "openai-compat") {
     yield* runOpenAiCompat({
-      baseUrl: process.env["ARDI_BASE_URL"]!,
-      model: process.env["ARDI_MODEL"] ?? "local-model",
-      apiKey: process.env["ARDI_API_KEY"],
+      baseUrl: resolvedOpenAiBaseUrl()!,
+      model: resolvedOpenAiModel(),
+      apiKey: resolvedOpenAiKey(),
       vertical,
       messages,
       context,

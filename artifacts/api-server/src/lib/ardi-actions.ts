@@ -129,11 +129,18 @@ export async function executeArdiAction(
     );
   }
 
+  if (process.env.VERCEL === "1" && started.completion) {
+    await started.completion;
+  }
+
   return {
     ok: true,
     action: action.name,
-    message: `Pen Test started against ${asset.name}.`,
+    message:
+      process.env.VERCEL === "1"
+        ? `Pen Test completed against ${asset.name}.`
+        : `Pen Test started against ${asset.name}.`,
     href: `/scans/${scan.id}`,
-    linkLabel: "Open running Pen Test",
+    linkLabel: "Open Pen Test results",
   };
 }

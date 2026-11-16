@@ -20,6 +20,7 @@ import {
   runCyberStrikeScan,
   type CyberStrikeVuln,
 } from "./cyberstrike";
+import { runServerlessScan } from "./serverless-scanner";
 
 /** Map a CyberStrike vulnerability onto Ardi's RawFinding shape. */
 function cyberStrikeToRaw(v: CyberStrikeVuln, target: string): RawFinding {
@@ -129,10 +130,12 @@ async function persistFindings(
 export interface StartScanResult {
   started: boolean;
   reason?: string;
+  completion?: Promise<void>;
 }
 
 /**
- * Kicks off a scan. Returns immediately; the scan continues in the background.
+ * Kicks off a scan. Returns immediately; the scan continues in the background
+ * (or can be awaited via `completion` in serverless environments).
  * Never throws — a scanner failure marks the scan `failed` and is recorded,
  * because an unhandled rejection here would take down the API server.
  */
@@ -144,7 +147,7 @@ export function startScan(scanId: number): StartScanResult {
   const controller = new AbortController();
   inFlight.set(scanId, controller);
 
-  void execute(scanId, controller)
+  const completion = execute(scanId, controller)
     .catch((error: unknown) => {
       logger.error({ err: error, scanId }, "Scan failed unexpectedly");
     })
@@ -152,7 +155,7 @@ export function startScan(scanId: number): StartScanResult {
       inFlight.delete(scanId);
     });
 
-  return { started: true };
+  return { started: true, completion };
 }
 
 async function execute(
@@ -261,62 +264,102 @@ async function execute(
       return;
     }
 
-    // ── Fallback engine: built-in nmap + nuclei ────────────────────────────
-    // Port and service discovery
-    const nmap = await runNmap(asset.target, {
-      signal: controller.signal,
-      // Vercel functions stop at 300s. Finish or fail inside that window.
-      timeoutMs: process.env.VERCEL ? 240_000 : undefined,
-      onProgress: (pct, message) => {
-        logger.info({ scanId, pct, message }, "scan progress");
-        void setProgress(scanId, pct * 0.7);
-      },
-    });
-    collected.push(...nmap.findings);
-
-    if (controller.signal.aborted)
-      throw new ScanEngineError("Scan cancelled.", { code: "cancelled" });
-
-    // ── Vulnerability templates (web targets only) ─────────────────────────
-    // A bare host with no HTTP service has nothing for nuclei to test, and
-    // running it anyway wastes minutes per scan.
-    const hasWeb = nmap.findings.some(
-      (f) =>
-        /\b(80|443|8080|8443)\/tcp\b/.test(f.target) ||
-        /http/i.test(f.evidence ?? ""),
-    );
-
-    if (hasWeb) {
-      const url = asset.target.startsWith("http")
-        ? asset.target
-        : `http://${asset.target}`;
+    // ── Fallback engine: built-in nmap + nuclei (or native serverless scanner) ─
+    let usedServerlessFallback = false;
+    if (process.env.VERCEL === "1") {
+      usedServerlessFallback = true;
+      const serverless = await runServerlessScan(asset.target, {
+        signal: controller.signal,
+        onProgress: (pct, message) => {
+          logger.info({ scanId, pct, message }, "scan progress (serverless)");
+          void setProgress(scanId, pct);
+        },
+      });
+      collected.push(...serverless.findings);
+    } else {
       try {
-        const nuclei = await runNuclei(url, {
+        // Port and service discovery
+        const nmap = await runNmap(asset.target, {
           signal: controller.signal,
+          // Vercel functions stop at 300s. Finish or fail inside that window.
+          timeoutMs: process.env.VERCEL ? 240_000 : undefined,
           onProgress: (pct, message) => {
             logger.info({ scanId, pct, message }, "scan progress");
-            void setProgress(scanId, 70 + pct * 0.25);
+            void setProgress(scanId, pct * 0.7);
           },
         });
-        collected.push(...nuclei.findings);
-        if (nuclei.skipped > 0) {
-          logger.warn(
-            { scanId, skipped: nuclei.skipped },
-            "nuclei lines skipped as malformed",
-          );
+        collected.push(...nmap.findings);
+
+        if (controller.signal.aborted)
+          throw new ScanEngineError("Scan cancelled.", { code: "cancelled" });
+
+        // ── Vulnerability templates (web targets only) ─────────────────────────
+        // A bare host with no HTTP service has nothing for nuclei to test, and
+        // running it anyway wastes minutes per scan.
+        const hasWeb = nmap.findings.some(
+          (f) =>
+            /\b(80|443|8080|8443)\/tcp\b/.test(f.target) ||
+            /http/i.test(f.evidence ?? ""),
+        );
+
+        if (hasWeb) {
+          const url = asset.target.startsWith("http")
+            ? asset.target
+            : `http://${asset.target}`;
+          try {
+            const nuclei = await runNuclei(url, {
+              signal: controller.signal,
+              onProgress: (pct, message) => {
+                logger.info({ scanId, pct, message }, "scan progress");
+                void setProgress(scanId, 70 + pct * 0.25);
+              },
+            });
+            collected.push(...nuclei.findings);
+            if (nuclei.skipped > 0) {
+              logger.warn(
+                { scanId, skipped: nuclei.skipped },
+                "nuclei lines skipped as malformed",
+              );
+            }
+          } catch (error) {
+            if (error instanceof ScanEngineError && error.code === "tool_missing") {
+              logger.info(
+                { scanId },
+                "nuclei binary not installed; augmenting with native HTTP/TLS/CVE checks",
+              );
+              const extra = await runServerlessScan(asset.target, {
+                signal: controller.signal,
+                onProgress: (pct, message) => {
+                  void setProgress(scanId, 70 + pct * 0.25);
+                },
+              });
+              collected.push(...extra.findings);
+            } else {
+              throw error;
+            }
+          }
         }
       } catch (error) {
-        // A missing nuclei binary must not void a successful port scan.
         if (error instanceof ScanEngineError && error.code === "tool_missing") {
-          savedCount = await persistFindings(scanId, asset.id, scan.userId, collected);
-          throw new Error(
-            "The vulnerability checker is unavailable. Service-discovery findings were saved, but the security test is incomplete.",
+          usedServerlessFallback = true;
+          logger.info(
+            { scanId },
+            "nmap binary not installed; running native Node.js network/TLS/web scanner",
           );
+          const serverless = await runServerlessScan(asset.target, {
+            signal: controller.signal,
+            onProgress: (pct, message) => {
+              logger.info({ scanId, pct, message }, "scan progress (native)");
+              void setProgress(scanId, pct);
+            },
+          });
+          collected.push(...serverless.findings);
         } else {
           throw error;
         }
       }
     }
+    void usedServerlessFallback;
 
     if (controller.signal.aborted) throw new ScanEngineError("Scan cancelled.", { code: "cancelled" });
 
