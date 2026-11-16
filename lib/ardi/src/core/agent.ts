@@ -39,7 +39,7 @@ const MAX_TOKENS = 64_000;
 export type ArdiProvider = "anthropic" | "openai-compat";
 
 const GROQ_DEFAULT_BASE_URL = "https://api.groq.com/openai/v1";
-const GROQ_DEFAULT_MODEL = "llama-3.3-70b-versatile";
+const GROQ_DEFAULT_MODEL = "openai/gpt-oss-120b";
 
 function resolvedOpenAiKey(): string | undefined {
   return process.env["ARDI_API_KEY"] || process.env["GROQ_API_KEY"];
