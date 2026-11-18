@@ -5,6 +5,7 @@ import { and, eq, desc } from "drizzle-orm";
 import { researchDomain } from "./domain-research";
 import { researchOpenSources } from "./open-source-research";
 import { searchThreatIntelligence } from "./threat-intelligence";
+import { buildBlueTeamDefense } from "./blue-team-defenses";
 
 /**
  * ARDI Cyber's tools — read-only, over the real database.
@@ -257,6 +258,51 @@ export function buildCyberTools(userId: number) {
     },
   });
 
+  const getRemediationPlaybook = betaZodTool({
+    name: "get_remediation_playbook",
+    description:
+      "Generate Blue Team hardening rules (Nginx, Cloudflare WAF, Sigma SIEM detection rule) " +
+      "and compliance framework mappings (OWASP Top 10, SOC 2, ISO 27001, NIST CSF) for a specific finding ID.",
+    inputSchema: z.object({
+      findingId: z.number().int().positive().describe("The finding ID."),
+    }),
+    run: async ({ findingId }) => {
+      const [f] = await db
+        .select()
+        .from(findingsTable)
+        .where(
+          and(eq(findingsTable.id, findingId), eq(findingsTable.userId, userId)),
+        );
+      if (!f)
+        return JSON.stringify({ error: `No finding with ID ${findingId}.` });
+
+      const [asset] = await db
+        .select({ target: assetsTable.target, name: assetsTable.name })
+        .from(assetsTable)
+        .where(eq(assetsTable.id, f.assetId));
+
+      const defense = buildBlueTeamDefense({
+        id: f.id,
+        title: f.title,
+        severity: f.severity,
+        category: f.category,
+        mitreId: f.mitreId,
+        mitreTactic: f.mitreTactic,
+        mitreTechnique: f.mitreTechnique,
+        cve: f.cve ?? null,
+        target: asset?.target ?? null,
+      });
+
+      return JSON.stringify({
+        findingId: f.id,
+        title: f.title,
+        asset: asset?.name ?? "Unknown",
+        target: asset?.target ?? null,
+        ...defense,
+      });
+    },
+  });
+
   const listAssets = betaZodTool({
     name: "list_assets",
     description:
@@ -375,6 +421,7 @@ export function buildCyberTools(userId: number) {
     generateReport,
     listFindings,
     getFinding,
+    getRemediationPlaybook,
     listAssets,
     listScans,
     getSecuritySummary,

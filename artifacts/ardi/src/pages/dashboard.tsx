@@ -1,5 +1,6 @@
+import { useEffect, useState } from "react";
 import { Link } from "wouter";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ShieldAlert } from "lucide-react";
 import {
   getGetDashboardActivityQueryKey,
   getGetDashboardStatsQueryKey,
@@ -11,8 +12,27 @@ import {
   useGetScans,
 } from "@workspace/api-client-react";
 import { ActivityFeed } from "@/features/dashboard/components/activity-feed";
+import { auth } from "@/lib/auth";
 import { nextWorkflowAction, workflowStages } from "@/shared/config/workflow";
 import { PageError, PageLoading } from "@/shared/ui/page-state";
+
+interface HoneypotEvent {
+  id: string;
+  timestamp: string;
+  ipMasked: string;
+  path: string;
+  method: string;
+  userAgent: string;
+  hits: number;
+  blocked: boolean;
+}
+
+interface HoneypotTelemetry {
+  activeDecoys: string[];
+  totalHits: number;
+  activeBlocks: number;
+  recentEvents: HoneypotEvent[];
+}
 
 function stageStatus(step: number, input: {
   assets: number;
@@ -39,6 +59,22 @@ export default function Dashboard() {
   const scansQuery = useGetScans({ query: { queryKey: getGetScansQueryKey() } });
   const reportsQuery = useGetReports({ query: { queryKey: getGetReportsQueryKey() } });
   const activityQuery = useGetDashboardActivity({ query: { queryKey: getGetDashboardActivityQueryKey() } });
+  const [honeypot, setHoneypot] = useState<HoneypotTelemetry | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/dashboard/honeypot", {
+      headers: auth.getToken() ? { authorization: `Bearer ${auth.getToken()}` } : {},
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: HoneypotTelemetry | null) => {
+        if (alive) setHoneypot(d);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   if (statsQuery.isLoading || scansQuery.isLoading || reportsQuery.isLoading) {
     return <PageLoading label="Loading your next step" />;
@@ -113,6 +149,98 @@ export default function Dashboard() {
       </ol>
 
       <ActivityFeed activity={activityQuery.data} />
+
+      <section
+        className="rounded-xl border border-card-border bg-card p-4 shadow-md sm:p-6"
+        aria-labelledby="honeypot-sensor-title"
+      >
+        <header className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 id="honeypot-sensor-title" className="flex items-center gap-2 text-lg font-bold">
+              <ShieldAlert className="h-5 w-5 text-primary" aria-hidden="true" />
+              Blue Team Deception &amp; Tripwire Sensor
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Decoy endpoints actively intercept automated scanners and temporarily block repeat offenders.
+            </p>
+          </div>
+          {honeypot ? (
+            <div className="flex gap-3 font-mono text-xs">
+              <span className="rounded-md border border-border bg-muted/50 px-2.5 py-1">
+                Probes intercepted: <strong>{honeypot.totalHits}</strong>
+              </span>
+              <span className="rounded-md border border-border bg-muted/50 px-2.5 py-1">
+                Active blocks: <strong>{honeypot.activeBlocks}</strong>
+              </span>
+            </div>
+          ) : null}
+        </header>
+
+        {honeypot ? (
+          <div className="space-y-4">
+            <div>
+              <p className="mb-2 text-xs font-mono uppercase tracking-wide text-muted-foreground">
+                Active Decoy Paths ({honeypot.activeDecoys.length})
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {honeypot.activeDecoys.map((path) => (
+                  <code
+                    key={path}
+                    className="rounded border border-border bg-muted px-2 py-0.5 text-xs font-mono text-muted-foreground"
+                  >
+                    {path}
+                  </code>
+                ))}
+              </div>
+            </div>
+
+            {honeypot.recentEvents.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="border-b border-border font-mono uppercase text-muted-foreground">
+                    <tr>
+                      <th className="py-2 pr-4">Time</th>
+                      <th className="py-2 pr-4">Source (Masked)</th>
+                      <th className="py-2 pr-4">Decoy Path</th>
+                      <th className="py-2 pr-4">Hits</th>
+                      <th className="py-2">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border font-mono">
+                    {honeypot.recentEvents.slice(0, 10).map((evt) => (
+                      <tr key={evt.id}>
+                        <td className="py-2 pr-4 text-muted-foreground">
+                          {new Date(evt.timestamp).toLocaleTimeString()}
+                        </td>
+                        <td className="py-2 pr-4">{evt.ipMasked}</td>
+                        <td className="py-2 pr-4 text-primary">{evt.path}</td>
+                        <td className="py-2 pr-4">{evt.hits}</td>
+                        <td className="py-2">
+                          <span
+                            className={`rounded px-1.5 py-0.5 text-[11px] ${
+                              evt.blocked
+                                ? "bg-destructive/15 text-destructive"
+                                : "bg-orange-500/15 text-orange-400"
+                            }`}
+                          >
+                            {evt.blocked ? "Blocked" : "Logged"}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="rounded-lg border border-dashed border-border py-6 text-center text-sm text-muted-foreground">
+                No hostile tripwire probes recorded in this instance window.
+              </p>
+            )}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">Loading deception sensor telemetry…</p>
+        )}
+      </section>
     </main>
   );
 }

@@ -9,6 +9,7 @@ import {
   type ThreatContext,
 } from "@workspace/threat-intel";
 import { logger } from "./logger";
+import { getEpss, getKevMap } from "./public-vuln-intel";
 
 /**
  * Thin app-side wrapper over lib/threat-intel.
@@ -68,14 +69,31 @@ export async function enrich(input: {
   mitreId: string | null;
   cvss: number | null;
 }): Promise<EnrichedThreat> {
-  if (!client) {
-    const ctx = emptyContext(input.cve, "unavailable");
-    return { ...ctx, priority: priorityScore(ctx, input.cvss) };
+  let ctx: ThreatContext;
+  if (client) {
+    ctx = await enrichFinding(client, {
+      cve: input.cve,
+      mitreId: input.mitreId === "unmapped" ? null : input.mitreId,
+    });
+  } else {
+    ctx = emptyContext(input.cve, "no-record");
   }
 
-  const ctx = await enrichFinding(client, {
-    cve: input.cve,
-    mitreId: input.mitreId === "unmapped" ? null : input.mitreId,
-  });
+  // Fill KEV / EPSS gaps from the authoritative public feeds (CISA + FIRST).
+  if (input.cve) {
+    const cve = input.cve.toUpperCase();
+    const [kev, epss] = await Promise.all([getKevMap(), getEpss([cve])]);
+    if (!kev && epss.size === 0 && !client) {
+      ctx = emptyContext(input.cve, "unavailable");
+    } else {
+      if (kev?.has(cve)) ctx.knownExploited = true;
+      const score = epss.get(cve);
+      if (score && ctx.epssScore === null) {
+        ctx.epssScore = score.epss;
+        ctx.epssPercentile = score.percentile;
+      }
+      if (ctx.knownExploited || ctx.epssScore !== null) ctx.confidence = "matched";
+    }
+  }
   return { ...ctx, priority: priorityScore(ctx, input.cvss) };
 }

@@ -1,4 +1,5 @@
 import type { findingsTable, assetsTable, scansTable, reportsTable } from "@workspace/db";
+import { buildBlueTeamDefense } from "./blue-team-defenses";
 type Report = typeof reportsTable.$inferSelect;
 type Finding = typeof findingsTable.$inferSelect;
 type Asset = typeof assetsTable.$inferSelect;
@@ -38,6 +39,7 @@ export function renderReportJson(data: ReportData): string {
         cve: f.cve,
         cvss: f.cvss,
         mitre: { id: f.mitreId, tactic: f.mitreTactic, technique: f.mitreTechnique },
+        compliance: buildBlueTeamDefense(f).compliance,
         description: f.description,
         remediation: f.remediation,
         evidence: f.evidence,
@@ -86,8 +88,9 @@ export function renderReportHtml(data: ReportData): string {
 
   const findingBlocks = findings.length
     ? findings
-        .map(
-          (f) => `
+        .map((f) => {
+          const defense = buildBlueTeamDefense(f);
+          return `
       <section class="finding">
         <div class="finding-head">
           <span class="sev" style="background:${SEVERITY_COLOR[f.severity] ?? "#475569"}">${esc(f.severity)}</span>
@@ -97,12 +100,13 @@ export function renderReportHtml(data: ReportData): string {
           <tr><th>Status</th><td>${esc(f.status)}</td><th>Category</th><td>${esc(f.category)}</td></tr>
           <tr><th>CVE</th><td>${esc(f.cve ?? "—")}</td><th>CVSS</th><td>${f.cvss ?? "—"}</td></tr>
           <tr><th>MITRE</th><td colspan="3">${esc(f.mitreId)} · ${esc(f.mitreTactic)} · ${esc(f.mitreTechnique)}</td></tr>
+          <tr><th>Compliance</th><td colspan="3">OWASP: ${esc(defense.compliance.owaspTop10)} · SOC 2: ${esc(defense.compliance.soc2)} · ISO 27001: ${esc(defense.compliance.iso27001)}</td></tr>
         </table>
         <h4>Description</h4><p>${esc(f.description)}</p>
         <h4>Remediation</h4><p>${esc(f.remediation)}</p>
         ${f.evidence ? `<h4>Evidence</h4><pre>${esc(f.evidence)}</pre>` : ""}
-      </section>`,
-        )
+      </section>`;
+        })
         .join("")
     : `<p class="empty">No findings are recorded for this scope.</p>`;
 

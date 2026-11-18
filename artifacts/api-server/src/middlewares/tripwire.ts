@@ -33,9 +33,37 @@ interface Offender {
   blockedUntil: number;
 }
 
+export interface HoneypotEvent {
+  id: string;
+  timestamp: string;
+  ipMasked: string;
+  path: string;
+  method: string;
+  userAgent: string;
+  hits: number;
+  blocked: boolean;
+}
+
 const offenders = new Map<string, Offender>();
+const recentEvents: HoneypotEvent[] = [];
+const MAX_RECENT_EVENTS = 50;
+let totalHitsCount = 0;
 const BLOCK_MS = 60 * 60 * 1000; // 1 hour
 const HITS_BEFORE_BLOCK = 2;
+
+function maskIp(ip: string): string {
+  if (ip.includes(".")) {
+    const parts = ip.split(".");
+    if (parts.length === 4) {
+      return `${parts[0]}.${parts[1]}.${parts[2]}.xxx`;
+    }
+  }
+  if (ip.includes(":")) {
+    const parts = ip.split(":");
+    return `${parts.slice(0, 3).join(":")}:xxxx`;
+  }
+  return "unknown";
+}
 
 /**
  * The real client IP. Behind the reverse proxy we trust the LAST hop of
@@ -76,6 +104,22 @@ export function tripwire(req: Request, res: Response, next: NextFunction): void 
       record.blockedUntil = now + BLOCK_MS;
     }
     offenders.set(ip, record);
+    totalHitsCount += 1;
+
+    const event: HoneypotEvent = {
+      id: `${now}-${totalHitsCount}`,
+      timestamp: new Date(now).toISOString(),
+      ipMasked: maskIp(ip),
+      path: req.path.slice(0, 120),
+      method: req.method,
+      userAgent: String(req.headers["user-agent"] ?? "unknown").slice(0, 160),
+      hits: record.hits,
+      blocked: record.blockedUntil > now,
+    };
+    recentEvents.unshift(event);
+    if (recentEvents.length > MAX_RECENT_EVENTS) {
+      recentEvents.length = MAX_RECENT_EVENTS;
+    }
 
     logger.warn(
       { ip, path: req.path, ua: req.headers["user-agent"], hits: record.hits, blocked: record.blockedUntil > now },
@@ -89,6 +133,20 @@ export function tripwire(req: Request, res: Response, next: NextFunction): void 
   }
 
   next();
+}
+
+export function getHoneypotTelemetry() {
+  const now = Date.now();
+  let activeBlocks = 0;
+  for (const rec of offenders.values()) {
+    if (rec.blockedUntil > now) activeBlocks += 1;
+  }
+  return {
+    activeDecoys: TRIPWIRE_PATHS,
+    totalHits: totalHitsCount,
+    activeBlocks,
+    recentEvents: recentEvents.slice(0, MAX_RECENT_EVENTS),
+  };
 }
 
 /** Exposed for an admin/audit view later; also keeps the map from growing forever. */

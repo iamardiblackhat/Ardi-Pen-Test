@@ -79,3 +79,10 @@ Keep answers short, direct, and conversational.`,
 export { buildCyberTools, buildPublicCyberTools } from "./tools";
 export { normalizePublicDomain, researchDomain } from "./domain-research";
 export { researchOpenSources } from "./open-source-research";
+export {
+  buildBlueTeamDefense,
+  type BlueTeamDefense,
+  type ComplianceMapping,
+  type DefenseRules,
+  type DefenseFindingInput,
+} from "./blue-team-defenses";

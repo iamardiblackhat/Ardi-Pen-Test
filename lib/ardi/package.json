@@ -6,7 +6,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./core": "./src/core/index.ts",
-    "./cyber": "./src/verticals/cyber/index.ts"
+    "./cyber": "./src/verticals/cyber/index.ts",
+    "./blue-team": "./src/verticals/cyber/blue-team-defenses.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit"

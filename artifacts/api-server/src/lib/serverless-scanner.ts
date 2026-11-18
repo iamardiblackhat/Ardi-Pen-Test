@@ -10,6 +10,11 @@ import {
   type ProgressCallback,
   type Severity,
 } from "@workspace/scan-engine";
+import {
+  discoverSubdomains,
+  probeGraphqlIntrospection,
+  probeOpenRedirect,
+} from "./red-team-checks";
 
 interface ShodanInternetDbResponse {
   ip?: string;
@@ -130,6 +135,30 @@ const SENSITIVE_PATHS: ReadonlyArray<{
       status === 200 && body.includes("Apache Server Status"),
     remediation:
       "Restrict the Apache mod_status /server-status handler to localhost or trusted administrative IP ranges.",
+  },
+  {
+    path: "/phpinfo.php",
+    title: "Exposed PHP Diagnostic Page (phpinfo.php)",
+    severity: "medium",
+    cvss: 5.3,
+    category: "exposure",
+    match: (status, body) =>
+      status === 200 && body.includes("PHP Version"),
+    remediation:
+      "Remove diagnostic phpinfo.php files from web roots in production environments.",
+  },
+  {
+    path: "/config.json",
+    title: "Exposed Public Configuration File (config.json)",
+    severity: "medium",
+    cvss: 5.3,
+    category: "exposure",
+    match: (status, body, ct) =>
+      status === 200 &&
+      ct.includes("json") &&
+      /"(apiKey|secret|password|privateKey)"/i.test(body),
+    remediation:
+      "Remove sensitive keys from public config.json files or restrict endpoint access on the server.",
   },
 ];
 
@@ -765,6 +794,45 @@ export async function runServerlessScan(
         fingerprint: `web:tech-disclosure:${host}`,
       });
     }
+
+    // Cookie security attributes check
+    const rawCookies: string[] =
+      typeof headers.getSetCookie === "function"
+        ? headers.getSetCookie()
+        : headers.get("set-cookie")
+          ? [headers.get("set-cookie")!]
+          : [];
+    const insecureCookies = rawCookies.filter((cookie) => {
+      const namePart = cookie.split("=")[0]?.trim() ?? "";
+      const isSessionLike = /sess|token|auth|sid|jwt|id/i.test(namePart);
+      if (!isHttps && !isSessionLike) return false;
+      const missingSecure = isHttps && !/;\s*secure\b/i.test(cookie);
+      const missingHttpOnly = !/;\s*httponly\b/i.test(cookie);
+      const missingSameSite = !/;\s*samesite=/i.test(cookie);
+      return missingSecure || missingHttpOnly || missingSameSite;
+    });
+    if (insecureCookies.length > 0) {
+      findings.push({
+        title: "Cookie Missing Security Attributes (Secure / HttpOnly / SameSite)",
+        severity: "low",
+        category: "web",
+        source: "nuclei",
+        target: finalUrl,
+        cve: null,
+        cvss: 3.7,
+        mitre: mapToMitre(["headers", "misconfig"]),
+        description: `${finalUrl} sets ${insecureCookies.length} cookie(s) without recommended Secure, HttpOnly, or SameSite attributes, increasing exposure to script access or CSRF.`,
+        remediation:
+          "Set `Secure`, `HttpOnly`, and `SameSite=Lax` (or `Strict`) on all session and application cookies.",
+        evidence: insecureCookies
+          .slice(0, 3)
+          .map((c) => c.split(";")[0]?.trim() + "; " + c.split(";").slice(1).join(";").trim())
+          .join(" | ")
+          .slice(0, 300),
+        references: ["https://owasp.org/www-community/controls/SecureCookieAttribute"],
+        fingerprint: `web:insecure-cookie:${host}`,
+      });
+    }
   } catch {
     // Target did not respond over HTTP/HTTPS
   }
@@ -812,6 +880,14 @@ export async function runServerlessScan(
       }
     }),
   );
+
+  onProgress?.(94, `Running subdomain takeover, GraphQL introspection, and redirect checks on ${host}`);
+  const [subFindings, gqlFindings, redirectFindings] = await Promise.all([
+    !net.isIP(host) ? discoverSubdomains(host).catch(() => []) : Promise.resolve([]),
+    probeGraphqlIntrospection(originUrl).catch(() => []),
+    probeOpenRedirect(baseUrl).catch(() => []),
+  ]);
+  findings.push(...subFindings, ...gqlFindings, ...redirectFindings);
 
   onProgress?.(98, "Finalizing scan findings");
   return { findings };

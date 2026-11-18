@@ -1,7 +1,9 @@
 import { Router } from "express";
-import { db, findingsTable, assetsTable } from "@workspace/db";
+import { db, activityTable, findingsTable, assetsTable } from "@workspace/db";
 import { and, eq } from "drizzle-orm";
-import { enrich, threatIntelEnabled } from "../lib/threat-intel";
+import { enrich } from "../lib/threat-intel";
+import { buildBlueTeamDefense } from "../lib/blue-team-defenses";
+import { runServerlessScan } from "../lib/serverless-scanner";
 import {
   GetFindingsResponse,
   GetFindingParams,
@@ -148,7 +150,7 @@ router.get("/findings/:id/threat-intel", async (req, res): Promise<void> => {
 
   const intel = await enrich({ cve: f.cve ?? null, mitreId: f.mitreId, cvss: f.cvss ?? null });
   res.json({
-    enabled: threatIntelEnabled(),
+    enabled: true,
     cve: f.cve ?? null,
     knownExploited: intel.knownExploited,
     epssScore: intel.epssScore,
@@ -160,6 +162,102 @@ router.get("/findings/:id/threat-intel", async (req, res): Promise<void> => {
     confidence: intel.confidence,
     retrievedAt: intel.retrievedAt,
   });
+});
+
+// GET /api/findings/:id/defenses — compliance mapping & Nginx/Cloudflare/Sigma defense rules.
+router.get("/findings/:id/defenses", async (req, res): Promise<void> => {
+  const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(rawId, 10);
+  if (Number.isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+
+  const [f] = await db.select().from(findingsTable).where(and(eq(findingsTable.id, id), eq(findingsTable.userId, req.user!.sub)));
+  if (!f) { res.status(404).json({ error: "Not found" }); return; }
+
+  const [asset] = await db.select({ target: assetsTable.target }).from(assetsTable).where(eq(assetsTable.id, f.assetId));
+  const defense = buildBlueTeamDefense({
+    id: f.id,
+    title: f.title,
+    severity: f.severity,
+    category: f.category,
+    mitreId: f.mitreId,
+    mitreTactic: f.mitreTactic,
+    mitreTechnique: f.mitreTechnique,
+    cve: f.cve ?? null,
+    target: asset?.target ?? null,
+  });
+
+  res.json({
+    findingId: f.id,
+    ...defense,
+  });
+});
+
+// POST /api/findings/:id/verify — one-click live re-test to verify remediation.
+router.post("/findings/:id/verify", async (req, res): Promise<void> => {
+  const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(rawId, 10);
+  if (Number.isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+
+  const [f] = await db.select().from(findingsTable).where(and(eq(findingsTable.id, id), eq(findingsTable.userId, req.user!.sub)));
+  if (!f) { res.status(404).json({ error: "Not found" }); return; }
+
+  const [asset] = await db.select().from(assetsTable).where(and(eq(assetsTable.id, f.assetId), eq(assetsTable.userId, req.user!.sub)));
+  if (!asset) { res.status(404).json({ error: "Associated target not found" }); return; }
+
+  try {
+    const fresh = await runServerlessScan(asset.target);
+    const matched = fresh.findings.find(
+      (raw) =>
+        raw.title === f.title ||
+        (f.cve !== null && raw.cve === f.cve) ||
+        (raw.category === f.category && raw.target === asset.target && raw.title === f.title),
+    );
+    const checkedAt = new Date();
+
+    if (!matched) {
+      const noteLine = `[Verified fixed by live re-test at ${checkedAt.toISOString()}]`;
+      const nextNotes = f.notes ? `${f.notes}\n${noteLine}` : noteLine;
+      await db
+        .update(findingsTable)
+        .set({ status: "resolved", resolvedAt: checkedAt, notes: nextNotes })
+        .where(and(eq(findingsTable.id, f.id), eq(findingsTable.userId, req.user!.sub)));
+
+      await db.insert(activityTable).values({
+        userId: req.user!.sub,
+        type: "finding_resolved",
+        title: `Verified fix: ${f.title}`,
+        description: `Live re-test confirmed the weakness is no longer present on ${asset.target}.`,
+        severity: "info",
+      });
+
+      res.json({
+        verified: true,
+        status: "resolved",
+        checkedAt: checkedAt.toISOString(),
+        message: "Live re-test confirmed this issue is resolved.",
+      });
+      return;
+    }
+
+    const noteLine = `[Re-tested at ${checkedAt.toISOString()}: still present]`;
+    const nextNotes = f.notes ? `${f.notes}\n${noteLine}` : noteLine;
+    await db
+      .update(findingsTable)
+      .set({ notes: nextNotes })
+      .where(and(eq(findingsTable.id, f.id), eq(findingsTable.userId, req.user!.sub)));
+
+    res.json({
+      verified: false,
+      status: f.status,
+      checkedAt: checkedAt.toISOString(),
+      message: "Live re-test still observed this weakness on the target.",
+      evidence: matched.evidence,
+    });
+  } catch (error) {
+    res.status(502).json({
+      error: error instanceof Error ? error.message : "Live verification scan failed.",
+    });
+  }
 });
 
 // PATCH /api/findings/:id
