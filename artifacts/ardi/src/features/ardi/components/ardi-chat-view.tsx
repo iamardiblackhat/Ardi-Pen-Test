@@ -1,10 +1,85 @@
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowUpRight, Send, Sparkles } from "lucide-react";
 import { useLocation } from "wouter";
 import { Button } from "@workspace/ardi-ds/components/ui/button";
 import { ArdiAvatar, ArdiFull } from "@/components/ardi-avatar";
 import { ArdiConfirmationCard } from "@/features/ardi/components/ardi-confirmation";
 import { useArdiChat } from "@/features/ardi/hooks/use-ardi-chat";
+
+function renderInlineFormatting(text: string): ReactNode[] {
+  const tokenRe = /(\*\*[^*\n]+\*\*|\[[^\]\n]+\]\(https?:\/\/[^)\s]+\)|https?:\/\/[^\s)<>]+)/g;
+  const nodes: ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  let key = 0;
+
+  while ((match = tokenRe.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      nodes.push(text.slice(lastIndex, match.index));
+    }
+    const token = match[0];
+    if (token.startsWith("**") && token.endsWith("**")) {
+      nodes.push(
+        <strong key={key++} className="font-semibold text-white">
+          {token.slice(2, -2)}
+        </strong>,
+      );
+    } else if (token.startsWith("[")) {
+      const sep = token.indexOf("](");
+      const label = token.slice(1, sep);
+      const href = token.slice(sep + 2, -1);
+      nodes.push(
+        <a
+          key={key++}
+          href={href}
+          target="_blank"
+          rel="noreferrer"
+          className="underline decoration-cyan-300/60 underline-offset-2 hover:text-cyan-200"
+        >
+          {label}
+        </a>,
+      );
+    } else {
+      const cleaned = token.replace(/[.,;:!?]+$/, "");
+      const trailing = token.slice(cleaned.length);
+      nodes.push(
+        <Fragment key={key++}>
+          <a
+            href={cleaned}
+            target="_blank"
+            rel="noreferrer"
+            className="underline decoration-cyan-300/60 underline-offset-2 hover:text-cyan-200"
+          >
+            {cleaned}
+          </a>
+          {trailing}
+        </Fragment>,
+      );
+    }
+    lastIndex = tokenRe.lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    nodes.push(text.slice(lastIndex));
+  }
+  return nodes;
+}
+
+function renderConversationalContent(content: string): ReactNode {
+  const normalized = content
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/^\s*[-*_]{3,}\s*$/gm, "")
+    .trim();
+
+  if (!normalized) return <p className="leading-relaxed">…</p>;
+
+  const paragraphs = normalized.split(/\n{2,}/).filter((p) => p.trim().length > 0);
+  return paragraphs.map((para, index) => (
+    <p key={index} className="whitespace-pre-wrap leading-relaxed">
+      {renderInlineFormatting(para.trim())}
+    </p>
+  ));
+}
 
 export function ArdiChatView({
   open,
@@ -100,7 +175,11 @@ export function ArdiChatView({
                   ))}
                 </div>
               ) : null}
-              <p className="whitespace-pre-wrap">{message.content || "…"}</p>
+              {message.role === "assistant" ? (
+                renderConversationalContent(message.content || "…")
+              ) : (
+                <p className="whitespace-pre-wrap">{message.content}</p>
+              )}
             </div>
           </article>
         ))}
