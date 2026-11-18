@@ -70,8 +70,8 @@ export function ThreatIntel({ findingId }: { findingId: number }) {
         </div>
         <p className="text-xs text-muted-foreground">
           {intel.enabled
-            ? "Threat intelligence service is currently unavailable — this is not a statement that the CVE is safe."
-            : "Threat intelligence is not connected yet. ARDI will not show sample records or imply that missing intelligence means the finding is safe."}
+            ? "Threat intelligence service is currently unavailable, so this does not guarantee the issue is safe."
+            : "Threat intelligence is not connected yet. ARDI will not show sample records or imply that missing data means the issue is safe."}
         </p>
       </div>
     );
@@ -109,8 +109,7 @@ export function ThreatIntel({ findingId }: { findingId: number }) {
         <div className="flex items-center gap-2 rounded-md bg-severity-critical/10 border border-severity-critical/30 px-3 py-2">
           <AlertTriangle className="w-4 h-4 text-severity-critical flex-shrink-0" />
           <span className="text-xs font-medium text-severity-critical">
-            On CISA's Known Exploited Vulnerabilities list — actively exploited
-            in the wild. Fix this first.
+            Listed on the official CISA active-attack list. Hackers are actively targeting this weakness in the wild, so fix this first.
           </span>
         </div>
       )}
@@ -119,7 +118,7 @@ export function ThreatIntel({ findingId }: { findingId: number }) {
         {intel.epssScore !== null && (
           <div>
             <p className="text-xs text-muted-foreground mb-0.5 flex items-center gap-1">
-              <Activity className="w-3 h-3" /> Exploit probability (EPSS)
+              <Activity className="w-3 h-3" /> Chance of being attacked in the next 30 days (EPSS)
             </p>
             <p className="font-semibold">
               {(intel.epssScore * 100).toFixed(1)}%
@@ -176,8 +175,7 @@ export function ThreatIntel({ findingId }: { findingId: number }) {
 
       {intel.confidence === "no-record" && (
         <p className="text-xs text-muted-foreground">
-          No threat intelligence record for {intel.cve ?? "this finding"} — it
-          may be too new or not yet catalogued.
+          No active threat record found for {intel.cve ?? "this issue"} yet.
         </p>
       )}
     </div>

@@ -9,10 +9,10 @@ import type {
 import { readArdiStream } from "@/features/ardi/lib/read-ardi-stream";
 
 const PUBLIC_SUGGESTIONS = [
-  "What does ARDI SEC actually do?",
-  "What investigations can ARDI run?",
-  "Show me the security testing workflow",
-  "Which capability fits my question?",
+  "What does ARDI actually do?",
+  "Do I need cybersecurity experience to use this?",
+  "How do I check if my website is safe?",
+  "How do I research a person or company?",
 ];
 
 const messageId = () =>

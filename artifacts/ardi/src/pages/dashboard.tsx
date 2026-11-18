@@ -40,7 +40,7 @@ function stageStatus(step: number, input: {
   openFindings: number;
   reports: number;
 }) {
-  if (step === 1) return "Website lookup works now. Name search and attacker records need a connection.";
+  if (step === 1) return "Look up any website, person, company, or known security threat.";
   if (step === 2) {
     if (input.assets === 0) return "No targets yet.";
     if (input.scans === 0) return `${input.assets} ${input.assets === 1 ? "target is" : "targets are"} ready to test.`;
@@ -158,19 +158,19 @@ export default function Dashboard() {
           <div>
             <h2 id="honeypot-sensor-title" className="flex items-center gap-2 text-lg font-bold">
               <ShieldAlert className="h-5 w-5 text-primary" aria-hidden="true" />
-              Blue Team Deception &amp; Tripwire Sensor
+              Automatic Trap Pages (Bot &amp; Snooper Protection)
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Decoy endpoints actively intercept automated scanners and temporarily block repeat offenders.
+              Fake hidden addresses (like /.env or /wp-admin) that normal visitors never open. If a bot or hacker snoops on them, ARDI spots them and blocks repeat attempts automatically.
             </p>
           </div>
           {honeypot ? (
             <div className="flex gap-3 font-mono text-xs">
               <span className="rounded-md border border-border bg-muted/50 px-2.5 py-1">
-                Probes intercepted: <strong>{honeypot.totalHits}</strong>
+                Snooping attempts caught: <strong>{honeypot.totalHits}</strong>
               </span>
               <span className="rounded-md border border-border bg-muted/50 px-2.5 py-1">
-                Active blocks: <strong>{honeypot.activeBlocks}</strong>
+                Currently blocked: <strong>{honeypot.activeBlocks}</strong>
               </span>
             </div>
           ) : null}
@@ -180,7 +180,7 @@ export default function Dashboard() {
           <div className="space-y-4">
             <div>
               <p className="mb-2 text-xs font-mono uppercase tracking-wide text-muted-foreground">
-                Active Decoy Paths ({honeypot.activeDecoys.length})
+                Protected trap addresses ({honeypot.activeDecoys.length})
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {honeypot.activeDecoys.map((path) => (
@@ -200,9 +200,9 @@ export default function Dashboard() {
                   <thead className="border-b border-border font-mono uppercase text-muted-foreground">
                     <tr>
                       <th className="py-2 pr-4">Time</th>
-                      <th className="py-2 pr-4">Source (Masked)</th>
-                      <th className="py-2 pr-4">Decoy Path</th>
-                      <th className="py-2 pr-4">Hits</th>
+                      <th className="py-2 pr-4">Visitor IP (Masked)</th>
+                      <th className="py-2 pr-4">Trap Address</th>
+                      <th className="py-2 pr-4">Attempts</th>
                       <th className="py-2">Status</th>
                     </tr>
                   </thead>
@@ -233,12 +233,12 @@ export default function Dashboard() {
               </div>
             ) : (
               <p className="rounded-lg border border-dashed border-border py-6 text-center text-sm text-muted-foreground">
-                No hostile tripwire probes recorded in this instance window.
+                No bots or snooping attempts caught in this session.
               </p>
             )}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">Loading deception sensor telemetry…</p>
+          <p className="text-sm text-muted-foreground">Loading trap page status…</p>
         )}
       </section>
     </main>

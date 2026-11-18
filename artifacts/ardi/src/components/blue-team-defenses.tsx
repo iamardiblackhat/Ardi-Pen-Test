@@ -21,9 +21,9 @@ interface DefensesPayload {
 type RuleTab = "nginx" | "cloudflareWaf" | "sigma";
 
 const TAB_LABELS: ReadonlyArray<{ id: RuleTab; label: string }> = [
-  { id: "nginx", label: "Nginx Hardening" },
-  { id: "cloudflareWaf", label: "Cloudflare WAF" },
-  { id: "sigma", label: "Sigma SIEM Rule" },
+  { id: "nginx", label: "Nginx Web Server" },
+  { id: "cloudflareWaf", label: "Cloudflare Firewall" },
+  { id: "sigma", label: "Security Alert Rule (Sigma)" },
 ];
 
 export function BlueTeamDefenses({ findingId }: { findingId: number }) {
@@ -58,7 +58,7 @@ export function BlueTeamDefenses({ findingId }: { findingId: number }) {
   if (loading) {
     return (
       <div className="rounded-lg border border-border p-4 text-sm text-muted-foreground">
-        Loading compliance mapping &amp; Blue Team detection rules…
+        Loading security checklists &amp; fix settings…
       </div>
     );
   }
@@ -79,12 +79,12 @@ export function BlueTeamDefenses({ findingId }: { findingId: number }) {
   return (
     <section
       className="space-y-4 rounded-lg border border-border p-4"
-      aria-label="Blue Team defense & compliance controls"
+      aria-label="Security checklists and fix settings"
     >
       <div>
         <h3 className="mb-2.5 flex items-center gap-2 text-sm font-semibold">
           <ShieldCheck className="h-4 w-4 text-primary" aria-hidden="true" />
-          Compliance Framework Mapping
+          Security checklists &amp; standards affected
         </h3>
         <dl className="grid gap-2 text-xs sm:grid-cols-2">
           <div className="rounded-md border border-border bg-muted/40 px-3 py-2">
@@ -115,10 +115,10 @@ export function BlueTeamDefenses({ findingId }: { findingId: number }) {
       </div>
 
       <div>
-        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
           <h3 className="flex items-center gap-2 text-sm font-semibold">
             <ShieldAlert className="h-4 w-4 text-primary" aria-hidden="true" />
-            Defensive Rules &amp; Detection Playbook
+            Ready-made fix settings (for your web developer or host)
           </h3>
           <Button
             type="button"
@@ -134,11 +134,14 @@ export function BlueTeamDefenses({ findingId }: { findingId: number }) {
             ) : (
               <>
                 <Copy className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-                Copy rule
+                Copy setting
               </>
             )}
           </Button>
         </div>
+        <p className="mb-2.5 text-xs text-muted-foreground">
+          Copy and send these settings to whoever manages your website or server to block this issue.
+        </p>
 
         <div
           className="mb-2 flex flex-wrap gap-1.5"

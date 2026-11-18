@@ -407,7 +407,7 @@ export function buildCyberTools(userId: number) {
           assets.length === 0
             ? "No systems registered yet, so there is nothing to report on."
             : scans.filter((s) => s.status === "completed").length === 0
-              ? "No scan has completed yet — absence of findings does not mean absence of problems."
+              ? "No security check has completed yet, so having zero problems listed does not mean your system is safe yet."
               : null,
       });
     },

@@ -38,7 +38,7 @@ export function OnboardingScopeForm(props: Props) {
           Add an authorised target
         </h2>
         <p className="mt-3 text-base leading-7 text-indigo-100/70">
-          Choose what is being assessed—not a vendor or integration.
+          Choose the website or system you want to check, not a third-party vendor.
         </p>
       </div>
       <div className="space-y-2">

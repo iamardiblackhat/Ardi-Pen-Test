@@ -17,10 +17,10 @@ export function FindingsTable({ findings, onSelect }: { findings: Finding[]; onS
               <TableCell className="pl-4"><SeverityBadge severity={finding.severity} /></TableCell>
               <TableCell><Button type="button" variant="link" className="h-auto justify-start p-0 text-left font-medium" onClick={() => onSelect(finding)}>{finding.title}{finding.cvss != null ? <span className="ml-2 font-mono text-xs text-muted-foreground">{finding.cvss.toFixed(1)}</span> : null}</Button></TableCell>
               <TableCell className="text-sm text-muted-foreground">{finding.assetName}</TableCell>
-              <TableCell>{finding.mitreId ? <span className="rounded border border-primary/20 bg-primary/10 px-2 py-1 text-xs font-mono text-primary">{finding.mitreId}</span> : '—'}</TableCell>
-              <TableCell className="text-xs font-mono text-muted-foreground">{finding.cve || '—'}</TableCell>
+              <TableCell>{finding.mitreId ? <span className="rounded border border-primary/20 bg-primary/10 px-2 py-1 text-xs font-mono text-primary">{finding.mitreId}</span> : '-'}</TableCell>
+              <TableCell className="text-xs font-mono text-muted-foreground">{finding.cve || 'None'}</TableCell>
               <TableCell><StatusBadge status={finding.status} /></TableCell>
-              <TableCell className="pr-4 text-right text-xs font-mono text-muted-foreground">{finding.createdAt ? formatDistanceToNow(new Date(finding.createdAt), { addSuffix: true }) : '—'}</TableCell>
+              <TableCell className="pr-4 text-right text-xs font-mono text-muted-foreground">{finding.createdAt ? formatDistanceToNow(new Date(finding.createdAt), { addSuffix: true }) : '-'}</TableCell>
             </TableRow>
           ))}
         </TableBody>

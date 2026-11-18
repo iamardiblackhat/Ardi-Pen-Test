@@ -186,7 +186,7 @@ export default function Osint() {
                 <div className="flex items-center gap-2 text-primary">
                   <Database className="h-4 w-4" />
                   <p className="font-mono text-[10px] font-semibold tracking-[.14em]">
-                    RDAP REGISTRY
+                    DOMAIN REGISTRATION (WHO REGISTERED IT)
                   </p>
                 </div>
                 {result.rdap ? (
@@ -237,7 +237,7 @@ export default function Osint() {
                 <div className="flex items-center gap-2 text-primary">
                   <Network className="h-4 w-4" />
                   <p className="font-mono text-[10px] font-semibold tracking-[.14em]">
-                    DNS RESOLUTION
+                    SERVER &amp; EMAIL ROUTING (DNS)
                   </p>
                 </div>
                 <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -273,7 +273,7 @@ export default function Osint() {
                 <div className="flex items-center gap-2 text-emerald-300">
                   <ShieldCheck className="h-4 w-4" />
                   <p className="font-mono text-[10px] font-semibold tracking-[.14em]">
-                    CERTIFICATE TRANSPARENCY
+                    SECURITY CERTIFICATES &amp; SUBDOMAINS
                   </p>
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -303,8 +303,8 @@ export default function Osint() {
                             {certificate.issuer ?? "Not supplied"}
                           </td>
                           <td className="py-3 text-xs text-muted-foreground">
-                            {certificate.notBefore ?? "—"} →{" "}
-                            {certificate.notAfter ?? "—"}
+                            {certificate.notBefore ?? "Unknown"} to{" "}
+                            {certificate.notAfter ?? "Unknown"}
                           </td>
                         </tr>
                       ))}

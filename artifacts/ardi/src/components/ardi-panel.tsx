@@ -39,10 +39,10 @@ export function ArdiPanel({
             <ArdiAvatar mood="idle" size={42} />
             <div>
               <SheetTitle className="text-lg text-white">
-                ARDI SEC command
+                Talk to ARDI
               </SheetTitle>
               <SheetDescription className="text-xs text-cyan-100/70">
-                Site-wide security assistant
+                Plain-English security guide
               </SheetDescription>
             </div>
           </div>

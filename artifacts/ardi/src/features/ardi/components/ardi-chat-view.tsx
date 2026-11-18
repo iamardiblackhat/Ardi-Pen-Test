@@ -67,6 +67,10 @@ function renderInlineFormatting(text: string): ReactNode[] {
 
 function renderConversationalContent(content: string): ReactNode {
   const normalized = content
+    .replace(/(\d)\s*[\u2013\u2014]\s*(\d)/g, "$1-$2")
+    .replace(/\s*[\u2013\u2014]\s*/g, ", ")
+    .replace(/\u2011/g, "-")
+    .replace(/\s+,\s+/g, ", ")
     .replace(/^#{1,6}\s+/gm, "")
     .replace(/^\s*[-*_]{3,}\s*$/gm, "")
     .trim();
@@ -122,8 +126,8 @@ export function ArdiChatView({
                 ? "Connecting ARDI…"
                 : chat.status.configured
                   ? authenticated
-                    ? "Ask ARDI to investigate public sources or work with the real assets, scans, findings, and reports in your workspace."
-                    : "Ask ARDI which investigation or security operation fits your question. You can review every capability before creating a workspace."
+                    ? "Ask me anything in plain English. We can look up a website or company, run a security check on your site, walk through what to fix, or create a report to share."
+                    : "Hi, I'm ARDI. Tell me what you want to check or research, and I'll point you to the right step in plain English."
                   : "ARDI is not connected to an approved model in this environment."}
             </p>
             <div className="grid gap-2">
@@ -225,9 +229,7 @@ export function ArdiChatView({
           placeholder={
             chat.status?.configured === false
               ? "ARDI is not configured"
-              : authenticated
-                ? "Ask ARDI to investigate, assess, or report…"
-                : "Ask which security operation fits…"
+              : "Ask a question in plain English..."
           }
           disabled={
             chat.streaming ||

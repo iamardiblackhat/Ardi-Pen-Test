@@ -86,7 +86,7 @@ export function WorkflowChrome() {
           <Link href={upcoming.href} className="font-medium text-primary hover:underline">
             Next: {upcoming.step}. {upcoming.label}
           </Link>
-          <span className="text-muted-foreground"> — {upcoming.question}</span>
+          <span className="text-muted-foreground">: {upcoming.question}</span>
         </p>
       ) : (
         <p className="mt-2 text-sm text-muted-foreground">

@@ -14,6 +14,13 @@ import type { ArdiEvent, ChatMessage, VerticalConfig } from "../types";
  * a feature you can sell, not just a saving.
  */
 
+function cleanDashes(input: string): string {
+  return input
+    .replace(/(\d)\s*[\u2013\u2014]\s*(\d)/g, "$1-$2")
+    .replace(/\s*[\u2013\u2014]\s*/g, ", ")
+    .replace(/\u2011/g, "-");
+}
+
 interface ToolSpec {
   type: "function";
   function: { name: string; description: string; parameters: unknown };
@@ -201,8 +208,9 @@ export async function* runOpenAiCompat(
               sawText = true;
               yield { type: "mood", mood: "idle" };
             }
-            text += delta.content;
-            yield { type: "text", text: delta.content };
+            const sanitized = cleanDashes(delta.content);
+            text += sanitized;
+            yield { type: "text", text: sanitized };
           }
 
           // Tool-call deltas arrive fragmented and indexed; accumulate by index.

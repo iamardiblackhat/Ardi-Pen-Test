@@ -48,7 +48,7 @@ export function SecurityHero(props: Props) {
           <p className="ardi-v2-hero-lead">
             Research people and companies using public information. Check
             websites for security problems. Look up known cyber threats and
-            create reports—all with ARDI.
+            create reports, all with ARDI.
           </p>
           <div className="ardi-v2-hero-actions">
             <Link

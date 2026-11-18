@@ -94,8 +94,8 @@ export default function Settings() {
               </AvatarFallback>
             </Avatar>
             <div>
-              <p className="font-bold text-lg">{user?.name ?? '—'}</p>
-              <p className="text-sm text-muted-foreground">{user?.email ?? '—'}</p>
+              <p className="font-bold text-lg">{user?.name ?? '-'}</p>
+              <p className="text-sm text-muted-foreground">{user?.email ?? '-'}</p>
               <span className="inline-block mt-1 text-xs font-mono text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded uppercase tracking-wide">
                 {user?.role ?? 'admin'}
               </span>
