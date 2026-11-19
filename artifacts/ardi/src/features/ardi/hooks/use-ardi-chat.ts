@@ -18,6 +18,20 @@ const PUBLIC_SUGGESTIONS = [
 const messageId = () =>
   crypto.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
 
+const storageKeyFor = (authenticated: boolean) =>
+  `ardi_chat_history_${authenticated ? "workspace" : "public"}`;
+
+function loadSavedMessages(authenticated: boolean): ArdiMessage[] {
+  try {
+    const raw = sessionStorage.getItem(storageKeyFor(authenticated));
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as ArdiMessage[]).slice(-30) : [];
+  } catch {
+    return [];
+  }
+}
+
 export function useArdiChat({
   open,
   authenticated,
@@ -28,8 +42,33 @@ export function useArdiChat({
   context?: string;
 }) {
   const [status, setStatus] = useState<ArdiStatus | null>(null);
-  const [messages, setMessages] = useState<ArdiMessage[]>([]);
+  const [messages, setMessages] = useState<ArdiMessage[]>(() =>
+    loadSavedMessages(authenticated),
+  );
   const [streaming, setStreaming] = useState(false);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(
+        storageKeyFor(authenticated),
+        JSON.stringify(messages.slice(-30)),
+      );
+    } catch {
+      // Ignore storage quota errors
+    }
+  }, [authenticated, messages]);
+
+  function clearChat() {
+    requestController.current?.abort();
+    setStreaming(false);
+    setActiveTool(null);
+    setPendingConfirmation(null);
+    setCompletedAction(null);
+    setMessages([]);
+    try {
+      sessionStorage.removeItem(storageKeyFor(authenticated));
+    } catch {}
+  }
   const [activeTool, setActiveTool] = useState<string | null>(null);
   const [pendingConfirmation, setPendingConfirmation] =
     useState<ArdiConfirmation | null>(null);
@@ -231,6 +270,7 @@ export function useArdiChat({
   return {
     activeTool,
     cancelPending,
+    clearChat,
     completedAction,
     confirmationError,
     confirming,

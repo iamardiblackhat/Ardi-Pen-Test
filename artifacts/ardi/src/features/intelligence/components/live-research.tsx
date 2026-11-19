@@ -9,12 +9,43 @@ type ResearchResult = {
   sources: string[];
 };
 
+const SUBJECT_HISTORY_KEY = "ardi_subject_research_history";
+
+function loadResearchHistory(): ResearchResult[] {
+  try {
+    const raw = localStorage.getItem(SUBJECT_HISTORY_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as ResearchResult[]).slice(0, 15) : [];
+  } catch {
+    return [];
+  }
+}
+
 export function LiveResearch() {
+  const [history, setHistory] = useState<ResearchResult[]>(() => loadResearchHistory());
   const [result, setResult] = useState<ResearchResult | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const request = useRef<AbortController | null>(null);
   useEffect(() => () => request.current?.abort(), []);
+
+  function saveResearch(entry: ResearchResult) {
+    setHistory((prev) => {
+      const next = [entry, ...prev.filter((i) => i.subject !== entry.subject || i.researchedAt !== entry.researchedAt)].slice(0, 15);
+      try {
+        localStorage.setItem(SUBJECT_HISTORY_KEY, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  }
+
+  function clearHistory() {
+    setHistory([]);
+    try {
+      localStorage.removeItem(SUBJECT_HISTORY_KEY);
+    } catch {}
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -46,7 +77,10 @@ export function LiveResearch() {
       const body = await response.json();
       if (!response.ok)
         throw new Error(body.error || "Live research could not complete.");
-      if (!controller.signal.aborted) setResult(body);
+      if (!controller.signal.aborted) {
+        setResult(body);
+        saveResearch(body);
+      }
     } catch (failure) {
       if (!controller.signal.aborted)
         setError(
@@ -139,6 +173,41 @@ export function LiveResearch() {
         <p role="alert" className="mt-4 text-rose-200">
           {error}
         </p>
+      ) : null}
+      {history.length > 0 ? (
+        <div className="mt-6 rounded-xl border border-slate-700/80 bg-[#0c1125]/70 p-4">
+          <div className="mb-2.5 flex items-center justify-between gap-2">
+            <p className="font-mono text-xs uppercase tracking-wide text-slate-400">
+              Saved research lookups ({history.length})
+            </p>
+            <button
+              type="button"
+              onClick={clearHistory}
+              className="text-xs text-slate-400 hover:text-white"
+            >
+              Clear history
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {history.map((item) => (
+              <button
+                key={`${item.subject}-${item.researchedAt}`}
+                type="button"
+                onClick={() => {
+                  setResult(item);
+                  setError("");
+                }}
+                className={`rounded-lg border px-3 py-1.5 text-xs transition ${
+                  result?.researchedAt === item.researchedAt
+                    ? "border-cyan-300 bg-cyan-300/15 text-cyan-100"
+                    : "border-slate-600 bg-slate-900/60 text-slate-200 hover:border-cyan-300/60"
+                }`}
+              >
+                {item.subject}
+              </button>
+            ))}
+          </div>
+        </div>
       ) : null}
       {result ? (
         <article className="mt-6 border-t border-slate-600 pt-5">

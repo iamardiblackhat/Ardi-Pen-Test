@@ -4,15 +4,18 @@ import { ArrowRight, ShieldAlert } from "lucide-react";
 import {
   getGetDashboardActivityQueryKey,
   getGetDashboardStatsQueryKey,
+  getGetFindingsQueryKey,
   getGetReportsQueryKey,
   getGetScansQueryKey,
   useGetDashboardActivity,
   useGetDashboardStats,
+  useGetFindings,
   useGetReports,
   useGetScans,
 } from "@workspace/api-client-react";
 import { ActivityFeed } from "@/features/dashboard/components/activity-feed";
 import { auth } from "@/lib/auth";
+import { computeSecurityGrade } from "@/lib/security-grade";
 import { nextWorkflowAction, workflowStages } from "@/shared/config/workflow";
 import { PageError, PageLoading } from "@/shared/ui/page-state";
 
@@ -57,6 +60,7 @@ function stageStatus(step: number, input: {
 export default function Dashboard() {
   const statsQuery = useGetDashboardStats({ query: { queryKey: getGetDashboardStatsQueryKey() } });
   const scansQuery = useGetScans({ query: { queryKey: getGetScansQueryKey() } });
+  const findingsQuery = useGetFindings({ query: { queryKey: getGetFindingsQueryKey() } });
   const reportsQuery = useGetReports({ query: { queryKey: getGetReportsQueryKey() } });
   const activityQuery = useGetDashboardActivity({ query: { queryKey: getGetDashboardActivityQueryKey() } });
   const [honeypot, setHoneypot] = useState<HoneypotTelemetry | null>(null);
@@ -102,15 +106,36 @@ export default function Dashboard() {
     reports: reportsQuery.data?.length ?? 0,
   };
   const next = nextWorkflowAction(counts);
+  const overallGrade = computeSecurityGrade({
+    hasCompletedScan: (scansQuery.data ?? []).some((s) => s.status === "completed"),
+    findings: findingsQuery.data ?? [],
+  });
 
   return (
     <main className="space-y-8 p-4 sm:p-8">
-      <header>
-        <p className="font-mono text-xs uppercase tracking-[0.16em] text-primary">Start here</p>
-        <h1 className="mt-2 text-3xl font-bold">Do these four steps, in order.</h1>
-        <p className="mt-2 max-w-2xl text-muted-foreground">
-          Research what is public, test only systems you are allowed to test, fix the problems that come back, then write a report.
-        </p>
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="font-mono text-xs uppercase tracking-[0.16em] text-primary">Start here</p>
+          <h1 className="mt-2 text-3xl font-bold">Do these four steps, in order.</h1>
+          <p className="mt-2 max-w-2xl text-muted-foreground">
+            Research what is public, test only systems you are allowed to test, fix the problems that come back, then write a report.
+          </p>
+        </div>
+        <div className="flex items-center gap-4 rounded-xl border border-card-border bg-card px-5 py-4 shadow-sm">
+          <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border text-2xl font-bold font-mono ${overallGrade.badgeClass}`}>
+            {overallGrade.letter}
+          </div>
+          <div>
+            <p className="font-mono text-[11px] uppercase tracking-wide text-muted-foreground">
+              Overall Security Grade
+            </p>
+            <p className={`text-base font-semibold ${overallGrade.colorClass}`}>
+              {overallGrade.label}
+              {overallGrade.score !== null ? ` (${overallGrade.score}/100)` : ""}
+            </p>
+            <p className="text-xs text-muted-foreground">{overallGrade.summary}</p>
+          </div>
+        </div>
       </header>
 
       <Link

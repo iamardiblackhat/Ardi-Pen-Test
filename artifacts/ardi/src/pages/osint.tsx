@@ -51,11 +51,42 @@ function SourcePill({ enabled, label }: { enabled: boolean; label: string }) {
   );
 }
 
+const DOMAIN_HISTORY_KEY = "ardi_website_research_history";
+
+function loadDomainHistory(): DomainIntel[] {
+  try {
+    const raw = localStorage.getItem(DOMAIN_HISTORY_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as DomainIntel[]).slice(0, 15) : [];
+  } catch {
+    return [];
+  }
+}
+
 export default function Osint() {
   const [domain, setDomain] = useState("");
+  const [history, setHistory] = useState<DomainIntel[]>(() => loadDomainHistory());
   const [result, setResult] = useState<DomainIntel | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  function saveToHistory(entry: DomainIntel) {
+    setHistory((prev) => {
+      const next = [entry, ...prev.filter((item) => item.domain !== entry.domain)].slice(0, 15);
+      try {
+        localStorage.setItem(DOMAIN_HISTORY_KEY, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  }
+
+  function clearHistory() {
+    setHistory([]);
+    try {
+      localStorage.removeItem(DOMAIN_HISTORY_KEY);
+    } catch {}
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -77,6 +108,7 @@ export default function Osint() {
       if (!response.ok)
         throw new Error(body.error ?? "The domain research request failed.");
       setResult(body);
+      saveToHistory(body);
     } catch (requestError) {
       setError(
         requestError instanceof Error
@@ -132,6 +164,43 @@ export default function Osint() {
             </button>
           </form>
         </div>
+
+        {history.length > 0 && (
+          <section className="mt-6 rounded-2xl border border-border bg-card/70 p-4 sm:p-5" aria-label="Recent website lookups">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <p className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
+                Saved website lookups ({history.length})
+              </p>
+              <button
+                type="button"
+                onClick={clearHistory}
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                Clear history
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {history.map((item) => (
+                <button
+                  key={`${item.domain}-${item.retrievedAt}`}
+                  type="button"
+                  onClick={() => {
+                    setDomain(item.domain);
+                    setResult(item);
+                    setError("");
+                  }}
+                  className={`rounded-lg border px-3 py-1.5 text-xs font-mono transition ${
+                    result?.domain === item.domain
+                      ? "border-primary bg-primary/15 text-primary"
+                      : "border-border bg-background text-foreground hover:border-primary/40"
+                  }`}
+                >
+                  {item.domain}
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
 
         {error && (
           <div className="mt-8 rounded-2xl border border-amber-400/40 bg-amber-400/10 p-5 text-sm text-amber-100">

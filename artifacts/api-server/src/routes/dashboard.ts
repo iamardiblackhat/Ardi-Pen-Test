@@ -7,7 +7,7 @@ import {
   GetFindingsBySeverityResponse,
   GetScanTrendResponse,
 } from "@workspace/api-zod";
-import { getHoneypotTelemetry } from "../middlewares/tripwire";
+import { getHoneypotTelemetryAsync } from "../middlewares/tripwire";
 
 const router = Router();
 
@@ -102,8 +102,8 @@ router.get("/dashboard/scan-trend", async (req, res): Promise<void> => {
 });
 
 // GET /api/dashboard/honeypot — Blue Team deception & tripwire telemetry
-router.get("/dashboard/honeypot", (_req, res): void => {
-  res.json(getHoneypotTelemetry());
+router.get("/dashboard/honeypot", async (_req, res): Promise<void> => {
+  res.json(await getHoneypotTelemetryAsync());
 });
 
 export default router;

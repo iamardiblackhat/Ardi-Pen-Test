@@ -112,6 +112,18 @@ export function ArdiChatView({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
+      {chat.messages.length > 0 ? (
+        <div className="flex items-center justify-between border-b border-violet-200/10 bg-[#100c2a]/50 px-4 py-2 text-xs text-indigo-200/70">
+          <span>Conversation saved across pages</span>
+          <button
+            type="button"
+            onClick={chat.clearChat}
+            className="rounded-md border border-violet-200/20 px-2 py-0.5 text-xs text-cyan-200 transition hover:border-cyan-200/60 hover:bg-violet-300/10"
+          >
+            New chat
+          </button>
+        </div>
+      ) : null}
       <div
         ref={scrollRef}
         className="flex-1 space-y-4 overflow-y-auto px-4 py-5"

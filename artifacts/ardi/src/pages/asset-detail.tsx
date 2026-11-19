@@ -1,13 +1,15 @@
-import { useParams, Link } from 'wouter';
+import { useParams, Link, useLocation } from 'wouter';
 import { ArrowLeft, Play, Server, AlertTriangle } from 'lucide-react';
 import { Button } from '@workspace/ardi-ds/components/ui/button';
 import { StatusBadge } from '@/components/status-badge';
 import { SeverityBadge } from '@/components/severity-badge';
+import { computeSecurityGrade } from '@/lib/security-grade';
 import {
   useGetAsset,
   useGetScans,
   useGetFindings,
   useCreateScan,
+  useStartScan,
   getGetAssetQueryKey,
   getGetScansQueryKey,
   getGetFindingsQueryKey,
@@ -18,6 +20,7 @@ import { formatDistanceToNow } from 'date-fns';
 
 export default function AssetDetail() {
   const params = useParams<{ id: string }>();
+  const [, navigate] = useLocation();
   const assetId = Number(params.id);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -28,20 +31,41 @@ export default function AssetDetail() {
   const { data: allScans } = useGetScans({ query: { queryKey: getGetScansQueryKey() } });
   const { data: allFindings } = useGetFindings({ query: { queryKey: getGetFindingsQueryKey() } });
   const createScan = useCreateScan();
+  const startScan = useStartScan();
 
   const scans = allScans?.filter((s) => s.assetId === assetId);
   const findings = allFindings?.filter((f) => f.assetId === assetId);
+  const grade = computeSecurityGrade({
+    hasCompletedScan: Boolean(asset?.lastScannedAt) || (scans ?? []).some((s) => s.status === 'completed'),
+    findings: findings ?? [],
+  });
 
-  const handleStartScan = () => {
-    createScan.mutate(
-      { data: { name: `Scan ${asset?.name}`, type: 'web_app', assetId } },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getGetScansQueryKey() });
-          toast({ title: 'Scan started', description: 'A new scan has been initiated' });
-        },
-      }
-    );
+  const handleStartScan = async () => {
+    try {
+      const created = await createScan.mutateAsync({
+        data: { name: `Security Check: ${asset?.name}`, type: 'full_stack', assetId },
+      });
+      const started = await startScan.mutateAsync({ id: created.id });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: getGetScansQueryKey() }),
+        queryClient.invalidateQueries({ queryKey: getGetFindingsQueryKey() }),
+        queryClient.invalidateQueries({ queryKey: getGetAssetQueryKey(assetId) }),
+      ]);
+      toast({
+        title: started.status === 'completed' ? 'Security check complete' : 'Security check started',
+        description:
+          started.status === 'completed'
+            ? `Found ${started.findingsCount ?? 0} item(s).`
+            : 'Follow live progress on the check page.',
+      });
+      navigate(`/scans/${started.id}`);
+    } catch {
+      toast({
+        title: 'Security check could not start',
+        description: 'Please try again in a moment.',
+        variant: 'destructive',
+      });
+    }
   };
 
   if (isLoading) {
@@ -82,9 +106,9 @@ export default function AssetDetail() {
             </div>
             <p className="text-muted-foreground font-mono">{asset.target}</p>
           </div>
-          <Button onClick={handleStartScan} disabled={createScan.isPending} className="glow-primary" data-testid="button-start-scan">
+          <Button onClick={handleStartScan} disabled={createScan.isPending || startScan.isPending} className="glow-primary" data-testid="button-start-scan">
             <Play className="w-4 h-4 mr-2" />
-            {createScan.isPending ? 'Starting...' : 'Start Scan'}
+            {createScan.isPending || startScan.isPending ? 'Running check...' : 'Run Security Check'}
           </Button>
         </div>
       </div>
@@ -92,19 +116,27 @@ export default function AssetDetail() {
       {/* Overview */}
       <div className="grid md:grid-cols-4 gap-6">
         <div className="bg-card border border-card-border rounded-xl p-6">
-          <p className="text-sm text-muted-foreground mb-2">Type</p>
-          <p className="text-lg font-mono font-semibold">{asset.type.replace('_', ' ').toUpperCase()}</p>
+          <p className="text-sm text-muted-foreground mb-2">Security Grade</p>
+          <div className="flex items-center gap-3">
+            <span className={`inline-flex h-10 w-10 items-center justify-center rounded-lg border text-lg font-bold font-mono ${grade.badgeClass}`}>
+              {grade.letter}
+            </span>
+            <div>
+              <p className={`text-sm font-semibold ${grade.colorClass}`}>{grade.label}</p>
+              <p className="text-xs text-muted-foreground">{grade.summary}</p>
+            </div>
+          </div>
         </div>
         <div className="bg-card border border-card-border rounded-xl p-6">
           <p className="text-sm text-muted-foreground mb-2">Risk Level</p>
           <p className="text-lg font-mono font-semibold uppercase">{asset.riskLevel}</p>
         </div>
         <div className="bg-card border border-card-border rounded-xl p-6">
-          <p className="text-sm text-muted-foreground mb-2">Open Findings</p>
-          <p className="text-2xl font-mono font-bold">{asset.openFindings || 0}</p>
+          <p className="text-sm text-muted-foreground mb-2">Open Problems</p>
+          <p className="text-2xl font-mono font-bold">{(findings ?? []).filter((f) => f.status === 'open' || f.status === 'in_progress').length}</p>
         </div>
         <div className="bg-card border border-card-border rounded-xl p-6">
-          <p className="text-sm text-muted-foreground mb-2">Last Scanned</p>
+          <p className="text-sm text-muted-foreground mb-2">Last Checked</p>
           <p className="text-sm font-mono">
             {asset.lastScannedAt
               ? formatDistanceToNow(new Date(asset.lastScannedAt), { addSuffix: true })

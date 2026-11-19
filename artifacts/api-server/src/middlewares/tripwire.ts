@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
+import { pool } from "@workspace/db";
 import { logger } from "../lib/logger";
 
 /**
@@ -50,6 +51,57 @@ const MAX_RECENT_EVENTS = 50;
 let totalHitsCount = 0;
 const BLOCK_MS = 60 * 60 * 1000; // 1 hour
 const HITS_BEFORE_BLOCK = 2;
+let tableReadyPromise: Promise<boolean> | null = null;
+
+function canPersistToDb(): boolean {
+  const conn = process.env.DATABASE_URL || process.env.POSTGRES_URL_NON_POOLING;
+  return Boolean(conn && !conn.includes("127.0.0.1:1/"));
+}
+
+async function ensureHoneypotTable(): Promise<boolean> {
+  if (!canPersistToDb()) return false;
+  if (!tableReadyPromise) {
+    tableReadyPromise = pool
+      .query(
+        `CREATE TABLE IF NOT EXISTS honeypot_events (
+          id SERIAL PRIMARY KEY,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          ip_masked TEXT NOT NULL,
+          path TEXT NOT NULL,
+          method TEXT NOT NULL,
+          user_agent TEXT NOT NULL,
+          hits INTEGER NOT NULL DEFAULT 1,
+          blocked BOOLEAN NOT NULL DEFAULT FALSE
+        )`,
+      )
+      .then(() => true)
+      .catch(() => {
+        tableReadyPromise = null;
+        return false;
+      });
+  }
+  return tableReadyPromise;
+}
+
+async function persistHoneypotEvent(event: HoneypotEvent): Promise<void> {
+  try {
+    if (!(await ensureHoneypotTable())) return;
+    await pool.query(
+      `INSERT INTO honeypot_events (ip_masked, path, method, user_agent, hits, blocked)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [
+        event.ipMasked,
+        event.path,
+        event.method,
+        event.userAgent,
+        event.hits,
+        event.blocked,
+      ],
+    );
+  } catch {
+    // Non-fatal: in-memory buffer still records the event.
+  }
+}
 
 function maskIp(ip: string): string {
   if (ip.includes(".")) {
@@ -128,7 +180,9 @@ export function tripwire(req: Request, res: Response, next: NextFunction): void 
 
     // Look like an ordinary missing page — do not reveal it is a tripwire, or a
     // sophisticated attacker just avoids these paths.
-    res.status(404).json({ error: "Not found." });
+    void persistHoneypotEvent(event).finally(() => {
+      res.status(404).json({ error: "Not found." });
+    });
     return;
   }
 
@@ -147,6 +201,50 @@ export function getHoneypotTelemetry() {
     activeBlocks,
     recentEvents: recentEvents.slice(0, MAX_RECENT_EVENTS),
   };
+}
+
+export async function getHoneypotTelemetryAsync() {
+  const memory = getHoneypotTelemetry();
+  try {
+    if (!(await ensureHoneypotTable())) return memory;
+    const [countRes, rowsRes] = await Promise.all([
+      pool.query<{ count: string }>(`SELECT COUNT(*)::text AS count FROM honeypot_events`),
+      pool.query<{
+        id: number;
+        created_at: Date;
+        ip_masked: string;
+        path: string;
+        method: string;
+        user_agent: string;
+        hits: number;
+        blocked: boolean;
+      }>(
+        `SELECT id, created_at, ip_masked, path, method, user_agent, hits, blocked
+         FROM honeypot_events
+         ORDER BY created_at DESC
+         LIMIT 50`,
+      ),
+    ]);
+    const dbTotal = Number.parseInt(countRes.rows[0]?.count ?? "0", 10);
+    const dbEvents: HoneypotEvent[] = rowsRes.rows.map((r) => ({
+      id: `db-${r.id}`,
+      timestamp: new Date(r.created_at).toISOString(),
+      ipMasked: r.ip_masked,
+      path: r.path,
+      method: r.method,
+      userAgent: r.user_agent,
+      hits: r.hits,
+      blocked: r.blocked,
+    }));
+    return {
+      activeDecoys: TRIPWIRE_PATHS,
+      totalHits: Math.max(dbTotal, memory.totalHits),
+      activeBlocks: memory.activeBlocks,
+      recentEvents: dbEvents.length > 0 ? dbEvents : memory.recentEvents,
+    };
+  } catch {
+    return memory;
+  }
 }
 
 /** Exposed for an admin/audit view later; also keeps the map from growing forever. */

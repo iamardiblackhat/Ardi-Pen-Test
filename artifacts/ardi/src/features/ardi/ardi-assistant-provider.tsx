@@ -53,7 +53,7 @@ export function ArdiAssistantProvider({ children }: { children: ReactNode }) {
     if (value) display(false);
     setOpen(value);
   }
-  useEffect(() => setOpen(false), [authenticated, path]);
+  useEffect(() => setOpen(false), [authenticated]);
   return (
     <AssistantContext.Provider value={{ setOpen: show }}>
       {children}
