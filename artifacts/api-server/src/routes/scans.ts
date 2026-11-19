@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { startScan, cancelScan } from "../lib/scan-runner";
 import { db, scansTable, assetsTable, findingsTable } from "@workspace/db";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq, lt } from "drizzle-orm";
 import {
   GetScansResponse,
   CreateScanBody,
@@ -253,6 +253,87 @@ router.get("/scans/:id/findings", async (req, res): Promise<void> => {
     createdAt: f.createdAt.toISOString(),
   }));
   res.json(GetScanFindingsResponse.parse(serialized));
+});
+
+// GET /api/scans/:id/diff — compares this scan against the previous completed scan on the same target.
+router.get("/scans/:id/diff", async (req, res): Promise<void> => {
+  const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(rawId, 10);
+  if (Number.isNaN(id)) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
+
+  const [currentScan] = await db
+    .select()
+    .from(scansTable)
+    .where(and(eq(scansTable.id, id), eq(scansTable.userId, req.user!.sub)));
+  if (!currentScan) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+
+  const [previousScan] = await db
+    .select()
+    .from(scansTable)
+    .where(
+      and(
+        eq(scansTable.userId, req.user!.sub),
+        eq(scansTable.assetId, currentScan.assetId),
+        eq(scansTable.status, "completed"),
+        lt(scansTable.id, currentScan.id),
+      ),
+    )
+    .orderBy(desc(scansTable.id))
+    .limit(1);
+
+  if (!previousScan) {
+    res.json({
+      hasPrevious: false,
+      previousScan: null,
+      newFindings: [],
+      fixedFindings: [],
+      unchangedCount: currentScan.findingsCount,
+    });
+    return;
+  }
+
+  const [currentFindings, previousFindings] = await Promise.all([
+    db
+      .select()
+      .from(findingsTable)
+      .where(and(eq(findingsTable.scanId, currentScan.id), eq(findingsTable.userId, req.user!.sub))),
+    db
+      .select()
+      .from(findingsTable)
+      .where(and(eq(findingsTable.scanId, previousScan.id), eq(findingsTable.userId, req.user!.sub))),
+  ]);
+
+  const keyFor = (f: { title: string; category: string }) =>
+    `${f.category.toLowerCase()}::${f.title.toLowerCase()}`;
+  const prevKeys = new Set(previousFindings.map(keyFor));
+  const currKeys = new Set(currentFindings.map(keyFor));
+
+  const newFindings = currentFindings
+    .filter((f) => !prevKeys.has(keyFor(f)))
+    .map((f) => ({ id: f.id, title: f.title, severity: f.severity, category: f.category }));
+  const fixedFindings = previousFindings
+    .filter((f) => !currKeys.has(keyFor(f)))
+    .map((f) => ({ id: f.id, title: f.title, severity: f.severity, category: f.category }));
+  const unchangedCount = currentFindings.length - newFindings.length;
+
+  res.json({
+    hasPrevious: true,
+    previousScan: {
+      id: previousScan.id,
+      name: previousScan.name,
+      completedAt: previousScan.completedAt?.toISOString() ?? null,
+      findingsCount: previousScan.findingsCount,
+    },
+    newFindings,
+    fixedFindings,
+    unchangedCount,
+  });
 });
 
 export default router;

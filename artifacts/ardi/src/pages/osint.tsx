@@ -41,6 +41,26 @@ type DomainIntel = {
   }>;
 };
 
+type LookalikeCandidate = {
+  domain: string;
+  kind: "alternate-tld" | "brand-keyword" | "typo";
+  registered: boolean;
+  ipv4: string[];
+  hasMail: boolean;
+  httpStatus: number | null;
+  redirectTarget: string | null;
+  risk: "high" | "medium" | "low" | "none";
+};
+
+type LookalikeScanResult = {
+  domain: string;
+  checkedAt: string;
+  checkedCount: number;
+  registeredCount: number;
+  highRiskCount: number;
+  candidates: LookalikeCandidate[];
+};
+
 function SourcePill({ enabled, label }: { enabled: boolean; label: string }) {
   return (
     <span
@@ -68,8 +88,38 @@ export default function Osint() {
   const [domain, setDomain] = useState("");
   const [history, setHistory] = useState<DomainIntel[]>(() => loadDomainHistory());
   const [result, setResult] = useState<DomainIntel | null>(null);
+  const [lookalikes, setLookalikes] = useState<LookalikeScanResult | null>(null);
+  const [lookalikeLoading, setLookalikeLoading] = useState(false);
+  const [lookalikeError, setLookalikeError] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  async function runLookalikeScan(targetDomain: string) {
+    setLookalikeLoading(true);
+    setLookalikeError("");
+    setLookalikes(null);
+    try {
+      const response = await fetch(
+        `/api/osint/lookalikes/${encodeURIComponent(targetDomain)}`,
+        {
+          headers: auth.getToken()
+            ? { authorization: `Bearer ${auth.getToken()}` }
+            : {},
+        },
+      );
+      const body = (await response.json()) as LookalikeScanResult & { error?: string };
+      if (!response.ok) {
+        throw new Error(body.error ?? "Lookalike domain check failed.");
+      }
+      setLookalikes(body);
+    } catch (err) {
+      setLookalikeError(
+        err instanceof Error ? err.message : "Lookalike domain check failed.",
+      );
+    } finally {
+      setLookalikeLoading(false);
+    }
+  }
 
   function saveToHistory(entry: DomainIntel) {
     setHistory((prev) => {
@@ -235,7 +285,22 @@ export default function Osint() {
                   {new Date(result.retrievedAt).toLocaleString("en-GB")}
                 </p>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  disabled={lookalikeLoading}
+                  onClick={() => void runLookalikeScan(result.domain)}
+                  className="inline-flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/15 px-3 py-1.5 text-xs font-semibold text-primary transition hover:bg-primary/25 disabled:opacity-50"
+                >
+                  {lookalikeLoading ? (
+                    <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                  )}
+                  {lookalikeLoading
+                    ? "Checking lookalike domains..."
+                    : "Check for Fake / Lookalike Domains"}
+                </button>
                 <SourcePill enabled={result.sources.rdap} label="RDAP" />
                 <SourcePill enabled={result.sources.dns} label="DNS" />
                 <SourcePill
@@ -244,6 +309,94 @@ export default function Osint() {
                 />
               </div>
             </div>
+
+            {lookalikeError ? (
+              <div className="rounded-xl border border-amber-400/40 bg-amber-400/10 px-4 py-3 text-xs text-amber-100">
+                {lookalikeError}
+              </div>
+            ) : null}
+
+            {lookalikes ? (
+              <section className="rounded-[1.5rem] border border-primary/30 bg-card p-6">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="font-mono text-[10px] font-semibold tracking-[.14em] text-primary">
+                      BRAND IMPERSONATION &amp; PHISHING CHECK
+                    </p>
+                    <h3 className="mt-1 text-lg font-semibold">
+                      {lookalikes.registeredCount} active lookalike{" "}
+                      {lookalikes.registeredCount === 1 ? "domain" : "domains"} found (checked{" "}
+                      {lookalikes.checkedCount} variants)
+                    </h3>
+                  </div>
+                  <span
+                    className={`rounded-full border px-3 py-1 text-xs font-mono font-semibold ${
+                      lookalikes.highRiskCount > 0
+                        ? "border-destructive/40 bg-destructive/15 text-destructive"
+                        : "border-emerald-400/40 bg-emerald-400/10 text-emerald-300"
+                    }`}
+                  >
+                    {lookalikes.highRiskCount} high risk
+                  </span>
+                </div>
+                {lookalikes.registeredCount > 0 ? (
+                  <div className="mt-4 overflow-x-auto">
+                    <table className="w-full min-w-[600px] text-left text-xs">
+                      <thead className="border-b border-border font-mono uppercase text-muted-foreground">
+                        <tr>
+                          <th className="pb-2 pr-4">Lookalike Domain</th>
+                          <th className="pb-2 pr-4">Risk</th>
+                          <th className="pb-2 pr-4">Server IP</th>
+                          <th className="pb-2 pr-4">Can Send Email (MX)</th>
+                          <th className="pb-2">Web Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border/60 font-mono">
+                        {lookalikes.candidates
+                          .filter((c) => c.registered)
+                          .map((c) => (
+                            <tr key={c.domain}>
+                              <td className="py-2.5 pr-4 font-semibold text-foreground">
+                                {c.domain}
+                              </td>
+                              <td className="py-2.5 pr-4">
+                                <span
+                                  className={`rounded px-2 py-0.5 uppercase ${
+                                    c.risk === "high"
+                                      ? "bg-destructive/15 text-destructive"
+                                      : c.risk === "medium"
+                                        ? "bg-orange-500/15 text-orange-400"
+                                        : "bg-muted text-muted-foreground"
+                                  }`}
+                                >
+                                  {c.risk}
+                                </span>
+                              </td>
+                              <td className="py-2.5 pr-4 text-muted-foreground">
+                                {c.ipv4[0] ?? "DNS only"}
+                              </td>
+                              <td className="py-2.5 pr-4">
+                                {c.hasMail ? (
+                                  <span className="text-orange-400">Yes (MX active)</span>
+                                ) : (
+                                  <span className="text-muted-foreground">No</span>
+                                )}
+                              </td>
+                              <td className="py-2.5 text-muted-foreground">
+                                {c.httpStatus !== null ? `HTTP ${c.httpStatus}` : "No web server"}
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="mt-3 text-sm text-muted-foreground">
+                    None of the {lookalikes.checkedCount} common lookalike or typosquatted domains are currently registered.
+                  </p>
+                )}
+              </section>
+            ) : null}
             {result.sourceErrors.length > 0 && (
               <div className="rounded-xl border border-amber-400/40 bg-amber-400/10 px-4 py-3 text-xs text-amber-100">
                 Unavailable source: {result.sourceErrors.join(", ")}. Other

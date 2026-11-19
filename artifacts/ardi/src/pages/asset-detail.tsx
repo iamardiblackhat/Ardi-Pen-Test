@@ -1,6 +1,7 @@
 import { useParams, Link, useLocation } from 'wouter';
 import { ArrowLeft, Play, Server, AlertTriangle } from 'lucide-react';
 import { Button } from '@workspace/ardi-ds/components/ui/button';
+import { Switch } from '@workspace/ardi-ds/components/ui/switch';
 import { StatusBadge } from '@/components/status-badge';
 import { SeverityBadge } from '@/components/severity-badge';
 import { computeSecurityGrade } from '@/lib/security-grade';
@@ -10,6 +11,7 @@ import {
   useGetFindings,
   useCreateScan,
   useStartScan,
+  useUpdateAsset,
   getGetAssetQueryKey,
   getGetScansQueryKey,
   getGetFindingsQueryKey,
@@ -32,6 +34,31 @@ export default function AssetDetail() {
   const { data: allFindings } = useGetFindings({ query: { queryKey: getGetFindingsQueryKey() } });
   const createScan = useCreateScan();
   const startScan = useStartScan();
+  const updateAsset = useUpdateAsset();
+
+  const weeklyMonitoring = (asset?.tags ?? []).includes('monitor:weekly');
+
+  const toggleWeeklyMonitoring = async (enabled: boolean) => {
+    if (!asset) return;
+    const baseTags = (asset.tags ?? []).filter((t) => t !== 'monitor:weekly');
+    const nextTags = enabled ? [...baseTags, 'monitor:weekly'] : baseTags;
+    try {
+      await updateAsset.mutateAsync({ id: asset.id, data: { tags: nextTags } });
+      await queryClient.invalidateQueries({ queryKey: getGetAssetQueryKey(assetId) });
+      toast({
+        title: enabled ? 'Weekly monitoring enabled' : 'Weekly monitoring paused',
+        description: enabled
+          ? `${asset.name} is marked for recurring weekly security checks.`
+          : `${asset.name} will only be checked when you start one manually.`,
+      });
+    } catch {
+      toast({
+        title: 'Could not update monitoring setting',
+        description: 'Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   const scans = allScans?.filter((s) => s.assetId === assetId);
   const findings = allFindings?.filter((f) => f.assetId === assetId);
@@ -143,6 +170,22 @@ export default function AssetDetail() {
               : 'Never'}
           </p>
         </div>
+      </div>
+
+      {/* Monitoring Schedule */}
+      <div className="bg-card border border-card-border rounded-xl p-5 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <p className="font-semibold text-sm">Weekly Monitoring &amp; Change Tracking</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Track this website on a weekly schedule and highlight any new or fixed problems on each run.
+          </p>
+        </div>
+        <Switch
+          checked={weeklyMonitoring}
+          disabled={updateAsset.isPending}
+          onCheckedChange={(v) => void toggleWeeklyMonitoring(v)}
+          aria-label="Enable weekly monitoring"
+        />
       </div>
 
       {/* Scan History */}

@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { FileText, Printer } from "lucide-react";
+import { Button } from "@workspace/ardi-ds/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@workspace/ardi-ds/components/ui/dialog";
 import { auth } from "@/lib/auth";
 import "../intelligence-dashboard.css";
 
@@ -7,6 +10,7 @@ type ResearchResult = {
   researchedAt: string;
   answer: string;
   sources: string[];
+  html?: string;
 };
 
 const SUBJECT_HISTORY_KEY = "ardi_subject_research_history";
@@ -25,9 +29,12 @@ function loadResearchHistory(): ResearchResult[] {
 export function LiveResearch() {
   const [history, setHistory] = useState<ResearchResult[]>(() => loadResearchHistory());
   const [result, setResult] = useState<ResearchResult | null>(null);
+  const [dossierHtml, setDossierHtml] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState<"research" | "dossier">("research");
   const request = useRef<AbortController | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   useEffect(() => () => request.current?.abort(), []);
 
   function saveResearch(entry: ResearchResult) {
@@ -65,21 +72,31 @@ export function LiveResearch() {
     setResult(null);
     setError("");
     try {
-      const response = await fetch("/api/osint/research", {
+      const payload = Object.fromEntries(fields);
+      const endpoint = mode === "dossier" ? "/api/osint/dossier" : "/api/osint/research";
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           authorization: `Bearer ${auth.getToken()}`,
         },
-        body: JSON.stringify(Object.fromEntries(fields)),
+        body: JSON.stringify(payload),
         signal: controller.signal,
       });
       const body = await response.json();
       if (!response.ok)
         throw new Error(body.error || "Live research could not complete.");
       if (!controller.signal.aborted) {
-        setResult(body);
-        saveResearch(body);
+        const normalized: ResearchResult = {
+          subject: body.subject,
+          researchedAt: body.researchedAt ?? body.generatedAt ?? new Date().toISOString(),
+          answer: body.answer,
+          sources: body.sources ?? [],
+          html: body.html,
+        };
+        setResult(normalized);
+        saveResearch(normalized);
+        if (body.html) setDossierHtml(body.html);
       }
     } catch (failure) {
       if (!controller.signal.aborted)
@@ -141,6 +158,15 @@ export function LiveResearch() {
             <option value="exposure">Publicly exposed information</option>
           </select>
         </label>
+        <label className="grid gap-2">
+          Company website (optional, for full PDF dossier)
+          <input
+            name="domain"
+            maxLength={253}
+            placeholder="e.g. example.com"
+            className="ardi-liquid-input min-h-12 rounded-lg border border-slate-500 bg-[#0c1125] px-3 text-base"
+          />
+        </label>
         <label className="grid gap-2 sm:col-span-2">
           What do you want to find out?
           <textarea
@@ -152,16 +178,31 @@ export function LiveResearch() {
             className="ardi-liquid-input rounded-lg border border-slate-500 bg-[#0c1125] p-3 text-base"
           />
         </label>
-        <button
-          disabled={loading}
-          className="min-h-12 rounded-lg bg-cyan-200 px-5 font-semibold text-indigo-950 disabled:opacity-60"
-        >
-          {loading
-            ? "Searching public sources…"
-            : auth.isAuthenticated()
-              ? "Run live research"
-              : "Sign in to run research"}
-        </button>
+        <div className="flex flex-wrap gap-3 sm:col-span-2">
+          <button
+            type="submit"
+            disabled={loading}
+            onClick={() => setMode("research")}
+            className="min-h-12 rounded-lg bg-cyan-200 px-5 font-semibold text-indigo-950 disabled:opacity-60"
+          >
+            {loading && mode === "research"
+              ? "Searching public sources…"
+              : auth.isAuthenticated()
+                ? "Run live research"
+                : "Sign in to run research"}
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            onClick={() => setMode("dossier")}
+            className="inline-flex min-h-12 items-center gap-2 rounded-lg border border-cyan-300/50 bg-cyan-300/10 px-5 font-semibold text-cyan-100 transition hover:bg-cyan-300/20 disabled:opacity-60"
+          >
+            <FileText className="h-4 w-4" aria-hidden="true" />
+            {loading && mode === "dossier"
+              ? "Building PDF dossier…"
+              : "Build Full Client PDF Dossier"}
+          </button>
+        </div>
       </form>
       {loading ? (
         <p role="status" className="mt-4">
@@ -211,7 +252,15 @@ export function LiveResearch() {
       ) : null}
       {result ? (
         <article className="mt-6 border-t border-slate-600 pt-5">
-          <h3 className="text-xl font-semibold">Research: {result.subject}</h3>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h3 className="text-xl font-semibold">Research: {result.subject}</h3>
+            {result.html ? (
+              <Button size="sm" onClick={() => setDossierHtml(result.html!)}>
+                <Printer className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                Open PDF Dossier
+              </Button>
+            ) : null}
+          </div>
           <p className="mt-2 text-sm text-slate-400">
             Retrieved{" "}
             <time dateTime={result.researchedAt}>
@@ -241,6 +290,33 @@ export function LiveResearch() {
           </ul>
         </article>
       ) : null}
+      <Dialog open={dossierHtml !== null} onOpenChange={(open) => !open && setDossierHtml(null)}>
+        <DialogContent className="flex h-[85vh] max-w-4xl flex-col gap-3">
+          <DialogHeader className="flex flex-row items-center justify-between gap-4 pr-8">
+            <DialogTitle className="truncate">
+              Due Diligence Dossier: {result?.subject ?? ""}
+            </DialogTitle>
+            <Button
+              size="sm"
+              onClick={() => {
+                iframeRef.current?.contentWindow?.focus();
+                iframeRef.current?.contentWindow?.print();
+              }}
+            >
+              <Printer className="mr-1.5 h-4 w-4" aria-hidden="true" />
+              Print / Save as PDF
+            </Button>
+          </DialogHeader>
+          {dossierHtml ? (
+            <iframe
+              ref={iframeRef}
+              title={`Dossier for ${result?.subject ?? "company"}`}
+              srcDoc={dossierHtml}
+              className="w-full flex-1 rounded-lg border border-border bg-white"
+            />
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }
