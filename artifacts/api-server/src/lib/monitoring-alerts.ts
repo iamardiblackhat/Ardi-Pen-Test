@@ -1,6 +1,7 @@
 import { db, pool, assetsTable, scansTable, findingsTable, activityTable } from "@workspace/db";
 import { and, desc, eq } from "drizzle-orm";
 import { startScan } from "./scan-runner";
+import { sendWorkspaceAlertIfEnabled } from "./workspace-webhooks";
 
 export interface MonitoringAlert {
   id: number;
@@ -200,6 +201,13 @@ export async function runWeeklyMonitoring(userId?: number): Promise<{
       title: `Weekly monitor checked ${asset.name}`,
       description: summary,
       severity: severity === "critical" ? "high" : severity === "warning" ? "medium" : "info",
+    });
+
+    await sendWorkspaceAlertIfEnabled(asset.userId, {
+      title: `Weekly monitor checked ${asset.name}`,
+      summary,
+      severity,
+      source: "weekly_monitoring",
     });
 
     results.push({

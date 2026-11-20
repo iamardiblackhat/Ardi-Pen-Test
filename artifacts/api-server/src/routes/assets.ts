@@ -14,6 +14,8 @@ import {
   GetAssetStatsResponse,
 } from "@workspace/api-zod";
 
+import { checkAssetLiveHealth } from "../lib/asset-health";
+
 const router = Router();
 
 function serializeAsset(a: typeof assetsTable.$inferSelect) {
@@ -102,6 +104,31 @@ router.get("/assets/stats", async (req, res): Promise<void> => {
       })),
     }),
   );
+});
+
+// GET /api/assets/:id/health — Live HTTP uptime, response time, and SSL certificate expiry
+router.get("/assets/:id/health", async (req, res): Promise<void> => {
+  const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const parsed = GetAssetParams.safeParse({ id: parseInt(rawId, 10) });
+  if (!parsed.success) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
+  const [asset] = await db
+    .select()
+    .from(assetsTable)
+    .where(
+      and(
+        eq(assetsTable.id, parsed.data.id),
+        eq(assetsTable.userId, req.user!.sub),
+      ),
+    );
+  if (!asset) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+  const health = await checkAssetLiveHealth(asset.target);
+  res.json(health);
 });
 
 // GET /api/assets/:id

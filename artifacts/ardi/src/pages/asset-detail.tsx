@@ -1,9 +1,11 @@
+import { useEffect, useState } from 'react';
 import { useParams, Link, useLocation } from 'wouter';
-import { ArrowLeft, Play, Server, AlertTriangle } from 'lucide-react';
+import { Activity, ArrowLeft, Loader2, Lock, Play, RefreshCw, Server, AlertTriangle } from 'lucide-react';
 import { Button } from '@workspace/ardi-ds/components/ui/button';
 import { Switch } from '@workspace/ardi-ds/components/ui/switch';
 import { StatusBadge } from '@/components/status-badge';
 import { SeverityBadge } from '@/components/severity-badge';
+import { auth } from '@/lib/auth';
 import { computeSecurityGrade } from '@/lib/security-grade';
 import {
   useGetAsset,
@@ -35,6 +37,41 @@ export default function AssetDetail() {
   const createScan = useCreateScan();
   const startScan = useStartScan();
   const updateAsset = useUpdateAsset();
+
+  interface AssetHealth {
+    online: boolean;
+    httpStatus: number | null;
+    responseTimeMs: number | null;
+    tls: {
+      available: boolean;
+      protocol: string | null;
+      issuer: string | null;
+      validTo: string | null;
+      daysRemaining: number | null;
+      expiryStatus: 'healthy' | 'expiring_soon' | 'expired' | 'unavailable';
+    };
+  }
+  const [health, setHealth] = useState<AssetHealth | null>(null);
+  const [healthLoading, setHealthLoading] = useState(false);
+
+  const loadHealth = async () => {
+    if (!assetId) return;
+    setHealthLoading(true);
+    try {
+      const res = await fetch(`/api/assets/${assetId}/health`, {
+        headers: auth.getToken() ? { authorization: `Bearer ${auth.getToken()}` } : {},
+      });
+      if (res.ok) setHealth((await res.json()) as AssetHealth);
+    } catch {
+      // ignore transient network errors
+    } finally {
+      setHealthLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadHealth();
+  }, [assetId]);
 
   const weeklyMonitoring = (asset?.tags ?? []).includes('monitor:weekly');
 
@@ -170,6 +207,68 @@ export default function AssetDetail() {
               : 'Never'}
           </p>
         </div>
+      </div>
+
+      {/* Live Website Health & SSL Expiry */}
+      <div className="bg-card border border-card-border rounded-xl p-5 space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="font-semibold text-sm flex items-center gap-2">
+              <Activity className="w-4 h-4 text-primary" />
+              Live Website Health &amp; SSL Certificate Expiry
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Real-time online check, response speed, and exact days remaining before your SSL certificate expires.
+            </p>
+          </div>
+          <Button size="sm" variant="outline" onClick={() => void loadHealth()} disabled={healthLoading}>
+            {healthLoading ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5 mr-1.5" />}
+            Refresh Live Check
+          </Button>
+        </div>
+        {health ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+            <div className="rounded-lg border border-border bg-muted/30 p-3">
+              <p className="text-muted-foreground uppercase font-mono text-[10px]">Website Status</p>
+              <p className={`mt-1 font-semibold text-sm ${health.online ? 'text-emerald-400' : 'text-destructive'}`}>
+                {health.online ? `Online (HTTP ${health.httpStatus})` : 'Offline / Unreachable'}
+              </p>
+            </div>
+            <div className="rounded-lg border border-border bg-muted/30 p-3">
+              <p className="text-muted-foreground uppercase font-mono text-[10px]">Response Speed</p>
+              <p className="mt-1 font-semibold font-mono text-sm">
+                {health.responseTimeMs !== null ? `${health.responseTimeMs} ms` : 'Unavailable'}
+              </p>
+            </div>
+            <div className="rounded-lg border border-border bg-muted/30 p-3">
+              <p className="text-muted-foreground uppercase font-mono text-[10px]">SSL Expiry</p>
+              <p
+                className={`mt-1 font-semibold font-mono text-sm ${
+                  health.tls.expiryStatus === 'healthy'
+                    ? 'text-emerald-400'
+                    : health.tls.expiryStatus === 'expiring_soon'
+                      ? 'text-amber-400'
+                      : 'text-destructive'
+                }`}
+              >
+                {health.tls.daysRemaining !== null
+                  ? health.tls.daysRemaining < 0
+                    ? `Expired ${Math.abs(health.tls.daysRemaining)}d ago`
+                    : `${health.tls.daysRemaining} days left`
+                  : 'No SSL detected'}
+              </p>
+            </div>
+            <div className="rounded-lg border border-border bg-muted/30 p-3">
+              <p className="text-muted-foreground uppercase font-mono text-[10px]">TLS &amp; Issuer</p>
+              <p className="mt-1 font-semibold text-sm truncate flex items-center gap-1" title={health.tls.issuer ?? ''}>
+                <Lock className="w-3.5 h-3.5 text-primary shrink-0" />
+                {health.tls.protocol ?? 'None'}{health.tls.issuer ? ` (${health.tls.issuer})` : ''}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <p className="text-xs text-muted-foreground">Running live website and SSL check...</p>
+        )}
       </div>
 
       {/* Monitoring Schedule */}

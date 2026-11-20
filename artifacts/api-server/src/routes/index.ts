@@ -11,6 +11,8 @@ import ardiRouter from "./ardi";
 import intelligenceRouter from "./intelligence";
 import billingRouter from "./billing";
 import brandingRouter from "./branding";
+import webhooksRouter from "./webhooks";
+import apiKeysRouter from "./api-keys";
 import cronRouter from "./cron";
 import publicCheckRouter from "./public-check";
 import publicShareRouter from "./public-share";
@@ -44,5 +46,7 @@ router.use(reportsRouter);
 router.use(dashboardRouter);
 router.use(osintRouter);
 router.use(brandingRouter);
+router.use(webhooksRouter);
+router.use(apiKeysRouter);
 
 export default router;
