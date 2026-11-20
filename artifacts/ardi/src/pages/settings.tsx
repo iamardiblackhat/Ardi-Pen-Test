@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { User, Bell, Save, LogOut, Loader2 } from 'lucide-react';
+import { User, Bell, Save, LogOut, Loader2, Palette } from 'lucide-react';
 import { Button } from '@workspace/ardi-ds/components/ui/button';
 import { Input } from '@workspace/ardi-ds/components/ui/input';
 import { Label } from '@workspace/ardi-ds/components/ui/label';
@@ -29,6 +29,71 @@ export default function Settings() {
   const [notifScanComplete, setNotifScanComplete] = useState(true);
   const [notifCritical, setNotifCritical] = useState(true);
   const [notifWeeklyDigest, setNotifWeeklyDigest] = useState(false);
+
+  // White-label report & dossier branding state
+  const [brandName, setBrandName] = useState('');
+  const [logoUrl, setLogoUrl] = useState('');
+  const [accentColor, setAccentColor] = useState('#16181d');
+  const [contactEmail, setContactEmail] = useState('');
+  const [footerText, setFooterText] = useState('');
+  const [savingBranding, setSavingBranding] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    fetch('/api/settings/branding', {
+      headers: auth.getToken() ? { authorization: `Bearer ${auth.getToken()}` } : {},
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!alive || !data) return;
+        setBrandName(data.brandName ?? '');
+        setLogoUrl(data.logoUrl ?? '');
+        setAccentColor(data.accentColor || '#16181d');
+        setContactEmail(data.contactEmail ?? '');
+        setFooterText(data.footerText ?? '');
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const saveBranding = async () => {
+    setSavingBranding(true);
+    try {
+      const res = await fetch('/api/settings/branding', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(auth.getToken() ? { authorization: `Bearer ${auth.getToken()}` } : {}),
+        },
+        body: JSON.stringify({
+          brandName,
+          logoUrl,
+          accentColor,
+          contactEmail,
+          footerText,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast({
+          title: 'Could not save branding',
+          description: data.error || 'Check your inputs and try again.',
+          variant: 'destructive',
+        });
+        return;
+      }
+      toast({
+        title: 'Report branding saved',
+        description: 'All new PDF security reports and company dossiers will use your brand.',
+      });
+    } catch {
+      toast({ title: 'Could not save branding', description: 'Try again.', variant: 'destructive' });
+    } finally {
+      setSavingBranding(false);
+    }
+  };
 
   // Local form state mirrors the server once, on load — after that it's
   // the user's to edit until they hit Save.
@@ -123,6 +188,104 @@ export default function Settings() {
             <Button className="glow-primary" onClick={saveProfile} disabled={updateMe.isPending} data-testid="button-save-profile">
               {updateMe.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
               Save Changes
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* White-Label Report & Dossier Branding */}
+      <section>
+        <div className="flex items-center gap-3 mb-5">
+          <Palette className="w-5 h-5 text-primary" />
+          <div>
+            <h2 className="text-lg font-bold">Report &amp; Dossier Branding (White-Label)</h2>
+            <p className="text-xs text-muted-foreground">
+              Add your own company name, logo, and color to every exported PDF security report and company due diligence dossier.
+            </p>
+          </div>
+        </div>
+        <div className="bg-card border border-card-border rounded-xl p-6 space-y-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Company / Agency Name</Label>
+              <Input
+                value={brandName}
+                onChange={(e) => setBrandName(e.target.value)}
+                placeholder="e.g. Acme Cyber Advisory"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Contact Email (shown in footer)</Label>
+              <Input
+                value={contactEmail}
+                onChange={(e) => setContactEmail(e.target.value)}
+                type="email"
+                placeholder="security@youragency.com"
+              />
+            </div>
+            <div className="space-y-2 sm:col-span-2">
+              <Label>Logo URL (PNG, SVG, or JPG)</Label>
+              <Input
+                value={logoUrl}
+                onChange={(e) => setLogoUrl(e.target.value)}
+                placeholder="https://youragency.com/logo.png"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Report Accent Color</Label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={/^#[0-9a-fA-F]{6}$/.test(accentColor) ? accentColor : '#16181d'}
+                  onChange={(e) => setAccentColor(e.target.value)}
+                  className="h-10 w-12 rounded border border-border bg-transparent cursor-pointer"
+                />
+                <Input
+                  value={accentColor}
+                  onChange={(e) => setAccentColor(e.target.value)}
+                  placeholder="#16181d"
+                  className="font-mono"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Custom Footer Line</Label>
+              <Input
+                value={footerText}
+                onChange={(e) => setFooterText(e.target.value)}
+                placeholder="Confidential client report prepared by Acme Cyber Advisory."
+              />
+            </div>
+          </div>
+
+          {(brandName || logoUrl) && (
+            <div
+              className="rounded-lg border border-border bg-background p-4"
+              style={{ borderTopWidth: '3px', borderTopColor: /^#[0-9a-fA-F]{6}$/.test(accentColor) ? accentColor : '#16181d' }}
+            >
+              <p className="text-[11px] font-mono uppercase tracking-wide text-muted-foreground mb-2">
+                Report Header Preview
+              </p>
+              {logoUrl && (
+                <img
+                  src={logoUrl}
+                  alt={brandName || 'Brand logo'}
+                  className="max-h-9 max-w-[180px] object-contain mb-2"
+                />
+              )}
+              <p className="font-bold text-sm" style={{ color: /^#[0-9a-fA-F]{6}$/.test(accentColor) ? accentColor : undefined }}>
+                {brandName || 'ARDI SEC'}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {footerText || 'Security assessment report and due diligence dossier.'}
+              </p>
+            </div>
+          )}
+
+          <div className="flex justify-end">
+            <Button className="glow-primary" onClick={saveBranding} disabled={savingBranding}>
+              {savingBranding ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+              Save Branding
             </Button>
           </div>
         </div>

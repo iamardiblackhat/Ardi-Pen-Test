@@ -8,6 +8,7 @@ import { rateLimit } from "../middlewares/rate-limit";
 import { logger } from "../lib/logger";
 import { scanLookalikeDomains } from "../lib/lookalike-scanner";
 import { renderDossierHtml } from "../lib/dossier-renderer";
+import { getWorkspaceBranding } from "../lib/workspace-branding";
 
 const router = Router();
 
@@ -121,10 +122,11 @@ router.post(
 
     res.setHeader("Cache-Control", "no-store");
     try {
-      const [research, domainData, lookalikes] = await Promise.all([
+      const [research, domainData, lookalikes, branding] = await Promise.all([
         researchOpenSources({ subject, objective, region, question }),
         rawDomain ? researchDomain(rawDomain).catch(() => null) : Promise.resolve(null),
         rawDomain ? scanLookalikeDomains(rawDomain).catch(() => null) : Promise.resolve(null),
+        getWorkspaceBranding(req.user!.sub),
       ]);
 
       const generatedAt = new Date().toISOString();
@@ -136,6 +138,7 @@ router.post(
         sources: research.sources,
         domainData,
         lookalikes,
+        branding,
       });
 
       res.json({

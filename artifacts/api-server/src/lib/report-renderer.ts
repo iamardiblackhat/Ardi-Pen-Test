@@ -1,5 +1,6 @@
 import type { findingsTable, assetsTable, scansTable, reportsTable } from "@workspace/db";
 import { buildBlueTeamDefense } from "./blue-team-defenses";
+import type { WorkspaceBranding } from "./workspace-branding";
 type Report = typeof reportsTable.$inferSelect;
 type Finding = typeof findingsTable.$inferSelect;
 type Asset = typeof assetsTable.$inferSelect;
@@ -9,6 +10,7 @@ export interface ReportData {
   report: Report;
   generatedAt: Date;
   owner: { name: string; email: string; orgName: string } | null;
+  branding?: WorkspaceBranding | null;
   scan: Scan | null;
   asset: Asset | null;
   findings: Finding[];
@@ -69,16 +71,27 @@ const SEVERITY_COLOR: Record<string, string> = {
 
 /** Self-contained, print-ready HTML for `format: "html"`. */
 export function renderReportHtml(data: ReportData): string {
-  const { report, findings, counts, owner, scan, asset, generatedAt } = data;
+  const { report, findings, counts, owner, branding, scan, asset, generatedAt } = data;
+  const brandName = branding?.brandName?.trim() || "ARDI SEC";
+  const accentColor =
+    branding?.accentColor && /^#[0-9a-fA-F]{6}$/.test(branding.accentColor)
+      ? branding.accentColor
+      : "#16181d";
+  const logoHtml = branding?.logoUrl
+    ? `<img src="${esc(branding.logoUrl)}" alt="${esc(brandName)}" style="max-height:42px;max-width:200px;object-fit:contain;margin-bottom:10px;display:block;" />`
+    : "";
+  const footerLine = branding?.footerText?.trim()
+    ? `${esc(branding.footerText.trim())}${branding.contactEmail ? ` | Contact: ${esc(branding.contactEmail)}` : ""}`
+    : `${esc(brandName)} Security assessment report.${branding?.contactEmail ? ` Contact: ${esc(branding.contactEmail)}.` : ""} This report reflects findings recorded at generation time and does not certify that a target is secure.`;
 
   const scopeLine = scan
     ? `Scan: ${esc(scan.name)} (${esc(scan.type)})`
     : asset
-      ? `Asset: ${esc(asset.name)} — ${esc(asset.target)}`
+      ? `Asset: ${esc(asset.name)} (${esc(asset.target)})`
       : "Scope: all assets";
 
   const assessmentNotice = scan && scan.status !== "completed"
-    ? `<aside class="assessment-notice"><strong>Assessment incomplete — ${esc(scan.status)}</strong><p>This check did not finish. Recorded findings may be partial; no findings does not mean the target is secure.</p></aside>`
+    ? `<aside class="assessment-notice"><strong>Assessment incomplete (${esc(scan.status)})</strong><p>This check did not finish. Recorded findings may be partial; no findings does not mean the target is secure.</p></aside>`
     : "";
 
   const summaryChips = SEVERITY_ORDER.map(
@@ -119,7 +132,7 @@ export function renderReportHtml(data: ReportData): string {
   * { box-sizing: border-box; }
   body { font: 14px/1.55 -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color: #16181d; margin: 0; padding: 40px; background: #fff; }
   .wrap { max-width: 860px; margin: 0 auto; }
-  header { border-bottom: 3px solid #16181d; padding-bottom: 16px; margin-bottom: 24px; }
+  header { border-bottom: 3px solid ${accentColor}; padding-bottom: 16px; margin-bottom: 24px; }
   h1 { margin: 0 0 4px; font-size: 26px; }
   .muted { color: #5b6470; font-size: 13px; }
   .chips { margin: 16px 0 8px; display: flex; flex-wrap: wrap; gap: 8px; }
@@ -141,6 +154,8 @@ export function renderReportHtml(data: ReportData): string {
 </style></head>
 <body><div class="wrap">
   <header>
+    ${logoHtml}
+    <div class="muted" style="text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:4px;color:${accentColor}">${esc(brandName)}</div>
     <h1>${esc(report.title)}</h1>
     <div class="muted">${esc(report.type.charAt(0).toUpperCase() + report.type.slice(1))} report · ${scopeLine}</div>
     <div class="muted">Generated ${esc(generatedAt.toUTCString())}${owner ? ` · ${esc(owner.orgName || owner.name || owner.email)}` : ""}</div>
@@ -149,6 +164,6 @@ export function renderReportHtml(data: ReportData): string {
     <div class="muted">${findings.length} finding${findings.length === 1 ? "" : "s"} in scope</div>
   </header>
   ${findingBlocks}
-  <footer>ARDI SEC — Security assessment report. This report reflects findings recorded at generation time and does not certify that a target is secure.</footer>
+  <footer>${footerLine}</footer>
 </div></body></html>`;
 }

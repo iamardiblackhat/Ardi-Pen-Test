@@ -1,4 +1,10 @@
 {
   "buildCommand": "node scripts/vercel-output.mjs",
-  "framework": null
+  "framework": null,
+  "crons": [
+    {
+      "path": "/api/cron/weekly-monitor",
+      "schedule": "0 8 * * 1"
+    }
+  ]
 }

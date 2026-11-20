@@ -17,6 +17,7 @@ type Asset = typeof assetsTable.$inferSelect;
 type Scan = typeof scansTable.$inferSelect;
 
 import { SEVERITY_ORDER, type ReportData } from "./report-renderer";
+import { getWorkspaceBranding } from "./workspace-branding";
 export { renderReportHtml, renderReportJson } from "./report-renderer";
 export type { ReportData } from "./report-renderer";
 
@@ -57,10 +58,13 @@ export async function gatherReportData(userId: number, report: Report): Promise<
     .from(usersTable)
     .where(eq(usersTable.id, userId));
 
+  const branding = await getWorkspaceBranding(userId);
+
   return {
     report,
     generatedAt: new Date(),
     owner: user ?? null,
+    branding,
     scan,
     asset,
     findings,

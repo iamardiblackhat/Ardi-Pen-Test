@@ -10,6 +10,8 @@ import osintRouter from "./osint";
 import ardiRouter from "./ardi";
 import intelligenceRouter from "./intelligence";
 import billingRouter from "./billing";
+import brandingRouter from "./branding";
+import cronRouter from "./cron";
 import { requireAuth } from "../middlewares/require-auth";
 
 const router: IRouter = Router();
@@ -25,6 +27,7 @@ router.use(authRouter);
 router.use(ardiRouter);
 router.use(intelligenceRouter);
 router.use(billingRouter);
+router.use(cronRouter);
 
 router.use(requireAuth);
 
@@ -34,5 +37,6 @@ router.use(findingsRouter);
 router.use(reportsRouter);
 router.use(dashboardRouter);
 router.use(osintRouter);
+router.use(brandingRouter);
 
 export default router;

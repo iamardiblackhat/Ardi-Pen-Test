@@ -8,6 +8,7 @@ import {
   GetScanTrendResponse,
 } from "@workspace/api-zod";
 import { getHoneypotTelemetryAsync } from "../middlewares/tripwire";
+import { listMonitoringAlerts, runWeeklyMonitoring } from "../lib/monitoring-alerts";
 
 const router = Router();
 
@@ -104,6 +105,17 @@ router.get("/dashboard/scan-trend", async (req, res): Promise<void> => {
 // GET /api/dashboard/honeypot — Blue Team deception & tripwire telemetry
 router.get("/dashboard/honeypot", async (_req, res): Promise<void> => {
   res.json(await getHoneypotTelemetryAsync());
+});
+
+// GET /api/dashboard/monitoring-alerts — Weekly monitoring summary & change alerts
+router.get("/dashboard/monitoring-alerts", async (req, res): Promise<void> => {
+  res.json(await listMonitoringAlerts(req.user!.sub));
+});
+
+// POST /api/dashboard/monitoring-alerts/run — Trigger an immediate check of all weekly-monitored sites
+router.post("/dashboard/monitoring-alerts/run", async (req, res): Promise<void> => {
+  const result = await runWeeklyMonitoring(req.user!.sub);
+  res.json(result);
 });
 
 export default router;

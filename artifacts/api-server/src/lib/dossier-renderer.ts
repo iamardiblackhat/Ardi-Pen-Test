@@ -1,4 +1,5 @@
 import type { LookalikeScanResult } from "./lookalike-scanner";
+import type { WorkspaceBranding } from "./workspace-branding";
 
 export interface DossierDomainData {
   domain: string;
@@ -29,6 +30,7 @@ export interface DossierInput {
   sources: string[];
   domainData: DossierDomainData | null;
   lookalikes: LookalikeScanResult | null;
+  branding?: WorkspaceBranding | null;
 }
 
 function esc(value: unknown): string {
@@ -40,6 +42,18 @@ function esc(value: unknown): string {
 }
 
 export function renderDossierHtml(input: DossierInput): string {
+  const brandName = input.branding?.brandName?.trim() || "ARDI SEC";
+  const accentColor =
+    input.branding?.accentColor && /^#[0-9a-fA-F]{6}$/.test(input.branding.accentColor)
+      ? input.branding.accentColor
+      : "#16181d";
+  const logoHtml = input.branding?.logoUrl
+    ? `<img src="${esc(input.branding.logoUrl)}" alt="${esc(brandName)}" style="max-height:42px;max-width:200px;object-fit:contain;margin-bottom:10px;display:block;" />`
+    : "";
+  const footerLine = input.branding?.footerText?.trim()
+    ? `${esc(input.branding.footerText.trim())}${input.branding.contactEmail ? ` | Contact: ${esc(input.branding.contactEmail)}` : ""}`
+    : `${esc(brandName)} Due Diligence Dossier.${input.branding?.contactEmail ? ` Contact: ${esc(input.branding.contactEmail)}.` : ""} Compiled from live public records at generation time.`;
+
   const registeredLookalikes = (input.lookalikes?.candidates ?? []).filter(
     (c) => c.registered,
   );
@@ -100,13 +114,13 @@ export function renderDossierHtml(input: DossierInput): string {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ARDI Due Diligence Dossier: ${esc(input.subject)}</title>
+  <title>${esc(brandName)} Due Diligence Dossier: ${esc(input.subject)}</title>
   <style>
     :root { color-scheme: light; }
     * { box-sizing: border-box; }
     body { font: 14px/1.6 -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color: #16181d; margin: 0; padding: 36px; background: #fff; }
     .wrap { max-width: 860px; margin: 0 auto; }
-    header { border-bottom: 3px solid #16181d; padding-bottom: 16px; margin-bottom: 24px; }
+    header { border-bottom: 3px solid ${accentColor}; padding-bottom: 16px; margin-bottom: 24px; }
     h1 { margin: 0 0 6px; font-size: 26px; }
     h2 { margin: 0 0 12px; font-size: 17px; color: #0f172a; }
     .muted { color: #5b6470; font-size: 13px; }
@@ -126,8 +140,10 @@ export function renderDossierHtml(input: DossierInput): string {
 <body>
   <div class="wrap">
     <header>
+      ${logoHtml}
+      <div class="muted" style="text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:4px;color:${accentColor}">${esc(brandName)}</div>
       <h1>Due Diligence Dossier: ${esc(input.subject)}</h1>
-      <div class="muted">Prepared by ARDI SEC | Region: ${esc(input.region.toUpperCase())} | Generated ${esc(new Date(input.generatedAt).toUTCString())}</div>
+      <div class="muted">Prepared by ${esc(brandName)} | Region: ${esc(input.region.toUpperCase())} | Generated ${esc(new Date(input.generatedAt).toUTCString())}</div>
     </header>
     <section class="card">
       <h2>Public Intelligence Summary</h2>
@@ -139,7 +155,7 @@ export function renderDossierHtml(input: DossierInput): string {
       <h2>Verified Public Sources (${input.sources.length})</h2>
       ${sourcesList}
     </section>
-    <footer>ARDI SEC Due Diligence Dossier. Compiled from live public records at generation time.</footer>
+    <footer>${footerLine}</footer>
   </div>
 </body>
 </html>`;
