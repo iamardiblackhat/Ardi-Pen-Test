@@ -36,6 +36,7 @@ const ResearchThreats = lazy(() =>
   })),
 );
 const Settings = lazy(() => import("@/pages/settings"));
+const Pricing = lazy(() => import("@/pages/pricing"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 const publicInfo = import("@/pages/public-info");
 const Terms = lazy(() =>
@@ -54,6 +55,7 @@ type PageComponent = ComponentType<Record<string, never>>;
 const publicRoutes: Array<{ path: string; component: PageComponent }> = [
   { path: routes.home, component: SecurityHomePage },
   { path: routes.capabilities, component: PublicCapabilitiesPage },
+  { path: routes.pricing, component: Pricing },
   { path: routes.security, component: PublicSecurityPage },
   { path: routes.intelligence, component: Intelligence },
   { path: routes.login, component: Login },

@@ -32,6 +32,7 @@ export function ArdiAssistantProvider({ children }: { children: ReactNode }) {
   const publicPath = [
     "/",
     "/capabilities",
+    "/pricing",
     "/security",
     "/intelligence",
     "/login",

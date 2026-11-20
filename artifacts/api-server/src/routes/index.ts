@@ -9,6 +9,7 @@ import dashboardRouter from "./dashboard";
 import osintRouter from "./osint";
 import ardiRouter from "./ardi";
 import intelligenceRouter from "./intelligence";
+import billingRouter from "./billing";
 import { requireAuth } from "../middlewares/require-auth";
 
 const router: IRouter = Router();
@@ -23,6 +24,7 @@ router.use(healthRouter);
 router.use(authRouter);
 router.use(ardiRouter);
 router.use(intelligenceRouter);
+router.use(billingRouter);
 
 router.use(requireAuth);
 
