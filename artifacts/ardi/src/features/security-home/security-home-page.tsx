@@ -5,6 +5,7 @@ import { SecurityAssistantSection } from '@/features/security-home/components/se
 import { SecurityFooter } from '@/features/security-home/components/security-footer';
 import { SecurityHeader } from '@/features/security-home/components/security-header';
 import { SecurityHero } from '@/features/security-home/components/security-hero';
+import { QuickGradeChecker } from '@/features/security-home/components/quick-grade-checker';
 import { CapabilityPreviewSection } from '@/features/security-home/components/capability-preview-section';
 import { SecurityOperationsSection } from '@/features/security-home/components/security-operations-section';
 import { useActiveSecuritySection } from '@/features/security-home/hooks/use-active-security-section';
@@ -25,6 +26,7 @@ export default function SecurityHomePage() {
       <SecurityHeader activeSection={navigation.activeSection} onOpenAssistant={() => setArdiOpen(true)} onSelectSection={navigation.setActiveSection} />
       <main id="ardi-main">
         <SecurityHero activeIndex={hero.activeIndex} activeScene={hero.activeScene} isPlaying={hero.isPlaying} onAdvance={hero.advance} onSelect={hero.select} onToggle={hero.toggle} videoRef={hero.videoRef} onOpenAssistant={() => setArdiOpen(true)} />
+        <QuickGradeChecker />
         <SecurityOperationsSection />
         <CapabilityPreviewSection />
         <SecurityAssistantSection onOpenAssistant={() => setArdiOpen(true)} />

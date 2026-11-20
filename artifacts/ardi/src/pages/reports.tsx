@@ -13,9 +13,44 @@ export default function Reports() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [previewTitle, setPreviewTitle] = useState('');
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
+  const [sharedIds, setSharedIds] = useState<Record<number, boolean>>({});
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const reportsQuery = useGetReports({ query: { queryKey: getGetReportsQueryKey() } });
   const { toast } = useToast();
+
+  async function shareReport(report: Report) {
+    try {
+      const response = await fetch(`/api/reports/${report.id}/share`, {
+        method: 'POST',
+        headers: { authorization: `Bearer ${auth.getToken() ?? ''}` },
+      });
+      const data = await response.json();
+      if (!response.ok || !data.sharePath) throw new Error(data.error || 'Could not create share link.');
+      const fullUrl = `${window.location.origin}${data.sharePath}`;
+      await navigator.clipboard?.writeText(fullUrl).catch(() => {});
+      setSharedIds((prev) => ({ ...prev, [report.id]: true }));
+      toast({
+        title: 'Client share link copied',
+        description: `${fullUrl} (valid for 14 days, no login needed).`,
+      });
+    } catch {
+      toast({ title: 'Could not create share link', description: 'Try again.', variant: 'destructive' });
+    }
+  }
+
+  async function revokeShare(report: Report) {
+    try {
+      const response = await fetch(`/api/reports/${report.id}/share`, {
+        method: 'DELETE',
+        headers: { authorization: `Bearer ${auth.getToken() ?? ''}` },
+      });
+      if (!response.ok) throw new Error('Failed to revoke');
+      setSharedIds((prev) => ({ ...prev, [report.id]: false }));
+      toast({ title: 'Share link revoked', description: 'Anyone with the old link can no longer open this report.' });
+    } catch {
+      toast({ title: 'Could not revoke share link', description: 'Try again.', variant: 'destructive' });
+    }
+  }
 
   async function download(report: Report) {
     if (!report.downloadUrl) return;
@@ -58,7 +93,7 @@ export default function Reports() {
   return (
     <main className="space-y-6 p-4 sm:p-8">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><div><h1 className="text-3xl font-bold">Reports</h1><p className="mt-2 text-muted-foreground">Create a file from the targets, checks, and problems already stored, then preview, print as PDF, or download it.</p></div><CreateReportDialog open={dialogOpen} onOpenChange={setDialogOpen} /></header>
-      {reports.length ? <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3" aria-label="Generated reports">{reports.map((report) => <ReportCard key={report.id} report={report} onDownload={download} onPreview={preview} />)}</section> : <PageEmpty title="No reports yet" description="Generate a report from real workspace evidence." actionLabel="New report" onAction={() => setDialogOpen(true)} />}
+      {reports.length ? <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3" aria-label="Generated reports">{reports.map((report) => <ReportCard key={report.id} report={report} onDownload={download} onPreview={preview} onShare={shareReport} onRevokeShare={revokeShare} isShared={Boolean(sharedIds[report.id])} />)}</section> : <PageEmpty title="No reports yet" description="Generate a report from real workspace evidence." actionLabel="New report" onAction={() => setDialogOpen(true)} />}
 
       <Dialog open={previewHtml !== null} onOpenChange={(open) => !open && setPreviewHtml(null)}>
         <DialogContent className="flex h-[85vh] max-w-4xl flex-col gap-3">

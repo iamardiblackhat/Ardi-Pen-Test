@@ -9,6 +9,7 @@ import {
   GetReportResponse,
 } from "@workspace/api-zod";
 import { gatherReportData, renderReportHtml, renderReportJson } from "../lib/report-generator";
+import { createOrGetReportShare, revokeReportShares } from "../lib/report-shares";
 
 const router = Router();
 
@@ -98,6 +99,33 @@ router.get("/reports/:id/download", async (req, res): Promise<void> => {
   res.setHeader("Content-Type", "text/html; charset=utf-8");
   res.setHeader("Content-Disposition", `attachment; filename="${slug}.html"`);
   res.send(renderReportHtml(data));
+});
+
+// POST /api/reports/:id/share — Create or retrieve a 14-day public read-only client link
+router.post("/reports/:id/share", async (req, res): Promise<void> => {
+  const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const parsed = GetReportParams.safeParse({ id: parseInt(rawId, 10) });
+  if (!parsed.success) { res.status(400).json({ error: "Invalid id" }); return; }
+
+  const [report] = await db.select().from(reportsTable).where(and(eq(reportsTable.id, parsed.data.id), eq(reportsTable.userId, req.user!.sub)));
+  if (!report) { res.status(404).json({ error: "Not found" }); return; }
+
+  const share = await createOrGetReportShare(req.user!.sub, report.id, 14);
+  res.json({
+    token: share.token,
+    sharePath: `/api/share/${share.token}`,
+    expiresAt: share.expiresAt,
+  });
+});
+
+// DELETE /api/reports/:id/share — Revoke all active public share links for this report
+router.delete("/reports/:id/share", async (req, res): Promise<void> => {
+  const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const parsed = GetReportParams.safeParse({ id: parseInt(rawId, 10) });
+  if (!parsed.success) { res.status(400).json({ error: "Invalid id" }); return; }
+
+  const revokedCount = await revokeReportShares(req.user!.sub, parsed.data.id);
+  res.json({ revoked: revokedCount > 0, revokedCount });
 });
 
 // GET /api/reports/:id

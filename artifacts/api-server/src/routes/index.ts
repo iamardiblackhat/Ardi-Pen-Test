@@ -12,6 +12,8 @@ import intelligenceRouter from "./intelligence";
 import billingRouter from "./billing";
 import brandingRouter from "./branding";
 import cronRouter from "./cron";
+import publicCheckRouter from "./public-check";
+import publicShareRouter from "./public-share";
 import { requireAuth } from "../middlewares/require-auth";
 
 const router: IRouter = Router();
@@ -28,6 +30,8 @@ router.use(ardiRouter);
 router.use(intelligenceRouter);
 router.use(billingRouter);
 router.use(cronRouter);
+router.use(publicCheckRouter);
+router.use(publicShareRouter);
 
 router.use(requireAuth);
 

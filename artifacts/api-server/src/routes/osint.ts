@@ -9,6 +9,7 @@ import { logger } from "../lib/logger";
 import { scanLookalikeDomains } from "../lib/lookalike-scanner";
 import { renderDossierHtml } from "../lib/dossier-renderer";
 import { getWorkspaceBranding } from "../lib/workspace-branding";
+import { runEmailDnsAudit } from "../lib/email-dns-audit";
 
 const router = Router();
 
@@ -160,6 +161,21 @@ router.post(
             : "Could not compile the due diligence dossier right now.",
       });
     }
+  },
+);
+
+router.get(
+  "/osint/email-audit/:domain",
+  rateLimit(20, 60_000),
+  async (req, res): Promise<void> => {
+    const raw = Array.isArray(req.params.domain) ? req.params.domain[0] : req.params.domain;
+    const domain = (raw ?? "").trim().toLowerCase();
+    if (!domain || !/^[a-z0-9.-]+\.[a-z]{2,}$/.test(domain)) {
+      res.status(400).json({ error: "Enter a valid domain like example.com." });
+      return;
+    }
+    const audit = await runEmailDnsAudit(domain);
+    res.json(audit);
   },
 );
 

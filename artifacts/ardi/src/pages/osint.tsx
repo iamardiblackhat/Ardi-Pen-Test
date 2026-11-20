@@ -84,6 +84,34 @@ function loadDomainHistory(): DomainIntel[] {
   }
 }
 
+interface EmailDnsAudit {
+  domain: string;
+  overallStatus: "protected" | "partial" | "vulnerable";
+  summary: string;
+  spf: {
+    present: boolean;
+    record: string | null;
+    status: "pass" | "warn" | "fail";
+    explanation: string;
+    recommendedRecord: string;
+  };
+  dmarc: {
+    present: boolean;
+    record: string | null;
+    policy: string;
+    status: "pass" | "warn" | "fail";
+    explanation: string;
+    recommendedRecord: string;
+  };
+  caa: {
+    present: boolean;
+    records: string[];
+    status: "pass" | "warn";
+    explanation: string;
+    recommendedRecord: string;
+  };
+}
+
 export default function Osint() {
   const [domain, setDomain] = useState("");
   const [history, setHistory] = useState<DomainIntel[]>(() => loadDomainHistory());
@@ -91,6 +119,24 @@ export default function Osint() {
   const [lookalikes, setLookalikes] = useState<LookalikeScanResult | null>(null);
   const [lookalikeLoading, setLookalikeLoading] = useState(false);
   const [lookalikeError, setLookalikeError] = useState("");
+  const [emailAudit, setEmailAudit] = useState<EmailDnsAudit | null>(null);
+
+  async function fetchEmailAudit(targetDomain: string) {
+    setEmailAudit(null);
+    try {
+      const response = await fetch(
+        `/api/osint/email-audit/${encodeURIComponent(targetDomain)}`,
+        {
+          headers: auth.getToken()
+            ? { authorization: `Bearer ${auth.getToken()}` }
+            : {},
+        },
+      );
+      if (response.ok) {
+        setEmailAudit((await response.json()) as EmailDnsAudit);
+      }
+    } catch {}
+  }
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -159,6 +205,7 @@ export default function Osint() {
         throw new Error(body.error ?? "The domain research request failed.");
       setResult(body);
       saveToHistory(body);
+      void fetchEmailAudit(body.domain);
     } catch (requestError) {
       setError(
         requestError instanceof Error
@@ -314,6 +361,66 @@ export default function Osint() {
               <div className="rounded-xl border border-amber-400/40 bg-amber-400/10 px-4 py-3 text-xs text-amber-100">
                 {lookalikeError}
               </div>
+            ) : null}
+
+            {emailAudit ? (
+              <section className="rounded-[1.5rem] border border-border bg-card p-6">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="font-mono text-[10px] font-semibold tracking-[.14em] text-primary">
+                      EMAIL SPOOFING &amp; SSL ISSUANCE AUDIT
+                    </p>
+                    <h3 className="mt-1 text-lg font-semibold">
+                      SPF, DMARC &amp; CAA Protection
+                    </h3>
+                    <p className="mt-1 text-xs text-muted-foreground">{emailAudit.summary}</p>
+                  </div>
+                  <span
+                    className={`rounded-full border px-3 py-1 text-xs font-mono font-semibold uppercase ${
+                      emailAudit.overallStatus === "protected"
+                        ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-300"
+                        : emailAudit.overallStatus === "partial"
+                          ? "border-amber-400/40 bg-amber-400/10 text-amber-300"
+                          : "border-destructive/40 bg-destructive/15 text-destructive"
+                    }`}
+                  >
+                    {emailAudit.overallStatus}
+                  </span>
+                </div>
+                <div className="mt-4 grid gap-3 md:grid-cols-3">
+                  {[
+                    { title: "SPF (Allowed Senders)", item: emailAudit.spf },
+                    { title: "DMARC (Fake Email Blocking)", item: emailAudit.dmarc },
+                    { title: "CAA (SSL Certificate Lock)", item: emailAudit.caa },
+                  ].map(({ title, item }) => (
+                    <div key={title} className="rounded-xl border border-border bg-background/60 p-4 text-xs">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-semibold text-foreground">{title}</span>
+                        <span
+                          className={`rounded px-1.5 py-0.5 font-mono text-[10px] uppercase ${
+                            item.status === "pass"
+                              ? "bg-emerald-500/15 text-emerald-400"
+                              : item.status === "warn"
+                                ? "bg-amber-500/15 text-amber-400"
+                                : "bg-destructive/15 text-destructive"
+                          }`}
+                        >
+                          {item.status}
+                        </span>
+                      </div>
+                      <p className="mt-2 leading-relaxed text-muted-foreground">{item.explanation}</p>
+                      {item.status !== "pass" ? (
+                        <div className="mt-2.5 rounded border border-border bg-muted/40 p-2 font-mono text-[11px] break-all">
+                          <span className="block text-[10px] uppercase text-muted-foreground mb-0.5">
+                            Copy-paste DNS fix:
+                          </span>
+                          {item.recommendedRecord}
+                        </div>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              </section>
             ) : null}
 
             {lookalikes ? (

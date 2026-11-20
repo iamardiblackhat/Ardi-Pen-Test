@@ -1,4 +1,4 @@
-import { AlertCircle, CheckCircle2, Clock, Download, Eye, FileText, Loader2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Clock, Download, Eye, FileText, Link2, Loader2, Unlink } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import type { Report } from '@workspace/api-client-react';
 import { Button } from '@workspace/ardi-ds/components/ui/button';
@@ -16,10 +16,16 @@ export function ReportCard({
   report,
   onDownload,
   onPreview,
+  onShare,
+  onRevokeShare,
+  isShared,
 }: {
   report: Report;
   onDownload: (report: Report) => void;
   onPreview: (report: Report) => void;
+  onShare?: (report: Report) => void;
+  onRevokeShare?: (report: Report) => void;
+  isShared?: boolean;
 }) {
   return (
     <article className="flex flex-col gap-4 rounded-xl border border-card-border bg-card p-5 shadow-md transition hover:border-border">
@@ -34,6 +40,18 @@ export function ReportCard({
               <Button size="sm" variant="default" onClick={() => onPreview(report)}>
                 <Eye className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
                 Preview / PDF
+              </Button>
+            ) : null}
+            {report.format !== 'json' && onShare ? (
+              <Button size="sm" variant="outline" onClick={() => onShare(report)}>
+                <Link2 className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+                Share Link
+              </Button>
+            ) : null}
+            {isShared && onRevokeShare ? (
+              <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => onRevokeShare(report)}>
+                <Unlink className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+                Revoke
               </Button>
             ) : null}
             <Button size="sm" variant="outline" onClick={() => onDownload(report)}>
