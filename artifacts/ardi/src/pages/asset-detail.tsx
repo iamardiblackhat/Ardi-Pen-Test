@@ -188,6 +188,43 @@ export default function AssetDetail() {
         />
       </div>
 
+      {/* Embeddable Security Trust Badge */}
+      {(() => {
+        const cleanDomain = asset.target
+          .replace(/^https?:\/\//i, '')
+          .replace(/\/.*$/, '')
+          .replace(/:\d+$/, '')
+          .replace(/^www\./i, '');
+        const badgeSrc = `${window.location.origin}/api/badge/${encodeURIComponent(cleanDomain)}.svg`;
+        const embedHtml = `<a href="${window.location.origin}" target="_blank" rel="noreferrer"><img src="${badgeSrc}" alt="Verified by ARDI SEC" height="28" /></a>`;
+        return (
+          <div className="bg-card border border-card-border rounded-xl p-5 flex flex-wrap items-center justify-between gap-4">
+            <div className="space-y-1.5">
+              <p className="font-semibold text-sm">Embeddable Website Security Badge</p>
+              <p className="text-xs text-muted-foreground">
+                Show visitors your live A+ to F security grade in your website footer. Updates automatically after every scan.
+              </p>
+              <div className="pt-1">
+                <img src={`/api/badge/${encodeURIComponent(cleanDomain)}.svg`} alt="ARDI SEC live badge" height={28} />
+              </div>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                void navigator.clipboard?.writeText(embedHtml);
+                toast({
+                  title: 'Badge HTML copied',
+                  description: 'Paste it into your website footer to display your live ARDI SEC grade.',
+                });
+              }}
+            >
+              Copy HTML Embed Code
+            </Button>
+          </div>
+        );
+      })()}
+
       {/* Scan History */}
       <div className="bg-card border border-card-border rounded-xl p-6">
         <h2 className="text-lg font-bold mb-6">Scan History</h2>

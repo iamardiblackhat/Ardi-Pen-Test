@@ -13,6 +13,7 @@ import { authContinuation, intelligenceReturn } from "@/lib/auth-return";
 export default function Register() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const initialTarget = new URLSearchParams(window.location.search).get("target")?.trim() ?? "";
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [orgName, setOrgName] = useState("");
@@ -30,8 +31,11 @@ export default function Register() {
             title: "Account created",
             description: `Welcome to Ardi, ${response.user.name}`,
           });
+          const nextOnboarding = initialTarget
+            ? `/onboarding?target=${encodeURIComponent(initialTarget)}`
+            : "/onboarding";
           setLocation(
-            intelligenceReturn(window.location.search) ?? "/onboarding",
+            intelligenceReturn(window.location.search) ?? nextOnboarding,
           );
         },
         onError: (err: unknown) => {
@@ -61,6 +65,11 @@ export default function Register() {
           <p className="text-muted-foreground text-sm mt-2 font-mono">
             Start securing your infrastructure today
           </p>
+          {initialTarget ? (
+            <p className="mt-3 rounded-lg border border-primary/30 bg-primary/10 px-3 py-1.5 text-center text-xs text-primary">
+              Full scan &amp; PDF report ready for <strong>{initialTarget}</strong> right after signup.
+            </p>
+          ) : null}
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">

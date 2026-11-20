@@ -14,6 +14,7 @@ import brandingRouter from "./branding";
 import cronRouter from "./cron";
 import publicCheckRouter from "./public-check";
 import publicShareRouter from "./public-share";
+import publicBadgeRouter from "./public-badge";
 import { requireAuth } from "../middlewares/require-auth";
 
 const router: IRouter = Router();
@@ -32,6 +33,7 @@ router.use(billingRouter);
 router.use(cronRouter);
 router.use(publicCheckRouter);
 router.use(publicShareRouter);
+router.use(publicBadgeRouter);
 
 router.use(requireAuth);
 

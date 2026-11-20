@@ -29,10 +29,17 @@ export default function Onboarding() {
   const createAsset = useCreateAsset();
   const createScan = useCreateScan();
   const startScan = useStartScan();
-  const [step, setStep] = useState(1);
-  const [assetName, setAssetName] = useState("");
+  const initialTargetParam =
+    new URLSearchParams(window.location.search).get("target")?.trim() ?? "";
+  const cleanedTargetDomain = initialTargetParam
+    .replace(/^https?:\/\//i, "")
+    .replace(/\/.*$/, "");
+  const [step, setStep] = useState(cleanedTargetDomain ? 2 : 1);
+  const [assetName, setAssetName] = useState(cleanedTargetDomain);
   const [assetType, setAssetType] = useState<AssetInputType>("web_app");
-  const [assetTarget, setAssetTarget] = useState("");
+  const [assetTarget, setAssetTarget] = useState(
+    cleanedTargetDomain ? `https://${cleanedTargetDomain}` : "",
+  );
   const [assetId, setAssetId] = useState<number | null>(null);
   const [scopeConfirmed, setScopeConfirmed] = useState(false);
   const [startedScanId, setStartedScanId] = useState<number | null>(null);
